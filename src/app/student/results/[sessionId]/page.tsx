@@ -7,7 +7,6 @@ import {
   Sparkles,
   Download,
   ArrowLeft,
-  CheckCircle2,
   Award,
   Layers,
   GraduationCap,
@@ -15,16 +14,110 @@ import {
   AlertTriangle,
   Lightbulb,
   Compass,
-  ChevronRight,
   TrendingUp,
-  FileText,
   School,
-  Share2,
   RefreshCw,
   Clock,
   ShieldCheck,
+  Target,
+  Gauge,
+  ListChecks,
+  Crown,
+  Star,
 } from "lucide-react";
 import { ScoringResult } from "@/lib/scoring";
+import CountUp from "@/components/results/CountUp";
+import ScoreRing from "@/components/results/ScoreRing";
+import RadarChart from "@/components/results/RadarChart";
+
+/* -------------------------------------------------------------------------- */
+/* Small presentational helpers                                               */
+/* -------------------------------------------------------------------------- */
+
+function SectionHeader({
+  id,
+  eyebrow,
+  title,
+  description,
+  icon: Icon,
+  aside,
+}: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  description?: string;
+  icon: React.ElementType;
+  aside?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shadow-md shrink-0">
+          <Icon className="w-5 h-5" />
+        </div>
+        <div>
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ggc-gold-dark">
+            {eyebrow}
+          </span>
+          <h2 id={id} className="text-xl sm:text-2xl font-black text-ggc-dark tracking-tight leading-tight">
+            {title}
+          </h2>
+          {description && <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-2xl">{description}</p>}
+        </div>
+      </div>
+      {aside}
+    </div>
+  );
+}
+
+function toPercent(score: number) {
+  return Math.max(0, Math.min(100, Math.round(((score - 1) / 4) * 100)));
+}
+
+const LEVEL_STYLES: Record<string, string> = {
+  Tinggi: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Sedang: "bg-sky-100 text-sky-800 border-sky-200",
+  Berkembang: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
+/* -------------------------------------------------------------------------- */
+/* Loading skeleton                                                           */
+/* -------------------------------------------------------------------------- */
+
+function ResultsSkeleton() {
+  return (
+    <div className="space-y-8 pb-16" aria-busy="true" aria-live="polite">
+      <span className="sr-only">Menganalisis skor multi-matriks Anda...</span>
+      <div className="h-10 w-64 rounded-xl skeleton-shimmer" />
+      <div className="rounded-[2rem] bg-ggc-dark p-8 sm:p-10 grid lg:grid-cols-[1.4fr_1fr] gap-8">
+        <div className="space-y-4">
+          <div className="h-6 w-48 rounded-full bg-white/10" />
+          <div className="h-12 w-4/5 rounded-xl bg-white/10" />
+          <div className="h-5 w-3/5 rounded-lg bg-white/10" />
+          <div className="h-20 w-full rounded-xl bg-white/5" />
+        </div>
+        <div className="h-64 rounded-3xl bg-white/5" />
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-28 rounded-2xl skeleton-shimmer" />
+        ))}
+      </div>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="h-80 rounded-3xl skeleton-shimmer" />
+        <div className="h-80 rounded-3xl skeleton-shimmer" />
+      </div>
+      <div className="text-center text-xs text-gray-500 flex items-center justify-center gap-2">
+        <Compass className="w-4 h-4 text-ggc animate-spin motion-reduce:animate-none" />
+        Mengalkulasi kecocokan 84 instrumen terhadap profil jurusan dan potensi bakat Anda...
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Page                                                                       */
+/* -------------------------------------------------------------------------- */
 
 export default function StudentResultsPage() {
   const params = useParams();
@@ -92,24 +185,15 @@ export default function StudentResultsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center animate-bounce shadow-xl">
-          <Compass className="w-7 h-7 animate-spin" />
-        </div>
-        <div className="text-center">
-          <h3 className="text-lg font-bold text-ggc-dark">Menganalisis Skor Multi-Matriks...</h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Mengalkulasi kecocokan 84 instrumen terhadap profil jurusan dan potensi bakat Anda.
-          </p>
-        </div>
-      </div>
-    );
+    return <ResultsSkeleton />;
   }
 
   if (error || !data) {
     return (
       <div className="max-w-lg mx-auto my-12 p-8 rounded-3xl bg-white border border-red-200 shadow-xl text-center">
+        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+          <AlertTriangle className="w-7 h-7" />
+        </div>
         <h3 className="text-lg font-bold text-gray-900 mb-2">Gagal Membuka Laporan</h3>
         <p className="text-xs text-gray-600 mb-6">{error || "Data asesmen tidak ditemukan."}</p>
         <Link
@@ -126,411 +210,634 @@ export default function StudentResultsPage() {
   const { student, results } = data;
   const primarySignature = results.potentialSignatures[0];
   const topMajor = results.studyRecommendations[0];
+  const readinessPercent = toPercent(results.overallReadinessScore);
+  const firstName = student.name?.split(" ")[0] || "Siswa";
+  const radarData = results.dimensionScores.map((d) => ({
+    label: d.name.split("(")[0].trim(),
+    value: d.percentage,
+  }));
+  const strongestDimension = [...results.dimensionScores].sort((a, b) => b.percentage - a.percentage)[0];
+  const sortedTalents = [...results.talentSubdimensions].sort((a, b) => b.score - a.score);
+
+  const quickStats = [
+    {
+      icon: ListChecks,
+      label: "Butir Dijawab",
+      value: results.totalAnswered,
+      decimals: 0,
+      suffix: " / 84",
+      hint: "Instrumen multi-matriks",
+    },
+    {
+      icon: Gauge,
+      label: "Kesiapan Studi",
+      value: readinessPercent,
+      decimals: 0,
+      suffix: "%",
+      hint: "Readiness Index",
+    },
+    {
+      icon: Star,
+      label: "Skor Signature",
+      value: primarySignature?.score ?? 0,
+      decimals: 1,
+      suffix: " / 5",
+      hint: primarySignature?.title ?? "-",
+    },
+    {
+      icon: Target,
+      label: "Top Match",
+      value: topMajor?.fitScore ?? 0,
+      decimals: 0,
+      suffix: "%",
+      hint: topMajor?.majorName ?? "-",
+    },
+  ];
 
   return (
-    <div className="space-y-8 pb-16">
-      {/* Top Action & Navigation Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-        <div className="flex items-center gap-2">
+    <div className="space-y-12 pb-16">
+      {/* ------------------------------------------------------------------ */}
+      {/* Top Action & Navigation Bar                                        */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2">
           <Link
             href="/student/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-ggc transition-colors bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Dashboard</span>
           </Link>
           <span className="text-xs text-gray-400">/</span>
-          <span className="text-xs font-semibold text-ggc-dark">Laporan Hasil Asesmen</span>
-        </div>
-
-        {/* Download PDF Button */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleDownloadPdf}
-            disabled={isDownloadingPdf}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white transition-all shadow-md hover:shadow-lg disabled:opacity-60"
-          >
-            {isDownloadingPdf ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Memproses Dokumen PDF...</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                <span>Unduh Laporan PDF Resmi</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Hero: Potential Signature Banner */}
-      <div className="rounded-3xl bg-emerald-luxury p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-ggc-gold/30">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-ggc-gold/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        <div className="absolute top-6 right-6 hidden md:block opacity-20 pointer-events-none">
-          <img src="/logo.png" alt="GGC Logo" className="w-24 h-24 object-contain" />
-        </div>
-
-        <div className="relative z-10 max-w-3xl">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/20 text-ggc-gold text-xs font-bold tracking-wide uppercase border border-ggc-gold/40">
-              <Sparkles className="w-3.5 h-3.5" />
-              Primary Potential Signature
-            </span>
-            <span className="text-xs text-ggc-subtle/80">
-              • ID Sesi: {results.sessionId.slice(0, 12)}...
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
-            {primarySignature?.title}
-          </h1>
-
-          <p className="text-base sm:text-lg font-medium text-ggc-gold mt-1">
-            "{primarySignature?.archetype}"
-          </p>
-
-          <p className="mt-3 text-xs sm:text-sm text-ggc-subtle/90 leading-relaxed max-w-2xl">
-            {primarySignature?.description}
-          </p>
-
-          {/* Core Strengths Badges */}
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            {primarySignature?.highlightedTraits.map((trait) => (
-              <span
-                key={trait}
-                className="px-3 py-1 rounded-xl bg-white/10 text-white text-xs font-semibold backdrop-blur-md border border-white/20"
-              >
-                ✓ {trait}
-              </span>
-            ))}
-          </div>
-
-          {/* Student Identity Tag Footer */}
-          <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center gap-4 text-xs text-ggc-subtle">
-            <div className="flex items-center gap-1.5">
-              <GraduationCap className="w-4 h-4 text-ggc-gold" />
-              <span>{student.name}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <School className="w-4 h-4 text-ggc-gold" />
-              <span>{student.school} ({student.grade})</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-ggc-gold" />
-              <span>
-                {new Date(results.calculatedAt).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Top 3 Potential Signatures Comparison */}
-      <div>
-        <div className="mb-4">
-          <h3 className="text-lg font-black text-ggc-dark flex items-center gap-2">
-            <Award className="w-5 h-5 text-ggc" />
-            Top 3 Signature Potensi Unggulan Anda
-          </h3>
-          <p className="text-xs text-gray-500">
-            Dihitung dari skor performa subdimensi bakat dan preferensi penalaran alami Anda
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {results.potentialSignatures.map((sig, idx) => (
-            <div
-              key={idx}
-              className={`p-6 rounded-2xl border transition-all flex flex-col justify-between ${
-                idx === 0
-                  ? "bg-white border-ggc-gold shadow-md ring-2 ring-ggc-gold/20"
-                  : "bg-white border-gray-200 shadow-sm hover:border-gray-300"
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black ${
-                      idx === 0
-                        ? "bg-ggc-gold text-ggc-dark"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    0{idx + 1}
-                  </span>
-                  <span className="text-xs font-black text-ggc">
-                    Skor: {sig.score.toFixed(1)} / 5.0
-                  </span>
-                </div>
-                <h4 className="font-bold text-ggc-dark text-base mb-1">{sig.title}</h4>
-                <div className="text-xs font-semibold text-ggc-gold-dark mb-2">
-                  {sig.archetype}
-                </div>
-                <p className="text-xs text-gray-600 leading-relaxed mb-4">
-                  {sig.tagline}
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-gray-100 flex flex-wrap gap-1.5">
-                {sig.highlightedTraits.map((t) => (
-                  <span
-                    key={t}
-                    className="text-[10px] font-medium bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md border border-gray-200"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* MATRIX 2: STUDY PROFILE MATCHING SECTION */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-lg font-black text-ggc-dark flex items-center gap-2">
-              <Compass className="w-5 h-5 text-ggc" />
-              Rekomendasi Program Studi & Analisis Kecocokan (Matrix 2)
-            </h3>
-            <p className="text-xs text-gray-500">
-              Hasil komparasi profil bakat, minat, dan kesiapan akademik Anda terhadap benchmark jurusan perguruan tinggi
-            </p>
-          </div>
-
-          <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 self-start sm:self-auto">
-            Top Match: {topMajor?.majorName} ({topMajor?.fitScore}%)
+          <span className="text-xs font-semibold text-ggc-dark" aria-current="page">
+            Laporan Hasil Asesmen
           </span>
-        </div>
+        </nav>
 
-        <div className="space-y-4">
-          {results.studyRecommendations.map((rec, idx) => (
-            <div
-              key={rec.id}
-              className={`p-6 sm:p-7 rounded-3xl bg-white border shadow-sm transition-all hover:shadow-md ${
-                idx === 0
-                  ? "border-ggc-gold/60 ring-2 ring-ggc-gold/20"
-                  : "border-gray-200"
-              }`}
+        <button
+          onClick={handleDownloadPdf}
+          disabled={isDownloadingPdf}
+          className="group relative inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0 overflow-hidden"
+        >
+          {isDownloadingPdf ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>Memproses Dokumen PDF...</span>
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+              <span>Unduh Laporan PDF Resmi</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* HERO: Certificate-style Potential Signature                         */}
+      {/* ------------------------------------------------------------------ */}
+      <section
+        aria-labelledby="signature-title"
+        className="relative overflow-hidden rounded-[2rem] bg-emerald-luxury text-white shadow-2xl ring-1 ring-ggc-gold/40"
+      >
+        {/* Decorative layers */}
+        <div className="absolute inset-0 bg-dot-grid opacity-60 pointer-events-none" aria-hidden="true" />
+        <div
+          className="absolute -top-32 -right-24 w-[28rem] h-[28rem] rounded-full bg-ggc-gold/20 blur-3xl animate-float-slow pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -bottom-40 -left-20 w-96 h-96 rounded-full bg-emerald-400/10 blur-3xl animate-float-reverse pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-ggc-gold to-transparent"
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 grid lg:grid-cols-[1.35fr_1fr] gap-8 lg:gap-10 p-6 sm:p-10 lg:p-12">
+          {/* Left: Signature narrative */}
+          <div className="flex flex-col justify-center">
+            <div className="hero-rise flex flex-wrap items-center gap-2 mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/20 text-ggc-gold text-[11px] font-bold tracking-[0.14em] uppercase border border-ggc-gold/40">
+                <Sparkles className="w-3.5 h-3.5" />
+                Primary Potential Signature
+              </span>
+              <span className="text-[11px] text-ggc-subtle/70 font-mono">
+                #{results.sessionId.slice(0, 8).toUpperCase()}
+              </span>
+            </div>
+
+            <p className="hero-rise hero-rise-delay-1 text-sm sm:text-base text-ggc-subtle/90 font-medium">
+              Selamat, {firstName}! 🎉 Profil potensi dominan Anda adalah
+            </p>
+
+            <h1
+              id="signature-title"
+              className="hero-rise hero-rise-delay-1 mt-1 font-display text-3xl sm:text-5xl lg:text-[3.4rem] font-black tracking-tight leading-[1.05] gold-gradient-text"
             >
-              {/* Card Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
-                <div className="flex items-start gap-3">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
-                      idx === 0
-                        ? "bg-ggc text-ggc-gold"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    #{idx + 1}
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black text-ggc-dark">
-                      {rec.majorName}
-                    </h4>
-                    <p className="text-xs text-gray-500">
-                      {rec.faculty} • <span className="font-semibold text-ggc">{rec.cluster}</span>
-                    </p>
-                  </div>
-                </div>
+              {primarySignature?.title}
+            </h1>
 
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-2xl font-black text-ggc-dark">
-                      {rec.fitScore}%
-                    </div>
-                    <div className="text-[10px] text-gray-400 font-semibold uppercase">
-                      Study Fit Score
-                    </div>
-                  </div>
-                  <span
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border ${rec.badgeColor}`}
-                  >
-                    {rec.fitLevel}
+            <p className="hero-rise hero-rise-delay-2 text-base sm:text-lg font-semibold text-white mt-3">
+              &ldquo;{primarySignature?.archetype}&rdquo;
+            </p>
+
+            <p className="hero-rise hero-rise-delay-2 mt-3 text-sm text-ggc-subtle/85 leading-relaxed max-w-2xl">
+              {primarySignature?.description}
+            </p>
+
+            <ul className="hero-rise hero-rise-delay-3 mt-6 flex flex-wrap items-center gap-2" aria-label="Kekuatan inti">
+              {primarySignature?.highlightedTraits.map((trait) => (
+                <li
+                  key={trait}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 text-white text-xs font-semibold backdrop-blur-md border border-white/20 hover:bg-white/15 hover:border-ggc-gold/50 transition-colors"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-ggc-gold" aria-hidden="true" />
+                  {trait}
+                </li>
+              ))}
+            </ul>
+
+            <div className="hero-rise hero-rise-delay-3 mt-8 pt-5 border-t border-white/10 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-ggc-subtle/90">
+              <div className="flex items-center gap-1.5">
+                <GraduationCap className="w-4 h-4 text-ggc-gold" />
+                <span className="font-semibold text-white">{student.name}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <School className="w-4 h-4 text-ggc-gold" />
+                <span>
+                  {student.school} ({student.grade})
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-ggc-gold" />
+                <span>
+                  {new Date(results.calculatedAt).toLocaleDateString("id-ID", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Certificate card with Study Fit ring */}
+          <div className="hero-rise hero-rise-delay-2 relative">
+            <div className="relative overflow-hidden rounded-3xl bg-white/[0.07] backdrop-blur-xl border border-ggc-gold/40 p-6 sm:p-8 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
+              {/* Gold sweep (3 passes, then stops) */}
+              <div
+                className="shimmer-sweep absolute inset-y-0 -left-1/2 w-1/3 bg-gradient-to-r from-transparent via-ggc-gold/25 to-transparent skew-x-[-20deg] pointer-events-none"
+                aria-hidden="true"
+              />
+              {/* Corner ornaments */}
+              <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-ggc-gold/60 rounded-tl-lg" aria-hidden="true" />
+              <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-ggc-gold/60 rounded-tr-lg" aria-hidden="true" />
+              <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-ggc-gold/60 rounded-bl-lg" aria-hidden="true" />
+              <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-ggc-gold/60 rounded-br-lg" aria-hidden="true" />
+
+              <div className="relative flex flex-col items-center text-center">
+                <div className="flex items-center gap-2 mb-5">
+                  <img src="/logo.png" alt="" className="w-8 h-8 object-contain bg-white rounded-lg p-0.5" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-ggc-gold">
+                    Certified Study Fit
                   </span>
                 </div>
+
+                <ScoreRing value={topMajor?.fitScore ?? 0} size={176} stroke={14} label="Study Fit" tone="dark" />
+
+                <p className="mt-5 text-[11px] uppercase tracking-[0.16em] text-ggc-subtle/70 font-bold">
+                  Rekomendasi Jurusan #1
+                </p>
+                <p className="mt-1 text-xl font-black text-white leading-tight">{topMajor?.majorName}</p>
+                <p className="text-xs text-ggc-subtle/70 mt-0.5">{topMajor?.faculty}</p>
+
+                <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold text-ggc-dark text-[11px] font-black uppercase tracking-wider shadow">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  {topMajor?.fitLevel}
+                </span>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              {/* Insights Grid: Why This Fit & What to Watch Out For */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
-                {/* Why This Fit */}
-                <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
-                    <Lightbulb className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-emerald-900 mb-1">
-                      Mengapa Jurusan Ini Cocok (Why This Fit?)
-                    </h5>
-                    <p className="text-xs text-emerald-950/80 leading-relaxed">
-                      {rec.whyThisFit}
-                    </p>
-                  </div>
+      {/* ------------------------------------------------------------------ */}
+      {/* Quick Stats                                                        */}
+      {/* ------------------------------------------------------------------ */}
+      <section aria-label="Ringkasan skor" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {quickStats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.label}
+              className="reveal-on-scroll group relative overflow-hidden rounded-2xl bg-white border border-gray-200/80 p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-ggc-gold/50 transition-all duration-300"
+            >
+              <div
+                className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-ggc-gold/10 group-hover:bg-ggc-gold/20 transition-colors"
+                aria-hidden="true"
+              />
+              <div className="relative">
+                <div className="w-9 h-9 rounded-xl bg-ggc-subtle text-ggc flex items-center justify-center mb-3 group-hover:bg-ggc group-hover:text-ggc-gold transition-colors">
+                  <Icon className="w-4 h-4" />
                 </div>
-
-                {/* What to Watch Out For */}
-                <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
-                    <AlertTriangle className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-amber-900 mb-1">
-                      Hal yang Perlu Diantisipasi (What to Watch Out For?)
-                    </h5>
-                    <p className="text-xs text-amber-950/80 leading-relaxed">
-                      {rec.whatToWatchOutFor}
-                    </p>
-                  </div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">{stat.label}</div>
+                <div className="text-2xl sm:text-3xl font-black text-ggc-dark mt-0.5">
+                  <CountUp value={stat.value} decimals={stat.decimals} />
+                  <span className="text-sm sm:text-base font-bold text-gray-400">{stat.suffix}</span>
                 </div>
-              </div>
-
-              {/* Career Pathways */}
-              <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-bold text-gray-500 flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-ggc" />
-                    Prospek Profesi:
-                  </span>
-                  {rec.careerProspects.map((career) => (
-                    <span
-                      key={career}
-                      className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-0.5 rounded-lg border border-ggc/15"
-                    >
-                      {career}
-                    </span>
-                  ))}
+                <div className="text-[11px] text-gray-500 mt-1 truncate" title={stat.hint}>
+                  {stat.hint}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          );
+        })}
+      </section>
 
-      {/* MATRIX 1 DETAIL: TALENT SUBDIMENSIONS & 7 DIMENSIONS OVERVIEW */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 6 Talent Subdimensions */}
-        <div className="p-6 rounded-3xl bg-white border border-gray-200 shadow-sm">
-          <div className="mb-4">
-            <h4 className="text-base font-bold text-ggc-dark flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-ggc" />
-              6 Pilar Subdimensi Bakat (Talent Matrix)
-            </h4>
-            <p className="text-xs text-gray-500">
-              Evaluasi mendalam daya analitis, verbal, spasial, hingga intuisi sosial
-            </p>
+      {/* ------------------------------------------------------------------ */}
+      {/* Holistic Map: Radar + 7 Dimensions                                 */}
+      {/* ------------------------------------------------------------------ */}
+      <section aria-labelledby="holistic-title">
+        <SectionHeader
+          id="holistic-title"
+          eyebrow="Peta Profil Holistik"
+          title="Skor 7 Dimensi Evaluasi"
+          description="Keseimbangan antara bakat, minat, kepribadian, nilai pribadi, akademik, karier, dan kesiapan transisi kuliah."
+          icon={Layers}
+        />
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-6">
+          {/* Radar */}
+          <div className="reveal-on-scroll relative overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-sm p-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-ggc-tint via-white to-ggc-gold-subtle pointer-events-none" aria-hidden="true" />
+            <div className="relative">
+              <RadarChart data={radarData} className="max-w-[420px] mx-auto" />
+              {strongestDimension && (
+                <div className="mt-4 flex items-center justify-center gap-2 text-xs">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ggc text-white font-semibold shadow-sm">
+                    <TrendingUp className="w-3.5 h-3.5 text-ggc-gold" />
+                    Dimensi terkuat: {strongestDimension.name.split("(")[0].trim()} ({strongestDimension.percentage}%)
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {results.talentSubdimensions.map((sub) => (
-              <div key={sub.key}>
-                <div className="flex items-center justify-between text-xs font-bold mb-1">
-                  <span className="text-gray-800">{sub.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400 font-normal">
-                      Skor {sub.score.toFixed(1)} / 5.0
+          {/* Dimension list */}
+          <div className="reveal-on-scroll rounded-3xl bg-white border border-gray-200 shadow-sm p-6 space-y-4">
+            {results.dimensionScores.map((dim) => {
+              const isTop = dim.category === strongestDimension?.category;
+              return (
+                <div key={dim.category}>
+                  <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                    <span className="text-gray-800 flex items-center gap-1.5">
+                      {isTop && <Crown className="w-3.5 h-3.5 text-ggc-gold-dark" aria-label="Tertinggi" />}
+                      {dim.name}
                     </span>
+                    <span className="text-ggc font-black tabular-nums">
+                      {dim.score.toFixed(1)}
+                      <span className="text-gray-400 font-semibold"> / 5 · {dim.percentage}%</span>
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 rounded-full bg-ggc-subtle overflow-hidden">
+                    <div
+                      className={`bar-grow h-full rounded-full ${
+                        isTop
+                          ? "bg-gradient-to-r from-ggc via-ggc-light to-ggc-gold"
+                          : "bg-gradient-to-r from-ggc-light to-ggc-gold/80"
+                      }`}
+                      style={{ width: `${dim.percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-gray-500 mt-1 line-clamp-1">{dim.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Top 3 Signatures: Podium                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <section aria-labelledby="signatures-title">
+        <SectionHeader
+          id="signatures-title"
+          eyebrow="Matrix 1 · Person Profile"
+          title="Top 3 Signature Potensi Unggulan"
+          description="Dihitung dari skor performa subdimensi bakat dan preferensi penalaran alami Anda."
+          icon={Award}
+        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
+          {results.potentialSignatures.map((sig, idx) => {
+            const isFirst = idx === 0;
+            return (
+              <article
+                key={sig.title + idx}
+                className={`reveal-on-scroll group relative overflow-hidden rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 ${
+                  isFirst
+                    ? "md:order-2 md:min-h-[340px] bg-emerald-luxury text-white shadow-xl ring-2 ring-ggc-gold/60"
+                    : `${idx === 1 ? "md:order-1" : "md:order-3"} bg-white border border-gray-200 shadow-sm hover:shadow-lg hover:border-ggc-gold/50`
+                }`}
+              >
+                {isFirst && (
+                  <>
+                    <div className="absolute inset-0 bg-dot-grid opacity-40 pointer-events-none" aria-hidden="true" />
+                    <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-ggc-gold/25 blur-2xl pointer-events-none" aria-hidden="true" />
+                  </>
+                )}
+                <div className="relative flex flex-col h-full">
+                  <div className="flex items-center justify-between mb-4">
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded font-bold ${
-                        sub.level === "Tinggi"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : sub.level === "Sedang"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-600"
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black ${
+                        isFirst ? "bg-ggc-gold text-ggc-dark" : "bg-ggc-subtle text-ggc"
                       }`}
                     >
-                      {sub.level}
+                      {isFirst ? <Crown className="w-3.5 h-3.5" /> : null}#{idx + 1}
+                    </span>
+                    <span className={`text-xs font-black tabular-nums ${isFirst ? "text-ggc-gold" : "text-ggc"}`}>
+                      {sig.score.toFixed(1)} / 5.0
                     </span>
                   </div>
+
+                  <h3 className={`font-display font-black text-xl leading-tight ${isFirst ? "text-white" : "text-ggc-dark"}`}>
+                    {sig.title}
+                  </h3>
+                  <div className={`text-xs font-semibold mt-1 ${isFirst ? "text-ggc-gold" : "text-ggc-gold-dark"}`}>
+                    {sig.archetype}
+                  </div>
+                  <p className={`text-xs leading-relaxed mt-3 ${isFirst ? "text-ggc-subtle/85" : "text-gray-600"}`}>
+                    {sig.tagline}
+                  </p>
+
+                  {/* Score bar */}
+                  <div className={`mt-4 h-1.5 rounded-full overflow-hidden ${isFirst ? "bg-white/15" : "bg-gray-100"}`}>
+                    <div
+                      className="bar-grow h-full rounded-full bg-gradient-to-r from-ggc-gold to-[#E6D5A8]"
+                      style={{ width: `${toPercent(sig.score)}%` }}
+                    />
+                  </div>
+
+                  <ul className={`mt-auto pt-4 flex flex-wrap gap-1.5 ${isFirst ? "" : ""}`}>
+                    {sig.highlightedTraits.map((t) => (
+                      <li
+                        key={t}
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                          isFirst
+                            ? "bg-white/10 text-white border-white/20"
+                            : "bg-gray-50 text-gray-600 border-gray-200"
+                        }`}
+                      >
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-ggc to-ggc-gold rounded-full"
-                    style={{ width: `${sub.percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              </article>
+            );
+          })}
         </div>
+      </section>
 
-        {/* 7 Holistic Assessment Dimensions */}
-        <div className="p-6 rounded-3xl bg-white border border-gray-200 shadow-sm">
-          <div className="mb-4">
-            <h4 className="text-base font-bold text-ggc-dark flex items-center gap-2">
-              <Layers className="w-4 h-4 text-ggc" />
-              Skor 7 Dimensi Evaluasi Holistik
-            </h4>
-            <p className="text-xs text-gray-500">
-              Keseimbangan antara bakat, minat, nilai pribadi, dan kesiapan transisi kuliah
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {results.dimensionScores.map((dim) => (
-              <div key={dim.category}>
-                <div className="flex items-center justify-between text-xs font-bold mb-1">
-                  <span className="text-gray-800">{dim.name.split("(")[0]}</span>
-                  <span className="text-ggc font-black">
-                    {dim.score.toFixed(1)} / 5.0 ({dim.percentage}%)
-                  </span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-ggc-light to-ggc-gold rounded-full"
-                    style={{ width: `${dim.percentage}%` }}
-                  />
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1 line-clamp-1">
-                  {dim.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Narrative Synthesis & Next Actions */}
-      <div className="p-8 rounded-3xl bg-ggc-subtle/50 border border-ggc/20 shadow-sm">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-ggc-gold-dark">
-              Sintesis Hasil Asesmen GGC
+      {/* ------------------------------------------------------------------ */}
+      {/* Matrix 2: Study Recommendations                                    */}
+      {/* ------------------------------------------------------------------ */}
+      <section aria-labelledby="majors-title">
+        <SectionHeader
+          id="majors-title"
+          eyebrow="Matrix 2 · Study Profile Matching"
+          title="Rekomendasi Program Studi"
+          description="Komparasi profil bakat, minat, dan kesiapan akademik Anda terhadap benchmark jurusan perguruan tinggi."
+          icon={Compass}
+          aside={
+            <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+              <Target className="w-3.5 h-3.5" />
+              Top Match: {topMajor?.majorName} ({topMajor?.fitScore}%)
             </span>
-            <h3 className="text-xl font-black text-ggc-dark">
-              Langkah Sukses Menuju Bangku Perkuliahan
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
-              {results.summaryNarrative}
-            </p>
+          }
+        />
+
+        <div className="space-y-5">
+          {results.studyRecommendations.map((rec, idx) => {
+            const isFirst = idx === 0;
+            return (
+              <article
+                key={rec.id}
+                className={`reveal-on-scroll relative overflow-hidden rounded-3xl bg-white border shadow-sm transition-all duration-300 hover:shadow-xl ${
+                  isFirst ? "border-ggc-gold/70 ring-2 ring-ggc-gold/25" : "border-gray-200 hover:border-ggc/30"
+                }`}
+              >
+                {isFirst && (
+                  <div className="absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl bg-gradient-to-r from-ggc-gold to-ggc-gold-dark text-ggc-dark text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Best Match
+                  </div>
+                )}
+                <div
+                  className={`absolute left-0 inset-y-0 w-1.5 ${
+                    isFirst ? "bg-gradient-to-b from-ggc-gold to-ggc" : "bg-ggc-subtle"
+                  }`}
+                  aria-hidden="true"
+                />
+
+                <div className="p-6 sm:p-7 pl-7 sm:pl-9">
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-5 border-b border-gray-100">
+                    <ScoreRing value={rec.fitScore} size={84} stroke={8} label="Fit" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-black text-gray-400">#{idx + 1}</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${rec.badgeColor}`}>
+                          {rec.fitLevel}
+                        </span>
+                        <span className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2 py-0.5 rounded-full">
+                          {rec.cluster}
+                        </span>
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark mt-1.5">{rec.majorName}</h3>
+                      <p className="text-xs text-gray-500">{rec.faculty}</p>
+                    </div>
+                  </div>
+
+                  {/* Key attributes vs benchmark */}
+                  {rec.keyAttributes?.length > 0 && (
+                    <div className="mt-5">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
+                        Atribut Kunci vs Benchmark Jurusan
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                        {rec.keyAttributes.map((attr) => {
+                          const pct = (attr.score / 5) * 100;
+                          const benchPct = (attr.benchmark / 5) * 100;
+                          const meets = attr.score >= attr.benchmark;
+                          return (
+                            <div key={attr.name}>
+                              <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
+                                <span className="text-gray-700 truncate pr-2">{attr.name}</span>
+                                <span className={`tabular-nums ${meets ? "text-emerald-700" : "text-amber-700"}`}>
+                                  {attr.score.toFixed(1)}
+                                  <span className="text-gray-400"> / {attr.benchmark.toFixed(1)}</span>
+                                </span>
+                              </div>
+                              <div className="relative h-2 rounded-full bg-gray-100">
+                                <div className="absolute inset-0 overflow-hidden rounded-full">
+                                  <div
+                                    className={`bar-grow h-full rounded-full ${
+                                      meets ? "bg-gradient-to-r from-ggc to-emerald-500" : "bg-gradient-to-r from-amber-400 to-ggc-gold"
+                                    }`}
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <div
+                                  className="absolute -top-1 -bottom-1 w-0.5 bg-ggc-dark rounded"
+                                  style={{ left: `${benchPct}%` }}
+                                  title={`Benchmark ${attr.benchmark.toFixed(1)}`}
+                                  aria-hidden="true"
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Insights */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-200/80 flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <Lightbulb className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-emerald-900 mb-1">Mengapa Jurusan Ini Cocok?</h5>
+                        <p className="text-xs text-emerald-950/80 leading-relaxed">{rec.whyThisFit}</p>
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-white border border-amber-200/80 flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <AlertTriangle className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-amber-900 mb-1">Hal yang Perlu Diantisipasi</h5>
+                        <p className="text-xs text-amber-950/80 leading-relaxed">{rec.whatToWatchOutFor}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Career prospects */}
+                  <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-gray-500 flex items-center gap-1 mr-1">
+                      <Briefcase className="w-3.5 h-3.5 text-ggc" />
+                      Prospek Profesi:
+                    </span>
+                    {rec.careerProspects.map((career) => (
+                      <span
+                        key={career}
+                        className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-1 rounded-lg border border-ggc/15 hover:bg-ggc hover:text-white transition-colors"
+                      >
+                        {career}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Talent Subdimensions                                               */}
+      {/* ------------------------------------------------------------------ */}
+      <section aria-labelledby="talent-title">
+        <SectionHeader
+          id="talent-title"
+          eyebrow="Talent Matrix"
+          title="6 Pilar Subdimensi Bakat"
+          description="Evaluasi daya analitis, verbal, numerik, spasial, kreativitas, hingga intuisi sosial — diurutkan dari yang terkuat."
+          icon={TrendingUp}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedTalents.map((sub, idx) => (
+            <div
+              key={sub.key}
+              className={`reveal-on-scroll group rounded-2xl p-5 border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                idx === 0 ? "bg-ggc-gold-subtle border-ggc-gold/50" : "bg-white border-gray-200"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black ${
+                      idx === 0 ? "bg-ggc text-ggc-gold" : "bg-ggc-subtle text-ggc"
+                    }`}
+                  >
+                    {idx + 1}
+                  </span>
+                  <h3 className="text-sm font-bold text-gray-800 leading-snug">{sub.name}</h3>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border shrink-0 ${LEVEL_STYLES[sub.level]}`}>
+                  {sub.level}
+                </span>
+              </div>
+              <div className="mt-4 flex items-end justify-between">
+                <span className="text-2xl font-black text-ggc-dark tabular-nums">
+                  {sub.score.toFixed(1)}
+                  <span className="text-xs font-bold text-gray-400"> / 5.0</span>
+                </span>
+                <span className="text-xs font-bold text-ggc-gold-dark">{sub.percentage}%</span>
+              </div>
+              <div className="mt-2 h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  className="bar-grow h-full rounded-full bg-gradient-to-r from-ggc to-ggc-gold"
+                  style={{ width: `${sub.percentage}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Narrative Synthesis & CTA                                          */}
+      {/* ------------------------------------------------------------------ */}
+      <section
+        aria-labelledby="synthesis-title"
+        className="reveal-on-scroll relative overflow-hidden rounded-[2rem] bg-ggc-dark text-white p-8 sm:p-10 shadow-2xl ring-1 ring-ggc-gold/30"
+      >
+        <div className="absolute inset-0 bg-dot-grid opacity-40 pointer-events-none" aria-hidden="true" />
+        <div className="absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-ggc-gold/20 blur-3xl pointer-events-none" aria-hidden="true" />
+
+        <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+          <div className="space-y-3 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-ggc-gold">
+              <Sparkles className="w-3.5 h-3.5" /> Sintesis Hasil Asesmen GGC
+            </span>
+            <h2 id="synthesis-title" className="font-display text-2xl sm:text-3xl font-black leading-tight">
+              Langkah Sukses Menuju <span className="gold-gradient-text">Bangku Perkuliahan</span>
+            </h2>
+            <p className="text-sm text-ggc-subtle/85 leading-relaxed">{results.summaryNarrative}</p>
           </div>
 
-          <div className="shrink-0 flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
+          <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
             <button
               onClick={handleDownloadPdf}
               disabled={isDownloadingPdf}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md transition-all text-center"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60"
             >
-              <Download className="w-4 h-4 text-ggc-gold" />
-              <span>Unduh Dokumen PDF Resmi</span>
+              {isDownloadingPdf ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              <span>{isDownloadingPdf ? "Memproses..." : "Unduh Dokumen PDF Resmi"}</span>
             </button>
             <Link
               href="/student/dashboard"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-ggc bg-white border border-ggc/20 hover:bg-ggc-tint shadow-sm transition-all text-center"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-white bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Kembali ke Beranda Dashboard</span>
+              <span>Kembali ke Dashboard</span>
             </Link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
