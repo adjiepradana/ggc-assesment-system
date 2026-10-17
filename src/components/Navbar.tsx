@@ -99,6 +99,41 @@ export default function Navbar() {
                 )}
               </>
             )}
+
+            {status !== "authenticated" && (
+              <div className="hidden lg:flex items-center gap-6">
+                <a
+                  href="#fitur"
+                  className="text-sm font-medium text-gray-600 hover:text-ggc transition-colors"
+                >
+                  Keunggulan
+                </a>
+                <a
+                  href="#metodologi"
+                  className="text-sm font-medium text-gray-600 hover:text-ggc transition-colors"
+                >
+                  7 Dimensi
+                </a>
+                <a
+                  href="#signatures"
+                  className="text-sm font-medium text-gray-600 hover:text-ggc transition-colors"
+                >
+                  Potential Signature
+                </a>
+                <a
+                  href="#alur"
+                  className="text-sm font-medium text-gray-600 hover:text-ggc transition-colors"
+                >
+                  Cara Kerja
+                </a>
+                <a
+                  href="#faq"
+                  className="text-sm font-medium text-gray-600 hover:text-ggc transition-colors"
+                >
+                  FAQ
+                </a>
+              </div>
+            )}
           </nav>
 
           {/* User Account / Auth Actions */}
