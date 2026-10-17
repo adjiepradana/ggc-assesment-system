@@ -1,0 +1,141 @@
+export interface QuestionItemData {
+  id?: string;
+  code: string;
+  dimension: "TALENT" | "INTEREST" | "PERSONALITY" | "VALUES" | "ACADEMIC" | "CAREER" | "READINESS";
+  subdimensi: string;
+  text: string;
+}
+
+export const defaultLikertOptions = [
+  { value: 1, label: "Sangat Tidak Sesuai", shortLabel: "STS" },
+  { value: 2, label: "Tidak Sesuai", shortLabel: "TS" },
+  { value: 3, label: "Netral / Ragu-ragu", shortLabel: "N" },
+  { value: 4, label: "Sesuai", shortLabel: "S" },
+  { value: 5, label: "Sangat Sesuai", shortLabel: "SS" },
+];
+
+export const all84QuestionsData: QuestionItemData[] = [
+  // --- 1. TALENT (T01 - T12) ---
+  { code: "T01", dimension: "TALENT", subdimensi: "Logika Analitikal", text: "Saya dengan cepat mampu menangkap pola sebab-akibat dalam data angka atau grafik rumit." },
+  { code: "T02", dimension: "TALENT", subdimensi: "Penalaran Spasial", text: "Saya mampu membayangkan bentuk tiga dimensi dari sebuah gambar sketsa dua dimensi dengan mudah." },
+  { code: "T03", dimension: "TALENT", subdimensi: "Kecerdasan Verbal", text: "Saya mudah mengekspresikan ide-ide kompleks ke dalam tulisan atau argumen lisan yang persuasif." },
+  { code: "T04", dimension: "TALENT", subdimensi: "Pemecahan Masalah Sistem", text: "Saya senang mengurai alur kerja mesin atau program komputer untuk mencari letak kesalahannya." },
+  { code: "T05", dimension: "TALENT", subdimensi: "Sensitivitas Estetika", text: "Saya memiliki kepekaan tinggi terhadap komposisi warna, tata letak, dan keharmonisan visual." },
+  { code: "T06", dimension: "TALENT", subdimensi: "Kecerdasan Intrapersonal", text: "Saya mampu mengidentifikasi pemicu emosi diri sendiri dan mengelolanya secara tenang dalam tekanan." },
+  { code: "T07", dimension: "TALENT", subdimensi: "Intuisi Sosial", text: "Saya cepat membaca bahasa tubuh orang lain dan memahami suasana hati mereka tanpa diberi tahu." },
+  { code: "T08", dimension: "TALENT", subdimensi: "Daya Ingat Konseptual", text: "Saya mudah mengingat terminologi teknis, teori abstrak, serta asosiasi antar konsep baru." },
+  { code: "T09", dimension: "TALENT", subdimensi: "Koordinasi Kinestetik", text: "Saya memiliki keterampilan tangan yang terampil dan presisi saat membedah atau merakit perkakas." },
+  { code: "T10", dimension: "TALENT", subdimensi: "Pola Berpikir Kritis", text: "Saya terbiasa memverifikasi kebenaran sebuah informasi sebelum menerimanya sebagai fakta." },
+  { code: "T11", dimension: "TALENT", subdimensi: "Kreativitas Orisinal", text: "Saya sering menemukan metode alternatif yang unik untuk menyelesaikan tugas yang monoton." },
+  { code: "T12", dimension: "TALENT", subdimensi: "Perencanaan Strategis", text: "Saya mahir membuat proyeksi skenario jangka panjang beserta langkah mitigasi risiko." },
+
+  // --- 2. INTEREST (I01 - I12) ---
+  { code: "I01", dimension: "INTEREST", subdimensi: "Investigasi Sains", text: "Saya sangat tertarik meneliti fenomena alam, eksperimen laboratorium, dan penelitian ilmiah terbaru." },
+  { code: "I02", dimension: "INTEREST", subdimensi: "Teknologi & Komputasi", text: "Saya antusias belajar bahasa pemrograman, kecerdasan buatan, atau pengembangan aplikasi perangkat lunak." },
+  { code: "I03", dimension: "INTEREST", subdimensi: "Desain Kreatif & Multimedia", text: "Saya betah menghabiskan waktu berjam-jam mendesain grafis, ilustrasi, atau mengedit video." },
+  { code: "I04", dimension: "INTEREST", subdimensi: "Bisnis & Kewirausahaan", text: "Saya tertarik mempelajari strategi pemasaran, valuasi bisnis rintisan, dan peluang transaksi pasar." },
+  { code: "I05", dimension: "INTEREST", subdimensi: "Pelayanan Kesehatan", text: "Saya terpanggil untuk merawat pasien, memahami diagnosis penyakit medis, dan anatomi biologi." },
+  { code: "I06", dimension: "INTEREST", subdimensi: "Hukum & Tata Kelola", text: "Saya tertarik dengan pembahasan regulasi negara, peradilan hukum, diplomasi, dan debat kebijakan." },
+  { code: "I07", dimension: "INTEREST", subdimensi: "Psikologi & Konseling", text: "Saya senang mendengarkan curhat orang lain dan mendalami motif perilaku manusia." },
+  { code: "I08", dimension: "INTEREST", subdimensi: "Eksplorasi Lapangan", text: "Saya lebih menikmati kegiatan lapangan, geologi, ekspedisi satwa liar daripada duduk di meja." },
+  { code: "I09", dimension: "INTEREST", subdimensi: "Sastra & Bahasa Asing", text: "Saya suka menganalisis karya sastra, belajar bahasa asing baru, dan kajian lintas budaya." },
+  { code: "I10", dimension: "INTEREST", subdimensi: "Finansial & Investasi", text: "Saya tertarik membaca laporan arus kas keuangan, instrumen saham, dan analisis perbankan." },
+  { code: "I11", dimension: "INTEREST", subdimensi: "Teknik & Manufaktur", text: "Saya senang mempelajari cara kerja turbin, robotika industri, dan infrastruktur konstruksi." },
+  { code: "I12", dimension: "INTEREST", subdimensi: "Pemberdayaan Sosial", text: "Saya tergerak aktif dalam aksi sosial sukarela, advokasi kemanusiaan, dan edukasi komunitas." },
+
+  // --- 3. PERSONALITY (P01 - P12) ---
+  { code: "P01", dimension: "PERSONALITY", subdimensi: "Keteraturan / Conscientiousness", text: "Saya selalu merapikan jadwal, membuat daftar tugas terperinci, dan tidak menyukai ketidakteraturan." },
+  { code: "P02", dimension: "PERSONALITY", subdimensi: "Keterbukaan Pengalaman", text: "Saya sangat menyambut ide-ide baru yang tidak konvensional dan suka keluar dari zona nyaman." },
+  { code: "P03", dimension: "PERSONALITY", subdimensi: "Ekstroversi / Interaksi", text: "Saya merasa berenergi saat berada di tengah keramaian dan mudah mencairkan suasana dengan orang baru." },
+  { code: "P04", dimension: "PERSONALITY", subdimensi: "Keramahan / Agreeableness", text: "Saya cenderung mengutamakan keharmonisan kelompok daripada memaksakan kehendak pribadi." },
+  { code: "P05", dimension: "PERSONALITY", subdimensi: "Stabilitas Emosional", text: "Saya tetap tenang dan kepala dingin meskipun menghadapi krisis mendadak atau tenggat waktu mepet." },
+  { code: "P06", dimension: "PERSONALITY", subdimensi: "Kemandirian Kerja", text: "Saya bekerja lebih optimal ketika diberikan kebebasan penuh tanpa perlu diawasi secara ketat." },
+  { code: "P07", dimension: "PERSONALITY", subdimensi: "Ketahanan / Grit", text: "Saya tidak mudah menyerah meskipun menghadapi kegagalan berulang kali dalam proyek yang sulit." },
+  { code: "P08", dimension: "PERSONALITY", subdimensi: "Kepemimpinan Alami", text: "Secara naluriah saya berani mengambil inisiatif mengarahkan tim saat situasi tidak menentu." },
+  { code: "P09", dimension: "PERSONALITY", subdimensi: "Fokus Detail", text: "Saya sangat teliti menemukan ketidaksesuaian kecil yang kerap terlewatkan oleh orang lain." },
+  { code: "P10", dimension: "PERSONALITY", subdimensi: "Fleksibilitas Adaptif", text: "Saya mudah menyesuaikan diri ketika rencana awal berubah secara tiba-tiba di tengah jalan." },
+  { code: "P11", dimension: "PERSONALITY", subdimensi: "Orientasi Kolaborasi", text: "Saya lebih menikmati mencapai target bersama tim sinergis dibanding bekerja individualistis." },
+  { code: "P12", dimension: "PERSONALITY", subdimensi: "Rasa Ingin Tahu Tinggi", text: "Saya selalu terdorong mencari tahu 'mengapa' dan 'bagaimana' sesuatu bekerja sampai ke akarnya." },
+
+  // --- 4. VALUES (V01 - V12) ---
+  { code: "V01", dimension: "VALUES", subdimensi: "Kontribusi Kemanusiaan", text: "Bagi saya, makna karier sejati adalah seberapa besar dampak positif yang saya berikan bagi masyarakat." },
+  { code: "V02", dimension: "VALUES", subdimensi: "Otonomi & Kebebasan", text: "Saya lebih menghargai kebebasan menentukan jam kerja dibanding gaji tinggi tapi serba terikat." },
+  { code: "V03", dimension: "VALUES", subdimensi: "Prestise & Pengakuan", text: "Menduduki posisi yang dihormati dan diakui secara profesional merupakan motivasi utama saya." },
+  { code: "V04", dimension: "VALUES", subdimensi: "Keamanan Finansial", text: "Kepastian stabilitas pendapatan bulanan yang mapan lebih penting daripada spekulasi risiko tinggi." },
+  { code: "V05", dimension: "VALUES", subdimensi: "Inovasi Berkelanjutan", text: "Saya mendambakan lingkungan kerja yang mendorong eksperimen terobosan dan hal baru tiada henti." },
+  { code: "V06", dimension: "VALUES", subdimensi: "Integritas Etika", text: "Saya menolak berkompromi terhadap kejujuran dan etika moral, apapun imbalan materinya." },
+  { code: "V07", dimension: "VALUES", subdimensi: "Keseimbangan Hidup", text: "Keseimbangan antara karier cemerlang dan waktu untuk keluarga/spiritual adalah harga mati bagi saya." },
+  { code: "V08", dimension: "VALUES", subdimensi: "Peningkatan Kapasitas", text: "Saya menilai kesuksesan dari seberapa pesat kemampuan intelektual saya terus bertumbuh setiap tahun." },
+  { code: "V09", dimension: "VALUES", subdimensi: "Pengaruh & Kekuasaan Positif", text: "Memiliki otoritas untuk membuat keputusan besar yang menggerakkan banyak pihak memotivasi saya." },
+  { code: "V10", dimension: "VALUES", subdimensi: "Kelestarian Lingkungan", text: "Saya ingin berkarya di sektor yang menjamin keberlanjutan bumi dan konservasi alam." },
+  { code: "V11", dimension: "VALUES", subdimensi: "Dinamisme & Tantangan", text: "Saya cepat bosan dengan rutinitas statis dan lebih bersemangat dalam ritme kerja yang dinamis." },
+  { code: "V12", dimension: "VALUES", subdimensi: "Solidaritas Persaudaraan", text: "Memiliki rasa kekeluargaan yang erat dengan rekan sejawat adalah faktor kenyamanan utama saya." },
+
+  // --- 5. ACADEMIC (A01 - A12) ---
+  { code: "A01", dimension: "ACADEMIC", subdimensi: "Kesiapan Kalkulus & Aljabar", text: "Saya merasa nyaman bergelut dengan persamaan matematika tingkat lanjut dan pembuktian rumus." },
+  { code: "A02", dimension: "ACADEMIC", subdimensi: "Literasi Jurnal Ilmiah", text: "Saya sanggup membaca dan merangkum intisari artikel ilmiah panjang berbahasa Inggris tanpa jenuh." },
+  { code: "A03", dimension: "ACADEMIC", subdimensi: "Manajemen Riset Mandiri", text: "Saya percaya diri mampu merancang proposal penelitian atau karya tulis ilmiah secara mandiri." },
+  { code: "A04", dimension: "ACADEMIC", subdimensi: "Studi Eksperimental Praktik", text: "Saya lebih cepat paham materi perkuliahan lewat uji coba laboratorium dibanding sekadar membaca buku." },
+  { code: "A05", dimension: "ACADEMIC", subdimensi: "Debat Teori Sosial", text: "Saya antusias mengkomparasikan teori-teori sosiologi, ekonomi, atau ilmu komunikasi di ruang kuliah." },
+  { code: "A06", dimension: "ACADEMIC", subdimensi: "Stamina Belajar Intensif", text: "Saya sanggup berkonsentrasi belajar intensif selama berminggu-minggu menjelang periode ujian berat." },
+  { code: "A07", dimension: "ACADEMIC", subdimensi: "Apresiasi Studi Interdisipliner", text: "Saya senang memadukan dua disiplin ilmu yang berbeda (misal: bioinformatika atau psikologi teknologi)." },
+  { code: "A08", dimension: "ACADEMIC", subdimensi: "Penguasaan Perangkat Lunak Kuliah", text: "Saya cepat menguasai aplikasi statistik/analisis (seperti SPSS, Python, MATLAB, atau Tableau)." },
+  { code: "A09", dimension: "ACADEMIC", subdimensi: "Penyusunan Argumentasi Akademik", text: "Saya terampil menyusun paragraf esai akademik yang runut, kohesif, dan didukung sitasi tepercaya." },
+  { code: "A10", dimension: "ACADEMIC", subdimensi: "Kesiapan Praktik Lapangan", text: "Saya siap mengikuti program studi yang mewajibkan kuliah kerja nyata atau magang klinis rumah sakit." },
+  { code: "A11", dimension: "ACADEMIC", subdimensi: "Antusiasme Kuliah Lanjutan", text: "Saya memiliki cita-cita kuat melanjutkan pendidikan hingga jenjang Magister (S2) atau Spesialis." },
+  { code: "A12", dimension: "ACADEMIC", subdimensi: "Kemampuan Presentasi Sidang", text: "Saya percaya diri mempresentasikan hasil karya skripsi/proyek di hadapan dewan penguji ahli." },
+
+  // --- 6. CAREER (C01 - C12) ---
+  { code: "C01", dimension: "CAREER", subdimensi: "Teknologi Informasi & Software", text: "Saya ingin berprofesi sebagai Software Engineer, Data Scientist, atau Cyber Security Specialist." },
+  { code: "C02", dimension: "CAREER", subdimensi: "Medis & Tenaga Kesehatan", text: "Saya bercita-cita menjadi Dokter, Apoteker, Dokter Gigi, atau Peneliti Biomedis terkemuka." },
+  { code: "C03", dimension: "CAREER", subdimensi: "Rekayasa & Desain Manufaktur", text: "Saya berminat menjadi Arsitek, Insinyur Sipil, Insinyur Mesin, atau Perancang Dirgantara." },
+  { code: "C04", dimension: "CAREER", subdimensi: "Korporasi & Konsultasi Manajemen", text: "Saya tertarik meniti karier sebagai Investment Banker, Konsultan Manajemen, atau Brand Strategist." },
+  { code: "C05", dimension: "CAREER", subdimensi: "Hukum & Aparatur Publik", text: "Saya bercita-cita berkarier sebagai Hakim, Jaksa, Diplomat Luar Negeri, atau Notaris." },
+  { code: "C06", dimension: "CAREER", subdimensi: "Industri Kreatif & Hiburan", text: "Saya ingin berkarya sebagai Creative Director, Animator 3D, Sutradara Film, atau UI/UX Designer." },
+  { code: "C07", dimension: "CAREER", subdimensi: "Pendidikan & Akademisi", text: "Saya tertarik menjadi Dosen Universitas, Peneliti Lembaga Riset, atau Trainer Profesional." },
+  { code: "C08", dimension: "CAREER", subdimensi: "Kewirausahaan / Founder", text: "Saya bertekad membangun perusahaan rintisan sendiri dan membuka lapangan pekerjaan bagi ribuan orang." },
+  { code: "C09", dimension: "CAREER", subdimensi: "Lembaga Swadaya & NGO Global", text: "Saya ingin bekerja di organisasi internasional seperti PBB, UNICEF, atau lembaga donor kemanusiaan." },
+  { code: "C10", dimension: "CAREER", subdimensi: "Keuangan & Audit Publik", text: "Saya berminat menjadi Akuntan Publik Bersertifikat (CPA), Aktuaris, atau Auditor Forensik." },
+  { code: "C11", dimension: "CAREER", subdimensi: "Media & Hubungan Komunikasi", text: "Saya tertarik menjadi Jurnalis Investigatif, Editor Media Massa, atau Public Relations Specialist." },
+  { code: "C12", dimension: "CAREER", subdimensi: "Agrikultur & Energi Terbarukan", text: "Saya ingin berkarier di sektor pertanian presisi, agritech, atau pengembang energi surya/terbarukan." },
+
+  // --- 7. READINESS (R01 - R12) ---
+  { code: "R01", dimension: "READINESS", subdimensi: "Kemandirian Hidup (Living)", text: "Saya siap mengurus kebutuhan hidup harian mandiri jika harus merantau kuliah di luar kota." },
+  { code: "R02", dimension: "READINESS", subdimensi: "Manajemen Keuangan Pribadi", text: "Saya mampu mengelola anggaran bulanan dan mencatat pengeluaran agar tidak boros." },
+  { code: "R03", dimension: "READINESS", subdimensi: "Daya Tahan Culture Shock", text: "Saya mudah bergaul dan berbaur dengan teman dari berbagai latar belakang suku, agama, dan budaya." },
+  { code: "R04", dimension: "READINESS", subdimensi: "Resiliensi Beban Belajar", text: "Saya sudah siap mental menghadapi tugas kuliah bertumpuk yang jauh lebih menantang dibanding SMA." },
+  { code: "R05", dimension: "READINESS", subdimensi: "Manajemen Waktu Bebas", text: "Saya mampu membagi waktu secara bijak antara kuliah, organisasi kemahasiswaan, dan istirahat." },
+  { code: "R06", dimension: "READINESS", subdimensi: "Kemandirian Keputusan", text: "Pilihan jurusan yang saya incar merupakan murni kesadaran cita-cita saya, bukan paksaan pihak lain." },
+  { code: "R07", dimension: "READINESS", subdimensi: "Kesiapan Mental Bersaing", text: "Saya siap berada di lingkungan kampus berprestasi tinggi di mana banyak mahasiswa hebat berkumpul." },
+  { code: "R08", dimension: "READINESS", subdimensi: "Keterampilan Mencari Solusi", text: "Ketika menemui kendala akademis, saya proaktif bertanya ke dosen, asisten, atau mencari referensi." },
+  { code: "R09", dimension: "READINESS", subdimensi: "Pengendalian Distraksi Digital", text: "Saya sanggup membatasi waktu bermain game atau media sosial saat mendekati masa belajar penting." },
+  { code: "R10", dimension: "READINESS", subdimensi: "Kesehatan Fisik & Pola Tidur", text: "Saya terbiasa menjaga pola makan teratur dan istirahat yang cukup untuk menjaga stamina belajar." },
+  { code: "R11", dimension: "READINESS", subdimensi: "Kesiapan Finansial Studi", text: "Keluarga saya dan saya telah merencanakan skema pembiayaan kuliah atau skema beasiswa target." },
+  { code: "R12", dimension: "READINESS", subdimensi: "Keyakinan Panggilan Diri", text: "Saya memiliki motivasi batin yang kuat mengapa saya harus menuntaskan perkuliahan hingga wisuda." },
+];
+
+/**
+ * Seeded deterministic pseudo-random shuffle (Fisher-Yates) using a seed string.
+ * This guarantees questions are randomized, but stable across page reloads for the same session!
+ */
+export function shuffleArrayWithSeed<T>(array: T[], seedStr: string): T[] {
+  const result = [...array];
+  let seed = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    seed = (seed << 5) - seed + seedStr.charCodeAt(i);
+    seed |= 0;
+  }
+
+  // Simple LCG pseudo-random generator
+  const random = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}

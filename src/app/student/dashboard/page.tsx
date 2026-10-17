@@ -127,14 +127,14 @@ export default async function StudentDashboardPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-            <button
+            <Link
+              href="/student/assessment"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-md hover:shadow-lg transition-all text-sm"
-              onClick={() => {}}
             >
               <Compass className="w-4 h-4 text-ggc-gold" />
               <span>{totalAnswers > 0 ? "Lanjutkan Asesmen" : "Mulai Asesmen Baru"}</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </Link>
             <div className="text-[11px] text-center text-gray-500">
               Estimasi pengerjaan: 15-20 menit
             </div>
