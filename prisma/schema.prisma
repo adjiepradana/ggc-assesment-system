@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum DimensionCategory {
+  TALENT
+  INTEREST
+  PERSONALITY
+  VALUES
+  ACADEMIC
+  CAREER
+  READINESS
+}
+
+model User {
+  id            String              @id @default(uuid())
+  email         String              @unique
+  password_hash String
+  role          Role                @default(STUDENT)
+  created_at    DateTime            @default(now())
+  updated_at    DateTime            @updatedAt
+  profile       StudentProfile?
+  sessions      AssessmentSession[]
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id           String   @id @default(uuid())
+  user_id      String   @unique
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  full_name    String
+  phone_number String?
+  school_name  String?
+  grade        String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("student_profiles")
+}
+
+model Question {
+  id                 String             @id @default(uuid())
+  code               String             @unique // e.g. T01..T12, I01..I12, P01..P12, V01..V12, A01..A12, C01..C12, R01..R12
+  dimension_category DimensionCategory
+  subdimensi         String             // e.g. Analytical, Realistic, Investigative, etc.
+  question_text      String
+  options            Json?              // Optional custom options or standard 1-5 scale descriptor
+  is_active          Boolean            @default(true)
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  answers            AssessmentAnswer[]
+
+  @@index([dimension_category])
+  @@index([code])
+  @@map("questions")
+}
+
+model AssessmentSession {
+  id           String             @id @default(uuid())
+  user_id      String
+  user         User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  status       SessionStatus      @default(IN_PROGRESS)
+  started_at   DateTime           @default(now())
+  completed_at DateTime?
+  answers      AssessmentAnswer[]
+
+  @@index([user_id])
+  @@index([status])
+  @@map("assessment_sessions")
+}
+
+model AssessmentAnswer {
+  id             String            @id @default(uuid())
+  session_id     String
+  session        AssessmentSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  question_id    String
+  question       Question          @relation(fields: [question_id], references: [id], onDelete: Restrict)
+  selected_value Int               // 1 to 5 Likert Scale
+  answered_at    DateTime          @default(now())
+
+  @@unique([session_id, question_id])
+  @@index([session_id])
+  @@index([question_id])
+  @@map("assessment_answers")
+}

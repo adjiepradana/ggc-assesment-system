@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #F3F8F5;
+    --foreground: #063424;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EBF4F0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #126348;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0B4632;
+}
+
+/* Subtle luxury gradients */
+.bg-emerald-luxury {
+  background: radial-gradient(circle at top right, #126348 0%, #0B4632 60%, #063424 100%);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #C5A869 0%, #E6D5A8 50%, #A6863F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-gradient-text {
+  background: linear-gradient(135deg, #0B4632 0%, #126348 60%, #C5A869 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
