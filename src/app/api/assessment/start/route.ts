@@ -130,10 +130,14 @@ export async function GET() {
       total_questions: clientQuestions.length,
       answered_count: Object.keys(answersMap).length,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in /api/assessment/start:", error);
     return NextResponse.json(
-      { error: "Gagal menginisialisasi sesi asesmen." },
+      {
+        error: "Gagal menginisialisasi sesi asesmen.",
+        details: error?.message || String(error),
+        stack: error?.stack,
+      },
       { status: 500 }
     );
   }
