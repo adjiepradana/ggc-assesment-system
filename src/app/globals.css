@@ -108,10 +108,50 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .animate-float-slow,
   .animate-float-reverse,
-  .parallax-layer-back {
+  .parallax-layer-back,
+  .spotlight-overlay {
     animation: none !important;
+    transition: none !important;
   }
   html {
     scroll-behavior: auto;
   }
+}
+
+/* Bento Spotlight Reveal (modern-web-guidance: interactive-content-reveal) */
+@property --inner-size {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+@property --outer-size {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease, --inner-size 0.2s ease-in-out, --outer-size 0.2s ease-in-out;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(197, 168, 105, 0.16) var(--inner-size, 0px),
+    rgba(11, 70, 50, 0.06) var(--outer-size, 180px),
+    transparent 320px
+  );
+  border-radius: inherit;
+}
+
+.spotlight-card:hover .spotlight-overlay {
+  opacity: 1;
+  --inner-size: 60px;
+  --outer-size: 200px;
 }
