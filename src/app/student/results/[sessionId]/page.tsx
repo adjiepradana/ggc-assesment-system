@@ -168,6 +168,9 @@ export default function StudentResultsPage() {
       {/* Hero: Potential Signature Banner */}
       <div className="rounded-3xl bg-emerald-luxury p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-ggc-gold/30">
         <div className="absolute top-0 right-0 w-96 h-96 bg-ggc-gold/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute top-6 right-6 hidden md:block opacity-20 pointer-events-none">
+          <img src="/logo.png" alt="GGC Logo" className="w-24 h-24 object-contain" />
+        </div>
 
         <div className="relative z-10 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2 mb-3">

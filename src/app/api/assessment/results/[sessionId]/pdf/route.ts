@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { calculateAssessmentScores } from "@/lib/scoring";
 import { all84QuestionsData } from "@/lib/questions-data";
 import React from "react";
+import fs from "fs";
+import path from "path";
 import { renderToBuffer } from "@react-pdf/renderer";
 import ReportPdfDocument from "@/components/ReportPdfDocument";
 
@@ -96,10 +98,23 @@ export async function GET(
       email: authSession.user.email,
     };
 
+    // Read official logo as base64 data URI if available
+    let logoSrc: string | undefined;
+    try {
+      const logoPath = path.join(process.cwd(), "public", "logo.png");
+      if (fs.existsSync(logoPath)) {
+        const logoBase64 = fs.readFileSync(logoPath).toString("base64");
+        logoSrc = `data:image/png;base64,${logoBase64}`;
+      }
+    } catch (logoErr) {
+      console.warn("Could not load logo for PDF:", logoErr);
+    }
+
     // Render PDF buffer using @react-pdf/renderer
     const pdfDocument = React.createElement(ReportPdfDocument, {
       student: studentInfo,
       results,
+      logoSrc,
     }) as any;
 
     const pdfBuffer = await renderToBuffer(pdfDocument);

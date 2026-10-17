@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import BrandLogo from "@/components/BrandLogo";
 import {
   Sparkles,
   ArrowRight,
@@ -215,12 +216,14 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto py-8 bg-ggc-dark text-white border-t border-ggc-light/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ggc-subtle/70">
-          <p>© {new Date().getFullYear()} Go Great Career (GGC). All rights reserved.</p>
-          <p className="flex items-center gap-1">
-            Study Fit Assessment™ • Milestone 1 Fullstack
-          </p>
+      <footer className="mt-auto py-10 bg-ggc-dark text-white border-t border-ggc-light/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <BrandLogo variant="light" size="sm" href="/" />
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-xs text-ggc-subtle/70">
+            <p>© {new Date().getFullYear()} Go Great Career (GGC). All rights reserved.</p>
+            <span className="hidden sm:inline">•</span>
+            <p>Study Fit Assessment™ • Multi-Matrix System</p>
+          </div>
         </div>
       </footer>
     </div>

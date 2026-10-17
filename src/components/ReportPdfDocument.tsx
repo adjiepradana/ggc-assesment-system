@@ -5,6 +5,7 @@ import {
   Text,
   View,
   StyleSheet,
+  Image,
 } from "@react-pdf/renderer";
 import { ScoringResult } from "@/lib/scoring";
 
@@ -16,6 +17,7 @@ interface ReportPdfProps {
     email?: string | null;
   };
   results: ScoringResult;
+  logoSrc?: string;
 }
 
 // Define elegant PDF styles using GGC branding
@@ -35,6 +37,16 @@ const styles = StyleSheet.create({
     borderBottomColor: "#C5A869",
     paddingBottom: 12,
     marginBottom: 16,
+  },
+  headerBrandContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logoImage: {
+    width: 38,
+    height: 38,
+    marginRight: 10,
+    objectFit: "contain",
   },
   headerBrand: {
     flexDirection: "column",
@@ -307,7 +319,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function ReportPdfDocument({ student, results }: ReportPdfProps) {
+export default function ReportPdfDocument({ student, results, logoSrc }: ReportPdfProps) {
   const topMajor = results.studyRecommendations[0];
 
   return (
@@ -316,9 +328,12 @@ export default function ReportPdfDocument({ student, results }: ReportPdfProps) 
       <Page size="A4" style={styles.page}>
         {/* Brand Header */}
         <View style={styles.header}>
-          <View style={styles.headerBrand}>
-            <Text style={styles.headerTitle}>GO GREAT CAREER (GGC)</Text>
-            <Text style={styles.headerSubtitle}>STUDY FIT ASSESSMENT™ • OFFICIAL REPORT</Text>
+          <View style={styles.headerBrandContainer}>
+            {logoSrc ? <Image src={logoSrc} style={styles.logoImage} /> : null}
+            <View style={styles.headerBrand}>
+              <Text style={styles.headerTitle}>GO GREAT CAREER (GGC)</Text>
+              <Text style={styles.headerSubtitle}>STUDY FIT ASSESSMENT™ • OFFICIAL REPORT</Text>
+            </View>
           </View>
           <View style={styles.headerBadge}>
             <Text style={styles.headerBadgeText}>84-ITEM MULTI-MATRIX</Text>
@@ -444,9 +459,12 @@ export default function ReportPdfDocument({ student, results }: ReportPdfProps) 
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerBrand}>
-            <Text style={styles.headerTitle}>REKOMENDASI PROGRAM STUDI & JURUSAN</Text>
-            <Text style={styles.headerSubtitle}>HASIL PENCOCOKAN MATRIX 2 (STUDY PROFILE MATCHING)</Text>
+          <View style={styles.headerBrandContainer}>
+            {logoSrc ? <Image src={logoSrc} style={styles.logoImage} /> : null}
+            <View style={styles.headerBrand}>
+              <Text style={styles.headerTitle}>REKOMENDASI PROGRAM STUDI & JURUSAN</Text>
+              <Text style={styles.headerSubtitle}>HASIL PENCOCOKAN MATRIX 2 (STUDY PROFILE MATCHING)</Text>
+            </View>
           </View>
           <View style={styles.headerBadge}>
             <Text style={styles.headerBadgeText}>
