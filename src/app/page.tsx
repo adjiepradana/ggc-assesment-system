@@ -34,6 +34,13 @@ import {
   Users,
   Zap,
   TrendingUp,
+  Search,
+  HelpCircle,
+  Lightbulb,
+  MessageCircle,
+  X,
+  RotateCcw,
+  FileQuestion,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -48,6 +55,12 @@ export default function HomePage() {
 
   // FAQ Accordion active index
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // FAQ Category Filter State
+  const [faqCategory, setFaqCategory] = useState<string>("ALL");
+
+  // FAQ Live Search State
+  const [faqSearch, setFaqSearch] = useState<string>("");
 
   // Parallax scroll state
   const [scrollY, setScrollY] = useState(0);
@@ -247,28 +260,90 @@ export default function HomePage() {
 
   const activeDimension = dimensions.find((d) => d.code === activeDimCode) || dimensions[0];
 
+  const faqCategoryList = [
+    { key: "ALL", label: "Semua Topik" },
+    { key: "ASSESSMENT", label: "Instrumen & Durasi" },
+    { key: "METHODOLOGY", label: "Metodologi Multi-Matrix" },
+    { key: "REPORT", label: "Laporan & Konseling" },
+  ];
+
   const faqs = [
     {
-      q: "Berapa lama waktu yang dibutuhkan untuk menyelesaikan asesmen?",
-      a: "Asesmen terdiri dari 84 butir soal pilihan Skala Likert (1 sampai 5) yang dirancang intuitif. Rata-rata siswa menyelesaikannya dalam kurun waktu 15 hingga 20 menit. Seluruh jawaban tersimpan otomatis secara realtime.",
+      id: "faq-1",
+      category: "ASSESSMENT",
+      categoryLabel: "Instrumen & Durasi",
+      tag: "15-20 Menit",
+      q: "Berapa lama waktu yang dibutuhkan untuk menyelesaikan seluruh 84 butir soal?",
+      a: "Asesmen terdiri dari 84 butir instrumen skala Likert (1 sampai 5) yang dirancang intuitif dan ringkas. Rata-rata siswa menyelesaikannya dalam kurun waktu 15 hingga 20 menit. Anda tidak perlu terburu-buru karena sistem mengamankan setiap pilihan secara realtime.",
+      takeaway: "Setiap jawaban tersimpan otomatis per butir soal, bebas stres tanpa batas waktu ketat.",
     },
     {
-      q: "Apakah ada jawaban 'benar' atau 'salah' dalam tes ini?",
-      a: "Sama sekali tidak ada jawaban benar atau salah. Seluruh instrumen dirancang untuk memetakan keaslian bakat kognitif, preferensi kerja, nilai hidup, dan minat karier Anda agar pencocokan program studi akurat dan objektif.",
+      id: "faq-2",
+      category: "ASSESSMENT",
+      categoryLabel: "Instrumen & Durasi",
+      tag: "Zero-Bias",
+      q: "Apakah ada jawaban 'benar' atau 'salah' yang dapat menggugurkan peserta?",
+      a: "Sama sekali tidak ada jawaban benar atau salah. Seluruh instrumen dirancang murni untuk memetakan keaslian bakat kognitif, preferensi kerja, nilai hidup, dan minat karier Anda secara objektif. Pilihlah jawaban yang paling mencerminkan diri Anda apa adanya.",
+      takeaway: "Asesmen ini bukan ujian kelulusan, melainkan kompas pencocokan potensi diri.",
     },
     {
-      q: "Bagaimana cara kerja algoritma Multi-Matrix Scoring?",
-      a: "Sistem menghitung matriks Person Profile (skor talenta, minat, dan kepribadian siswa) lalu mencocokkannya dengan bobot matriks Study Profile dari puluhan program studi perguruan tinggi. Hasilnya adalah persentase kecocokan ilmiah dan identifikasi 3 Potential Signature terkuat Anda.",
+      id: "faq-3",
+      category: "ASSESSMENT",
+      categoryLabel: "Instrumen & Durasi",
+      tag: "Auto-Save",
+      q: "Bisakah pengerjaan asesmen dijeda dan dilanjutkan kembali di perangkat lain?",
+      a: "Ya, tentu saja! Karena setiap klik jawaban langsung tersimpan di cloud database akun Anda, Anda dapat keluar kapan saja dan melanjutkan kembali melalui laptop, tablet, atau smartphone tanpa kehilangan progres pengerjaan.",
+      takeaway: "Fleksibel lintas perangkat; lanjutkan kapan saja dari nomor soal terakhir.",
     },
     {
-      q: "Apakah hasil asesmen bisa diunduh dalam format PDF resmi?",
-      a: "Ya! Setelah menyelesaikan seluruh butir instrumen, Anda dapat langsung melihat dashboard analitik interaktif sekaligus mengunduh dokumen Laporan PDF Resmi 2 Halaman lengkap dengan kop resmi Go Great Career™ untuk didiskusikan bersama orang tua dan guru BK.",
+      id: "faq-4",
+      category: "METHODOLOGY",
+      categoryLabel: "Metodologi & Multi-Matrix",
+      tag: "Scoring Engine",
+      q: "Bagaimana cara kerja algoritma Multi-Matrix Scoring dalam menentukan kecocokan jurusan?",
+      a: "Algoritma menghitung Person Profile (distribusi skor 7 dimensi siswa) lalu membandingkannya dengan Study Profile ratusan program studi berbobot ilmiah. Hasil akhirnya menghasilkan persentase keselarasan (Fit Score 1-100%) dan kategori kecocokan: Very Strong Fit, Strong Fit, Potential Fit, hingga Explore Further.",
+      takeaway: "Menggabungkan profil personal dengan bobot kurikulum perguruan tinggi secara presisi.",
     },
     {
-      q: "Apakah sekolah atau institusi bisa menggunakan sistem ini secara kolektif?",
-      a: "Tentu saja. GGC Study Fit Assessment™ dilengkapi dengan portal Administrator yang memungkinkan konselor sekolah melihat rekapitulasi data siswa, memantau kemajuan pengerjaan, dan mengekspor rekap hasil ke format Excel (.xlsx).",
+      id: "faq-5",
+      category: "METHODOLOGY",
+      categoryLabel: "Metodologi & Multi-Matrix",
+      tag: "Archetype",
+      q: "Apa itu 'Potential Signature' dan mengapa penting untuk masa depan saya?",
+      a: "Potential Signature adalah sintesis arketipe talenta dominan Anda (misalnya The Analytical Strategist, The Visionary Creator, dll.). Ini bukan sekadar label, melainkan cetak biru kognitif yang memandu Anda memilih karier dan lingkungan kerja yang paling memungkinkan Anda berkembang maksimal.",
+      takeaway: "Cetak biru kognitif untuk memandu keputusan karier jangka panjang.",
+    },
+    {
+      id: "faq-6",
+      category: "REPORT",
+      categoryLabel: "Laporan & Konseling",
+      tag: "PDF Resmi A4",
+      q: "Apakah laporan hasil asesmen bisa langsung diunduh dan dicetak untuk orang tua?",
+      a: "Seketika setelah menekan tombol Selesai, Anda langsung mendapatkan akses ke Dashboard Hasil interaktif serta tombol unduh Laporan PDF Resmi 2 Halaman (format A4 standar eksekutif) lengkap dengan kop Go Great Career™ yang siap dibagikan ke orang tua dan konselor.",
+      takeaway: "Dokumen resmi berformat eksekutif siap cetak untuk diskusi keluarga & guru BK.",
+    },
+    {
+      id: "faq-7",
+      category: "REPORT",
+      categoryLabel: "Laporan & Konseling",
+      tag: "Portal Sekolah",
+      q: "Bagaimana pihak sekolah, yayasan, atau guru BK dapat menggunakan platform ini?",
+      a: "Kami menyediakan Portal Administrator khusus bagi institusi pendidikan. Konselor dapat memantau status kemajuan seluruh siswa, meninjau analitik distribusi kecocokan jurusan, dan mengekspor seluruh rekap data siswa ke format Excel (.xlsx) dengan sekali klik.",
+      takeaway: "Terintegrasi penuh untuk manajemen bimbingan karier sekolah terpusat.",
     },
   ];
+
+  const filteredFaqs = React.useMemo(() => {
+    return faqs.filter((faq) => {
+      const matchesCategory = faqCategory === "ALL" || faq.category === faqCategory;
+      const matchesSearch =
+        !faqSearch.trim() ||
+        faq.q.toLowerCase().includes(faqSearch.toLowerCase()) ||
+        faq.a.toLowerCase().includes(faqSearch.toLowerCase()) ||
+        faq.tag.toLowerCase().includes(faqSearch.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [faqCategory, faqSearch]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFBF9] text-gray-900 overflow-x-hidden selection:bg-ggc selection:text-white">
@@ -962,48 +1037,225 @@ export default function HomePage() {
       </section>
 
       {/* ================= FREQUENTLY ASKED QUESTIONS (FAQ) ================= */}
-      <section id="faq" className="py-20 bg-white border-b border-ggc-subtle">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-widest text-ggc-gold-dark">
-              Paling Sering Ditanyakan
-            </span>
-            <h2 className="text-3xl font-black text-ggc-dark mt-2">
-              Pertanyaan & Jawaban Seputar Asesmen
+      <section id="faq" className="py-24 bg-white border-b border-ggc-subtle relative overflow-hidden">
+        {/* Ambient background decoration */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-ggc-gold/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-ggc/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-ggc-gold/15 text-ggc-gold-dark text-xs font-bold uppercase tracking-wider border border-ggc-gold/30 mb-3 shadow-2xs">
+              <HelpCircle className="w-4 h-4 text-ggc-gold-dark" />
+              <span>Pusat Bantuan & Metodologi Asesmen</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-ggc-dark tracking-tight">
+              Pertanyaan yang Sering Diajukan
             </h2>
-            <p className="text-sm text-gray-600 mt-2">
-              Pelajari lebih lanjut tentang validitas metodologi dan alur pengerjaan instrumen.
+            <p className="text-sm sm:text-base text-gray-600 mt-4 leading-relaxed">
+              Dapatkan pemahaman menyeluruh seputar validitas instrumen 84 butir, kerahasiaan data, algoritma multi-matriks, serta cara memanfaatkan laporan hasil asesmen secara maksimal.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div
-                  key={faq.q}
-                  className="rounded-2xl border border-gray-200/90 overflow-hidden bg-[#FAFBF9] transition-all"
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column: Search, Category Pills & Counselor Assistance Card (4 cols) */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Live Search Box */}
+              <div className="p-5 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 shadow-sm">
+                <label
+                  htmlFor="faq-search-input"
+                  className="block text-xs font-bold uppercase tracking-wider text-ggc-dark mb-2.5"
                 >
-                  <button
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full text-left px-6 py-4.5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-ggc-dark hover:text-ggc transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    {isOpen ? (
-                      <ChevronUp className="w-5 h-5 text-ggc-gold shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
-                    )}
-                  </button>
-
-                  {isOpen && (
-                    <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-gray-600 leading-relaxed border-t border-gray-100 bg-white">
-                      {faq.a}
-                    </div>
+                  Cari Topik Pertanyaan
+                </label>
+                <div className="relative">
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    id="faq-search-input"
+                    type="text"
+                    value={faqSearch}
+                    onChange={(e) => setFaqSearch(e.target.value)}
+                    placeholder="Ketik kata kunci: misal 'durasi', 'pdf', 'jurusan'..."
+                    className="w-full pl-9.5 pr-8 py-2.5 rounded-xl text-xs bg-white border border-gray-200 focus:border-ggc focus:ring-2 focus:ring-ggc/20 focus:outline-none transition-all placeholder:text-gray-400"
+                  />
+                  {faqSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setFaqSearch("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                      title="Hapus pencarian"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   )}
                 </div>
-              );
-            })}
+              </div>
+
+              {/* Category Filter Tabs */}
+              <div className="p-5 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 shadow-sm">
+                <div className="text-xs font-bold uppercase tracking-wider text-ggc-dark mb-3">
+                  Kategori Pembahasan
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {faqCategoryList.map((cat) => {
+                    const isSelected = faqCategory === cat.key;
+                    const count =
+                      cat.key === "ALL"
+                        ? faqs.length
+                        : faqs.filter((f) => f.category === cat.key).length;
+                    return (
+                      <button
+                        key={cat.key}
+                        type="button"
+                        onClick={() => setFaqCategory(cat.key)}
+                        className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between ${
+                          isSelected
+                            ? "bg-ggc text-white shadow-md shadow-ggc/15 ring-2 ring-ggc-gold/30"
+                            : "bg-white text-gray-600 hover:text-ggc hover:bg-ggc-subtle/50 border border-gray-200/80"
+                        }`}
+                      >
+                        <span>{cat.label}</span>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                            isSelected
+                              ? "bg-white/20 text-white"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Counselor Help Box */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-ggc-dark to-ggc text-white shadow-xl border border-ggc-gold/40 relative overflow-hidden">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[11px] font-bold text-ggc-gold uppercase tracking-wider">
+                    Tim Bimbingan Konseling GGC
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-white leading-snug">
+                  Punya Pertanyaan Khusus Terkait Program Sekolah?
+                </h3>
+                <p className="text-xs text-ggc-subtle/90 mt-2 leading-relaxed">
+                  Tim psikolog dan konselor karier kami siap memberikan konsultasi gratis seputar implementasi asesmen untuk angkatan siswa.
+                </p>
+                <div className="mt-5">
+                  <a
+                    href="https://wa.me/6281234567890?text=Halo%20Admin%20Go%20Great%20Career,%20saya%20ingin%20tanya%20seputar%20Study%20Fit%20Assessment"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white transition-all shadow-md"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Hubungi Konselor via WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: FAQ Accordion Cards with Spotlight Glow (8 cols) */}
+            <div className="lg:col-span-8 space-y-4">
+              {filteredFaqs.length === 0 ? (
+                <div className="p-10 rounded-3xl bg-[#FAFBF9] border border-gray-200 text-center">
+                  <HelpCircle className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-gray-800">
+                    Tidak Ditemukan Pertanyaan yang Cocok
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+                    Kata kunci "{faqSearch}" tidak sesuai dengan pertanyaan yang tersedia. Silakan gunakan kata kunci lain atau reset pencarian.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFaqSearch("");
+                      setFaqCategory("ALL");
+                    }}
+                    className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-ggc bg-ggc-subtle hover:bg-ggc/20 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Pencarian</span>
+                  </button>
+                </div>
+              ) : (
+                filteredFaqs.map((faq, idx) => {
+                  const isOpen = openFaqIndex === idx;
+                  return (
+                    <SpotlightCard
+                      key={faq.id}
+                      className={`rounded-3xl border transition-all duration-300 overflow-hidden ${
+                        isOpen
+                          ? "bg-white border-ggc/60 shadow-xl ring-2 ring-ggc-gold/20"
+                          : "bg-[#FAFBF9] border-gray-200/90 hover:border-ggc/40 hover:bg-white shadow-xs"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        aria-controls={`faq-answer-${faq.id}`}
+                        onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                        className="w-full text-left p-6 sm:p-7 flex items-start justify-between gap-4 cursor-pointer focus:outline-none"
+                      >
+                        <div className="flex-1">
+                          {/* Category and Index Pill */}
+                          <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-ggc-subtle text-ggc border border-ggc/20">
+                              {faq.categoryLabel}
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
+                              {faq.tag}
+                            </span>
+                          </div>
+
+                          {/* Question Text */}
+                          <h3
+                            className={`text-base sm:text-lg font-bold leading-snug transition-colors ${
+                              isOpen ? "text-ggc-dark" : "text-gray-800"
+                            }`}
+                          >
+                            {faq.q}
+                          </h3>
+                        </div>
+
+                        {/* Expand / Collapse Indicator Button */}
+                        <div
+                          className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 ${
+                            isOpen
+                              ? "bg-ggc text-white rotate-180 shadow-md"
+                              : "bg-white text-gray-400 border border-gray-200 group-hover:border-ggc/40 group-hover:text-ggc"
+                          }`}
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </div>
+                      </button>
+
+                      {/* Answer Body with Key Takeaway */}
+                      {isOpen && (
+                        <div
+                          id={`faq-answer-${faq.id}`}
+                          className="px-6 sm:px-7 pb-6 pt-2 border-t border-gray-100 text-xs sm:text-sm text-gray-600 leading-relaxed space-y-3"
+                        >
+                          <p>{faq.a}</p>
+
+                          {/* Key Takeaway Callout */}
+                          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-ggc-subtle/80 via-emerald-50/50 to-amber-50/50 border border-ggc/20 flex items-start gap-2.5">
+                            <Lightbulb className="w-4 h-4 text-ggc-gold-dark shrink-0 mt-0.5" />
+                            <div className="text-xs text-ggc-dark font-medium leading-relaxed">
+                              <strong className="text-ggc font-bold">Key Takeaway: </strong>
+                              {faq.takeaway}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </SpotlightCard>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </section>
