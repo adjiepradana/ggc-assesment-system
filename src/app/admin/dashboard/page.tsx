@@ -1,8 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import {
   ShieldCheck,
   FileQuestion,
@@ -10,52 +9,123 @@ import {
   CheckCircle2,
   Clock,
   Layers,
-  ArrowUpRight,
-  Database,
+  Download,
   Search,
   Filter,
+  FileSpreadsheet,
+  Plus,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
+  RefreshCw,
+  School,
+  GraduationCap,
+  ArrowUpRight,
+  Award,
 } from "lucide-react";
 
-export default async function AdminDashboardPage() {
-  const session = await getServerSession(authOptions);
+interface StudentItem {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  school: string;
+  grade: string;
+  session: {
+    id: string;
+    status: string;
+    startedAt: string;
+    completedAt: string | null;
+    answeredCount: number;
+    topSignature: string;
+    topMajor: string;
+    fitScore: number;
+  } | null;
+  createdAt: string;
+}
 
-  let totalQuestionsCount = 0;
-  let totalStudentsCount = 0;
-  let totalSessionsCount = 0;
-  let completedSessionsCount = 0;
+interface AdminStats {
+  totalStudents: number;
+  activeSessions: number;
+  completedSessions: number;
+  totalQuestions: number;
+}
 
-  try {
-    const [qCount, sCount, sessCount, compCount] = await Promise.all([
-      prisma.question.count(),
-      prisma.user.count({ where: { role: "STUDENT" } }),
-      prisma.assessmentSession.count(),
-      prisma.assessmentSession.count({ where: { status: "COMPLETED" } }),
-    ]);
+export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<AdminStats>({
+    totalStudents: 0,
+    activeSessions: 0,
+    completedSessions: 0,
+    totalQuestions: 84,
+  });
+  const [students, setStudents] = useState<StudentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [isExporting, setIsExporting] = useState(false);
 
-    totalQuestionsCount = qCount;
-    totalStudentsCount = sCount;
-    totalSessionsCount = sessCount;
-    completedSessionsCount = compCount;
-  } catch (e) {
-    // Fallback for dev environment
-    totalQuestionsCount = 84;
-    totalStudentsCount = 28;
-    totalSessionsCount = 34;
-    completedSessionsCount = 22;
-  }
+  // Fetch Students & Stats
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/admin/students?status=${statusFilter}&search=${encodeURIComponent(searchQuery)}`);
+      const json = await res.json();
+      if (json.success) {
+        setStudents(json.students || []);
+        if (json.stats) {
+          setStats(json.stats);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading admin data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [statusFilter]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loadData();
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      setIsExporting(true);
+      const res = await fetch("/api/admin/export");
+      if (!res.ok) throw new Error("Gagal mengekspor data Excel.");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `GGC_Study_Fit_Rekap_Peserta_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      alert(err.message || "Gagal mengunduh file Excel.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const dimensionBreakdowns = [
-    { code: "T01 - T12", name: "Talent (Bakat)", items: 12, category: "TALENT", status: "Active" },
-    { code: "I01 - I12", name: "Interest (Minat)", items: 12, category: "INTEREST", status: "Active" },
-    { code: "P01 - P12", name: "Personality (Kepribadian)", items: 12, category: "PERSONALITY", status: "Active" },
-    { code: "V01 - V12", name: "Values (Nilai Pribadi)", items: 12, category: "VALUES", status: "Active" },
-    { code: "A01 - A12", name: "Academic (Akademik)", items: 12, category: "ACADEMIC", status: "Active" },
-    { code: "C01 - C12", name: "Career (Karier)", items: 12, category: "CAREER", status: "Active" },
-    { code: "R01 - R12", name: "Readiness (Kesiapan)", items: 12, category: "READINESS", status: "Active" },
+    { code: "T01 - T12", name: "Talent (Bakat)", items: 12, category: "TALENT" },
+    { code: "I01 - I12", name: "Interest (Minat)", items: 12, category: "INTEREST" },
+    { code: "P01 - P12", name: "Personality (Kepribadian)", items: 12, category: "PERSONALITY" },
+    { code: "V01 - V12", name: "Values (Nilai Pribadi)", items: 12, category: "VALUES" },
+    { code: "A01 - A12", name: "Academic (Akademik)", items: 12, category: "ACADEMIC" },
+    { code: "C01 - C12", name: "Career (Karier)", items: 12, category: "CAREER" },
+    { code: "R01 - R12", name: "Readiness (Kesiapan)", items: 12, category: "READINESS" },
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-16">
       {/* Admin Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-200">
         <div>
@@ -68,44 +138,44 @@ export default async function AdminDashboardPage() {
             Dashboard Manajemen Asesmen GGC
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Pantau 84 item instrumen studi, sesi pengerjaan siswa, dan analitik multi-matriks.
+            Pantau rekapitulasi data peserta, hasil multi-matriks siswa, dan manajemen 84 butir soal.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2.5 rounded-xl text-xs font-bold text-ggc bg-white border border-ggc/20 shadow-sm hover:bg-ggc-tint transition-all">
-            Unduh Laporan Excel
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-ggc bg-white border border-ggc/30 shadow-sm hover:bg-ggc-subtle transition-all disabled:opacity-60"
+          >
+            {isExporting ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin text-ggc" />
+                <span>Memproses Excel...</span>
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Ekspor Excel (.xlsx)</span>
+              </>
+            )}
           </button>
-          <button className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md transition-all">
-            + Tambah Soal Baru
-          </button>
+
+          <Link
+            href="/admin/questions"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md hover:shadow-lg transition-all"
+          >
+            <Plus className="w-4 h-4 text-ggc-gold" />
+            <span>Kelola Bank Soal</span>
+          </Link>
         </div>
       </div>
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Total Questions */}
-        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Bank Soal Asesmen
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-ggc/10 text-ggc flex items-center justify-center">
-              <FileQuestion className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-black text-ggc-dark">
-              {totalQuestionsCount || 84}
-            </div>
-            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-              <span className="text-ggc font-bold">7 Dimensi</span> Terkalibrasi (12 item / dimensi)
-            </p>
-          </div>
-        </div>
-
-        {/* Registered Students */}
-        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        {/* Total Registered Students */}
+        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
               Total Siswa Terdaftar
@@ -116,72 +186,294 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="mt-4">
             <div className="text-3xl font-black text-ggc-dark">
-              {totalStudentsCount || 0}
+              {stats.totalStudents}
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Siswa aktif jenjang SMA/SMK sederajat
+              Partisipan aktif jenjang SMA/SMK sederajat
             </p>
           </div>
         </div>
 
-        {/* Total Sessions */}
-        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        {/* Total Active Sessions */}
+        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Total Sesi Pengerjaan
+              Sesi Sedang Berjalan
             </span>
             <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
               <Clock className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-black text-ggc-dark">
-              {totalSessionsCount || 0}
+            <div className="text-3xl font-black text-amber-700">
+              {stats.activeSessions}
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Sesi dimulai secara real-time
+              Siswa sedang mengisi lembar asesmen
             </p>
           </div>
         </div>
 
-        {/* Completed Sessions */}
-        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        {/* Completed Assessments */}
+        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Sesi Selesai (Completed)
+              Asesmen Selesai (Completed)
             </span>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-black text-ggc-dark">
-              {completedSessionsCount || 0}
+            <div className="text-3xl font-black text-emerald-700">
+              {stats.completedSessions}
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Hasil skor multi-matriks telah terbit
+              Laporan kecocokan studi telah terbit
+            </p>
+          </div>
+        </div>
+
+        {/* Total Questions in Bank */}
+        <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Bank Soal Asesmen
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-ggc/10 text-ggc flex items-center justify-center">
+              <FileQuestion className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-black text-ggc-dark">
+              {stats.totalQuestions}
+            </div>
+            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+              <span className="text-ggc font-bold">7 Dimensi</span> (12 butir per dimensi)
             </p>
           </div>
         </div>
       </div>
 
-      {/* 84 Questions Breakdown Table */}
+      {/* STUDENT MANAGEMENT & RESULTS RECAP TABLE */}
       <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Table Controls & Filter Bar */}
+        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-bold text-ggc-dark flex items-center gap-2">
-              <Layers className="w-5 h-5 text-ggc" />
-              Struktur 84 Item Pertanyaan Berdasarkan 7 Dimensi
+            <h3 className="text-lg font-black text-ggc-dark flex items-center gap-2">
+              <Users className="w-5 h-5 text-ggc" />
+              Rekapitulasi Partisipan Asesmen & Hasil Multi-Matriks
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Matriks standar Study Fit Assessment™ terbagi rata menjadi 12 item per pilar evaluasi
+              Daftar seluruh siswa, status pengerjaan sesi 84 butir, dan akses cepat unduh laporan PDF resmi
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-semibold text-ggc-gold-dark bg-ggc-gold-subtle px-3 py-1.5 rounded-xl border border-ggc-gold/30">
-            <Database className="w-4 h-4" />
-            <span>Skala Likert 1-5 Terintegrasi</span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Search Input */}
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari nama, email, sekolah..."
+                className="pl-8 pr-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-ggc w-48 sm:w-60"
+              />
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
+            </form>
+
+            {/* Status Filter Tabs */}
+            <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-medium">
+              <button
+                onClick={() => setStatusFilter("ALL")}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  statusFilter === "ALL"
+                    ? "bg-white text-ggc-dark font-bold shadow-xs"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                Semua
+              </button>
+              <button
+                onClick={() => setStatusFilter("COMPLETED")}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  statusFilter === "COMPLETED"
+                    ? "bg-white text-emerald-700 font-bold shadow-xs"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                Selesai
+              </button>
+              <button
+                onClick={() => setStatusFilter("IN_PROGRESS")}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  statusFilter === "IN_PROGRESS"
+                    ? "bg-white text-amber-700 font-bold shadow-xs"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                Berjalan
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Table Body */}
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="py-12 text-center text-xs text-gray-400">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-ggc" />
+              <span>Memuat data siswa...</span>
+            </div>
+          ) : students.length === 0 ? (
+            <div className="py-12 text-center text-xs text-gray-500">
+              Tidak ada data siswa yang cocok dengan filter.
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs">
+              <thead className="bg-gray-50 text-gray-600 uppercase font-bold border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-3.5">Nama & Kontak Siswa</th>
+                  <th className="px-6 py-3.5">Sekolah / Jenjang</th>
+                  <th className="px-6 py-3.5">Status Asesmen</th>
+                  <th className="px-6 py-3.5">Top Potential Signature</th>
+                  <th className="px-6 py-3.5">Rekomendasi Jurusan</th>
+                  <th className="px-6 py-3.5 text-right">Aksi Laporan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {students.map((stu) => {
+                  const sess = stu.session;
+                  const isCompleted = sess?.status === "COMPLETED";
+                  const isInProgress = sess?.status === "IN_PROGRESS";
+
+                  return (
+                    <tr key={stu.id} className="hover:bg-gray-50/80 transition-colors">
+                      {/* Name & Contact */}
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-ggc-dark">{stu.name}</div>
+                        <div className="text-[11px] text-gray-400 mt-0.5">{stu.email}</div>
+                        {stu.phoneNumber !== "-" && (
+                          <div className="text-[10px] text-gray-400">{stu.phoneNumber}</div>
+                        )}
+                      </td>
+
+                      {/* School & Grade */}
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-gray-800">{stu.school}</div>
+                        <div className="text-[11px] text-gray-400">{stu.grade}</div>
+                      </td>
+
+                      {/* Session Status */}
+                      <td className="px-6 py-4">
+                        {isCompleted ? (
+                          <div>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Selesai (84/84)
+                            </span>
+                            {sess?.completedAt && (
+                              <div className="text-[10px] text-gray-400 mt-1">
+                                {new Date(sess.completedAt).toLocaleDateString("id-ID")}
+                              </div>
+                            )}
+                          </div>
+                        ) : isInProgress ? (
+                          <div>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                              <Clock className="w-3 h-3 text-amber-600" /> Sedang Mengisi ({sess?.answeredCount}/84)
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">
+                            Belum Memulai
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Potential Signature */}
+                      <td className="px-6 py-4">
+                        {sess?.topSignature && sess.topSignature !== "-" ? (
+                          <span className="font-bold text-ggc">
+                            {sess.topSignature}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 italic">Belum tersedia</span>
+                        )}
+                      </td>
+
+                      {/* Top Major & Fit Score */}
+                      <td className="px-6 py-4">
+                        {sess?.topMajor && sess.topMajor !== "-" ? (
+                          <div>
+                            <div className="font-semibold text-gray-800">{sess.topMajor}</div>
+                            {sess.fitScore > 0 && (
+                              <span className="text-[10px] font-bold text-ggc-gold-dark">
+                                Fit Score: {sess.fitScore}%
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 italic">-</span>
+                        )}
+                      </td>
+
+                      {/* Action Buttons */}
+                      <td className="px-6 py-4 text-right">
+                        {sess ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* View Web Report */}
+                            <Link
+                              href={`/student/results/${sess.id}`}
+                              target="_blank"
+                              className="p-1.5 text-gray-500 hover:text-ggc hover:bg-ggc-subtle rounded-lg transition-colors"
+                              title="Buka Laporan Web"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </Link>
+
+                            {/* Download PDF Button */}
+                            <a
+                              href={`/api/assessment/results/${sess.id}/pdf`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-ggc-dark bg-ggc-gold/20 hover:bg-ggc-gold/40 border border-ggc-gold/40 rounded-lg transition-colors"
+                              title="Unduh PDF Resmi"
+                            >
+                              <Download className="w-3 h-3 text-ggc-gold-dark" />
+                              <span>PDF</span>
+                            </a>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-[11px]">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      {/* QUESTION BANK SUMMARY TABLE */}
+      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-black text-ggc-dark flex items-center gap-2">
+              <Layers className="w-5 h-5 text-ggc" />
+              Struktur Bank Soal Berdasarkan 7 Dimensi Penilaian
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              84 Butir instrumen skala Likert 1-5 dikelompokkan secara seimbang (12 butir / pilar)
+            </p>
+          </div>
+
+          <Link
+            href="/admin/questions"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-ggc hover:text-ggc-light transition-colors"
+          >
+            <span>Buka Question Bank CMS Lengkap</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </Link>
         </div>
 
         <div className="overflow-x-auto">
@@ -191,35 +483,38 @@ export default async function AdminDashboardPage() {
                 <th className="px-6 py-3.5">Kode Item</th>
                 <th className="px-6 py-3.5">Dimensi Kategori</th>
                 <th className="px-6 py-3.5">Jumlah Butir</th>
-                <th className="px-6 py-3.5">Tipe Penilaian</th>
-                <th className="px-6 py-3.5">Status Bank Soal</th>
-                <th className="px-6 py-3.5 text-right">Aksi</th>
+                <th className="px-6 py-3.5">Metode Penilaian</th>
+                <th className="px-6 py-3.5">Status Bank</th>
+                <th className="px-6 py-3.5 text-right">Kelola Soal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {dimensionBreakdowns.map((dim) => (
                 <tr key={dim.code} className="hover:bg-gray-50/80 transition-colors">
-                  <td className="px-6 py-4 font-mono font-bold text-ggc">
+                  <td className="px-6 py-3.5 font-mono font-bold text-ggc">
                     {dim.code}
                   </td>
-                  <td className="px-6 py-4 font-semibold text-ggc-dark">
+                  <td className="px-6 py-3.5 font-bold text-ggc-dark">
                     {dim.name}
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="font-bold">{dim.items}</span> Butir
+                  <td className="px-6 py-3.5">
+                    <span className="font-bold">{dim.items}</span> Butir Instrumen
                   </td>
-                  <td className="px-6 py-4 text-gray-500">
+                  <td className="px-6 py-3.5 text-gray-500">
                     Skala Likert (1 = Sangat Tidak Sesuai, 5 = Sangat Sesuai)
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                      Aktif ({dim.status})
+                  <td className="px-6 py-3.5">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      Aktif (Ready)
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="text-ggc hover:text-ggc-light font-bold hover:underline">
-                      Tinjau Soal →
-                    </button>
+                  <td className="px-6 py-3.5 text-right">
+                    <Link
+                      href={`/admin/questions?category=${dim.category}`}
+                      className="text-ggc hover:text-ggc-light font-bold hover:underline"
+                    >
+                      Buka Butir Soal →
+                    </Link>
                   </td>
                 </tr>
               ))}
