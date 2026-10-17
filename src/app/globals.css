@@ -273,3 +273,41 @@ html {
   background-image: radial-gradient(rgba(197, 168, 105, 0.22) 1px, transparent 1px);
   background-size: 22px 22px;
 }
+
+/* ==========================================================================
+   Assessment page interactions & micro-animations
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes sectionFadeIn {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  .animate-section-in {
+    animation: sectionFadeIn 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+
+  @keyframes milestonePop {
+    0% {
+      scale: 0.96;
+      opacity: 0;
+    }
+    70% {
+      scale: 1.015;
+    }
+    100% {
+      scale: 1;
+      opacity: 1;
+    }
+  }
+
+  .animate-milestone-pop {
+    animation: milestonePop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+}
