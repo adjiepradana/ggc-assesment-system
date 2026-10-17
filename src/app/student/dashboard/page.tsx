@@ -181,22 +181,26 @@ export default async function StudentDashboardPage() {
           ))}
 
           {/* Result Card preview */}
-          <div className="p-5 rounded-2xl bg-ggc-gold-subtle border border-ggc-gold/40 flex flex-col justify-between">
+          <Link
+            href={`/student/results/${activeSession?.id || "preview"}`}
+            className="p-5 rounded-2xl bg-ggc-gold-subtle border border-ggc-gold/40 hover:border-ggc-gold flex flex-col justify-between transition-all hover:shadow-md group"
+          >
             <div>
-              <div className="w-8 h-8 rounded-lg bg-ggc-gold text-ggc-dark font-black text-xs flex items-center justify-center mb-3">
+              <div className="w-8 h-8 rounded-lg bg-ggc-gold text-ggc-dark font-black text-xs flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                 <Award className="w-4 h-4" />
               </div>
-              <h4 className="font-bold text-ggc-dark text-sm mb-1">
+              <h4 className="font-bold text-ggc-dark text-sm mb-1 group-hover:text-ggc">
                 Laporan & Rekomendasi
               </h4>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Akan terbuka otomatis begitu seluruh 84 pertanyaan terjawab.
+                Tinjau Potential Signature dan kecocokan jurusan multi-matriks Anda.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-ggc-gold/30 text-[11px] font-bold text-ggc-gold-dark">
-              Study Fit Score™
+            <div className="mt-4 pt-3 border-t border-ggc-gold/30 text-[11px] font-bold text-ggc-gold-dark flex items-center justify-between">
+              <span>Study Fit Score™</span>
+              <span className="text-xs">Buka →</span>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 

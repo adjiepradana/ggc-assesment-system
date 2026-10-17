@@ -303,11 +303,18 @@ export default function StudentAssessmentPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
+            href={`/student/results/${sessionData?.id || "active-session"}`}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white transition-all text-xs shadow-md"
+          >
+            <span>Lihat Laporan Hasil & Rekomendasi Jurusan</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
             href="/student/dashboard"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-ggc hover:bg-ggc-light transition-all text-xs shadow-md"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-all text-xs shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Dashboard Siswa</span>
+            <span>Kembali ke Dashboard</span>
           </Link>
         </div>
       </div>
