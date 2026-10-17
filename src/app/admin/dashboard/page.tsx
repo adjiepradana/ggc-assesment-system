@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -22,6 +22,10 @@ import {
   GraduationCap,
   ArrowUpRight,
   Award,
+  FileCode,
+  X,
+  Copy,
+  Check,
 } from "lucide-react";
 
 interface StudentItem {
@@ -62,13 +66,21 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [schoolFilter, setSchoolFilter] = useState<string>("ALL");
   const [isExporting, setIsExporting] = useState(false);
+
+  // Modal JSON Viewer
+  const [activeJsonData, setActiveJsonData] = useState<any | null>(null);
+  const [loadingJson, setLoadingJson] = useState(false);
+  const [copiedJson, setCopiedJson] = useState(false);
 
   // Fetch Students & Stats
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/admin/students?status=${statusFilter}&search=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(
+        `/api/admin/students?status=${statusFilter}&search=${encodeURIComponent(searchQuery)}`
+      );
       const json = await res.json();
       if (json.success) {
         setStudents(json.students || []);
@@ -92,6 +104,21 @@ export default function AdminDashboardPage() {
     loadData();
   };
 
+  // Distinct school list
+  const uniqueSchools = useMemo(() => {
+    const set = new Set<string>();
+    students.forEach((s) => {
+      if (s.school && s.school !== "-") set.add(s.school);
+    });
+    return Array.from(set);
+  }, [students]);
+
+  // Filtered students by school
+  const displayedStudents = useMemo(() => {
+    if (schoolFilter === "ALL") return students;
+    return students.filter((s) => s.school === schoolFilter);
+  }, [students, schoolFilter]);
+
   const handleExportExcel = async () => {
     try {
       setIsExporting(true);
@@ -112,6 +139,28 @@ export default function AdminDashboardPage() {
     } finally {
       setIsExporting(false);
     }
+  };
+
+  const handleViewJson = async (sessionId: string) => {
+    try {
+      setLoadingJson(true);
+      setActiveJsonData(null);
+      setCopiedJson(false);
+      const res = await fetch(`/api/assessment/results/${sessionId}`);
+      const json = await res.json();
+      setActiveJsonData(json);
+    } catch (err) {
+      alert("Gagal memuat rincian skor JSON.");
+    } finally {
+      setLoadingJson(false);
+    }
+  };
+
+  const handleCopyJson = () => {
+    if (!activeJsonData) return;
+    navigator.clipboard.writeText(JSON.stringify(activeJsonData, null, 2));
+    setCopiedJson(true);
+    setTimeout(() => setCopiedJson(false), 2000);
   };
 
   const dimensionBreakdowns = [
@@ -258,29 +307,33 @@ export default function AdminDashboardPage() {
       {/* STUDENT MANAGEMENT & RESULTS RECAP TABLE */}
       <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
         {/* Table Controls & Filter Bar */}
-        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-black text-ggc-dark flex items-center gap-2">
               <Users className="w-5 h-5 text-ggc" />
               Rekapitulasi Partisipan Asesmen & Hasil Multi-Matriks
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Daftar seluruh siswa, status pengerjaan sesi 84 butir, dan akses cepat unduh laporan PDF resmi
+              Daftar seluruh siswa, status pengerjaan 84 butir, unduh laporan PDF resmi, dan rincian skor JSON
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Search Input */}
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama, email, sekolah..."
-                className="pl-8 pr-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-ggc w-48 sm:w-60"
-              />
-              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
-            </form>
+            {/* School Filter Dropdown */}
+            <div className="relative">
+              <select
+                value={schoolFilter}
+                onChange={(e) => setSchoolFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-gray-50 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-ggc"
+              >
+                <option value="ALL">Semua Sekolah ({uniqueSchools.length})</option>
+                {uniqueSchools.map((sch) => (
+                  <option key={sch} value={sch}>
+                    {sch}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Status Filter Tabs */}
             <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-medium">
@@ -315,6 +368,18 @@ export default function AdminDashboardPage() {
                 Berjalan
               </button>
             </div>
+
+            {/* Search Input */}
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari siswa, email..."
+                className="pl-8 pr-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-ggc w-40 sm:w-52"
+              />
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
+            </form>
           </div>
         </div>
 
@@ -325,9 +390,9 @@ export default function AdminDashboardPage() {
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-ggc" />
               <span>Memuat data siswa...</span>
             </div>
-          ) : students.length === 0 ? (
+          ) : displayedStudents.length === 0 ? (
             <div className="py-12 text-center text-xs text-gray-500">
-              Tidak ada data siswa yang cocok dengan filter.
+              Tidak ada data siswa yang cocok dengan filter atau sekolah terpilih.
             </div>
           ) : (
             <table className="w-full text-left text-xs">
@@ -338,11 +403,11 @@ export default function AdminDashboardPage() {
                   <th className="px-6 py-3.5">Status Asesmen</th>
                   <th className="px-6 py-3.5">Top Potential Signature</th>
                   <th className="px-6 py-3.5">Rekomendasi Jurusan</th>
-                  <th className="px-6 py-3.5 text-right">Aksi Laporan</th>
+                  <th className="px-6 py-3.5 text-right">Aksi Laporan & Skor</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {students.map((stu) => {
+                {displayedStudents.map((stu) => {
                   const sess = stu.session;
                   const isCompleted = sess?.status === "COMPLETED";
                   const isInProgress = sess?.status === "IN_PROGRESS";
@@ -417,7 +482,7 @@ export default function AdminDashboardPage() {
                         )}
                       </td>
 
-                      {/* Action Buttons */}
+                      {/* Action Buttons: Web Report, PDF, and Detailed JSON Scores */}
                       <td className="px-6 py-4 text-right">
                         {sess ? (
                           <div className="flex items-center justify-end gap-1.5">
@@ -426,10 +491,20 @@ export default function AdminDashboardPage() {
                               href={`/student/results/${sess.id}`}
                               target="_blank"
                               className="p-1.5 text-gray-500 hover:text-ggc hover:bg-ggc-subtle rounded-lg transition-colors"
-                              title="Buka Laporan Web"
+                              title="Buka Laporan Hasil Web"
                             >
                               <ExternalLink className="w-4 h-4" />
                             </Link>
+
+                            {/* View Detailed JSON Scores Modal */}
+                            <button
+                              onClick={() => handleViewJson(sess.id)}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors"
+                              title="Tinjau Skor Detail JSON"
+                            >
+                              <FileCode className="w-3 h-3 text-gray-600" />
+                              <span>JSON</span>
+                            </button>
 
                             {/* Download PDF Button */}
                             <a
@@ -522,6 +597,74 @@ export default function AdminDashboardPage() {
           </table>
         </div>
       </div>
+
+      {/* ================= MODAL DETAILED JSON SCORES VIEWER ================= */}
+      {(activeJsonData || loadingJson) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-ggc-gold/30 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-3">
+              <div>
+                <h3 className="text-base font-black text-ggc-dark flex items-center gap-2">
+                  <FileCode className="w-5 h-5 text-ggc" />
+                  Rincian Skor & Analitik Multi-Matriks (JSON)
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Siswa: {activeJsonData?.student?.name || "Memuat..."} • Sesi: {activeJsonData?.session?.id || "-"}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {activeJsonData && (
+                  <button
+                    onClick={handleCopyJson}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                  >
+                    {copiedJson ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Tersalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-gray-500" />
+                        <span>Salin JSON</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setActiveJsonData(null)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {loadingJson ? (
+              <div className="py-16 text-center text-xs text-gray-500">
+                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-ggc" />
+                <span>Memuat skor JSON...</span>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto bg-slate-900 text-emerald-400 p-4 rounded-2xl font-mono text-xs leading-relaxed border border-slate-800">
+                <pre>{JSON.stringify(activeJsonData, null, 2)}</pre>
+              </div>
+            )}
+
+            <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
+              <span>Endpoint: /api/assessment/results/[sessionId]</span>
+              <button
+                onClick={() => setActiveJsonData(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
