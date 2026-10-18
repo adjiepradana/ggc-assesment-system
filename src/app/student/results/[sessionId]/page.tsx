@@ -262,14 +262,23 @@ export default function StudentResultsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2">
           <Link
-            href="/student/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm"
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            title="Kembali ke Halaman Utama"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Dashboard</span>
+            <Compass className="w-3.5 h-3.5 text-ggc-gold" />
+            <span className="hidden sm:inline">Halaman Utama</span>
           </Link>
           <span className="text-xs text-gray-400">/</span>
-          <span className="text-xs font-semibold text-ggc-dark" aria-current="page">
+          <Link
+            href="/student/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Dashboard Siswa</span>
+          </Link>
+          <span className="text-xs text-gray-400">/</span>
+          <span className="text-xs font-bold text-ggc-dark" aria-current="page">
             Laporan Hasil Asesmen
           </span>
         </nav>

@@ -441,6 +441,36 @@ export default function StudentAssessmentPage() {
   return (
     <div ref={containerRef} className="space-y-6 pb-24">
       {/* ------------------------------------------------------------------ */}
+      {/* Top Navigation Breadcrumb                                          */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3.5 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            title="Kembali ke Halaman Utama"
+          >
+            <Compass className="w-3.5 h-3.5 text-ggc-gold" />
+            <span className="hidden sm:inline">Halaman Utama</span>
+          </Link>
+          <span className="text-xs text-gray-400">/</span>
+          <Link
+            href="/student/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3.5 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Dashboard Siswa</span>
+          </Link>
+          <span className="text-xs text-gray-400">/</span>
+          <span className="text-xs font-bold text-ggc-dark">Lembar Asesmen</span>
+        </div>
+
+        <span className="text-xs font-semibold text-gray-500 hidden sm:inline">
+          Instrumen 84 Butir • Zero Bias Multi-Matrix
+        </span>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
       {/* 1. STICKY TOP NAVIGATION & REAL-TIME PROGRESS BAR                  */}
       {/* ------------------------------------------------------------------ */}
       <div className="sticky top-20 z-40 bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-ggc-subtle shadow-lg transition-all">

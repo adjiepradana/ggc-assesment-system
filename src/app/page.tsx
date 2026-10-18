@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import Navbar from "@/components/Navbar";
 import BrandLogo from "@/components/BrandLogo";
 import InteractiveRadarChart, { RadarDataPoint } from "@/components/InteractiveRadarChart";
@@ -41,9 +42,14 @@ import {
   X,
   RotateCcw,
   FileQuestion,
+  LayoutDashboard,
 } from "lucide-react";
 
 export default function HomePage() {
+  const { data: session } = useSession();
+  const isStudent = session?.user?.role === "STUDENT";
+  const isAdmin = session?.user?.role === "ADMIN";
+
   // Hero interactive preview switcher: "simulation" | "try"
   const [heroTab, setHeroTab] = useState<"simulation" | "try">("simulation");
 
@@ -395,20 +401,58 @@ export default function HomePage() {
 
               {/* Primary & Secondary Action CTAs */}
               <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <Link
-                  href="/auth/register"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-lg shadow-ggc/25 hover:shadow-xl hover:shadow-ggc/30 transition-all duration-200 group text-sm sm:text-base ring-offset-2 hover:ring-2 hover:ring-ggc"
-                >
-                  <span>Mulai Asesmen Sekarang</span>
-                  <ArrowRight className="w-5 h-5 text-ggc-gold transition-transform duration-200 group-hover:translate-x-1" />
-                </Link>
-
-                <a
-                  href="#fitur"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark bg-white hover:bg-ggc-subtle/70 border border-ggc/25 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc"
-                >
-                  <span>Pelajari Fitur & Metodologi</span>
-                </a>
+                {isStudent ? (
+                  <>
+                    <Link
+                      href="/student/dashboard"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-lg shadow-ggc/25 hover:shadow-xl hover:shadow-ggc/30 transition-all duration-200 group text-sm sm:text-base ring-offset-2 hover:ring-2 hover:ring-ggc"
+                    >
+                      <LayoutDashboard className="w-5 h-5 text-ggc-gold" />
+                      <span>Buka Dashboard Siswa</span>
+                      <ArrowRight className="w-5 h-5 text-ggc-gold transition-transform duration-200 group-hover:translate-x-1" />
+                    </Link>
+                    <Link
+                      href="/student/assessment"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark bg-white hover:bg-ggc-subtle/70 border border-ggc/25 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc"
+                    >
+                      <Sparkles className="w-4 h-4 text-ggc-gold-dark" />
+                      <span>Lanjutkan Asesmen 84 Butir</span>
+                    </Link>
+                  </>
+                ) : isAdmin ? (
+                  <>
+                    <Link
+                      href="/admin/dashboard"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-lg shadow-ggc/25 hover:shadow-xl hover:shadow-ggc/30 transition-all duration-200 group text-sm sm:text-base ring-offset-2 hover:ring-2 hover:ring-ggc"
+                    >
+                      <ShieldCheck className="w-5 h-5 text-ggc-gold" />
+                      <span>Buka Portal Admin</span>
+                      <ArrowRight className="w-5 h-5 text-ggc-gold transition-transform duration-200 group-hover:translate-x-1" />
+                    </Link>
+                    <Link
+                      href="/admin/questions"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark bg-white hover:bg-ggc-subtle/70 border border-ggc/25 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc"
+                    >
+                      <span>Manajemen Bank Soal</span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/register"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-lg shadow-ggc/25 hover:shadow-xl hover:shadow-ggc/30 transition-all duration-200 group text-sm sm:text-base ring-offset-2 hover:ring-2 hover:ring-ggc"
+                    >
+                      <span>Mulai Asesmen Sekarang</span>
+                      <ArrowRight className="w-5 h-5 text-ggc-gold transition-transform duration-200 group-hover:translate-x-1" />
+                    </Link>
+                    <a
+                      href="#fitur"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark bg-white hover:bg-ggc-subtle/70 border border-ggc/25 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc"
+                    >
+                      <span>Pelajari Fitur & Metodologi</span>
+                    </a>
+                  </>
+                )}
               </div>
 
               {/* Interactive Quick Trust Highlights */}
@@ -1284,19 +1328,55 @@ export default function HomePage() {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  href="/auth/register"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white shadow-xl transition-all duration-200"
-                >
-                  <span>Mulai Asesmen Sekarang</span>
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-                <Link
-                  href="/auth/login"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-md transition-all duration-200"
-                >
-                  <span>Sudah Punya Akun? Masuk</span>
-                </Link>
+                {isStudent ? (
+                  <>
+                    <Link
+                      href="/student/dashboard"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white shadow-xl transition-all duration-200"
+                    >
+                      <span>Buka Dashboard Siswa</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
+                    <Link
+                      href="/student/assessment"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-md transition-all duration-200"
+                    >
+                      <span>Lanjutkan Asesmen 84 Butir</span>
+                    </Link>
+                  </>
+                ) : isAdmin ? (
+                  <>
+                    <Link
+                      href="/admin/dashboard"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white shadow-xl transition-all duration-200"
+                    >
+                      <span>Buka Admin Portal</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
+                    <Link
+                      href="/admin/questions"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-md transition-all duration-200"
+                    >
+                      <span>Bank Soal (84 Butir)</span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/register"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white shadow-xl transition-all duration-200"
+                    >
+                      <span>Mulai Asesmen Sekarang</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
+                    <Link
+                      href="/auth/login"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-md transition-all duration-200"
+                    >
+                      <span>Sudah Punya Akun? Masuk</span>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

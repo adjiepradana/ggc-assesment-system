@@ -239,7 +239,7 @@ export default function AdminSidebar({
           >
             <div className="flex items-center gap-2.5">
               <Compass className="w-4 h-4 text-ggc-gold" />
-              <span>Buka Beranda GGC</span>
+              <span>Kembali ke Halaman Utama</span>
             </div>
             <ExternalLink className="w-3.5 h-3.5 text-white/40" />
           </Link>

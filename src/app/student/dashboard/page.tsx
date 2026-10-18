@@ -63,7 +63,22 @@ export default async function StudentDashboardPage() {
   const progressPercent = Math.round((totalAnswers / totalQuestions) * 100);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Top Action Bar: Kembali ke Halaman Utama */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-ggc transition-colors bg-white px-4 py-2 rounded-xl border border-gray-200/90 shadow-2xs hover:shadow-xs self-start"
+        >
+          <Compass className="w-4 h-4 text-ggc-gold" />
+          <span>Kembali ke Halaman Utama</span>
+        </Link>
+
+        <span className="text-xs font-semibold text-gray-500">
+          Portal Siswa • Go Great Career Study Fit™
+        </span>
+      </div>
+
       {/* Welcome Hero Banner */}
       <div className="rounded-3xl bg-emerald-luxury p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-ggc-gold/30">
         <div className="absolute top-0 right-0 w-80 h-80 bg-ggc-gold/15 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />

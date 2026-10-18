@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Database,
   ExternalLink,
+  Compass,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -65,6 +66,13 @@ export default function AdminLayout({
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center gap-1 transition-colors"
+            title="Kembali ke Halaman Utama Publik"
+          >
+            <span>Halaman Utama</span>
+          </Link>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ggc-gold/20 text-ggc-gold border border-ggc-gold/30">
             Super Admin
           </span>
@@ -96,12 +104,10 @@ export default function AdminLayout({
             {/* Quick Live Preview link */}
             <Link
               href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-bold text-gray-600 hover:text-ggc transition-colors flex items-center gap-1 border border-gray-200 px-3 py-1.5 rounded-xl bg-gray-50/50 hover:bg-gray-100"
+              className="text-xs font-bold text-gray-700 hover:text-ggc transition-colors flex items-center gap-1.5 border border-gray-200 px-3 py-1.5 rounded-xl bg-gray-50/80 hover:bg-gray-100 shadow-2xs"
             >
-              <span>Beranda Publik</span>
-              <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+              <Compass className="w-3.5 h-3.5 text-ggc-gold" />
+              <span>Kembali ke Halaman Utama</span>
             </Link>
 
             {/* Admin Avatar */}

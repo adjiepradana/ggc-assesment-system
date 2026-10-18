@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import BrandLogo from "@/components/BrandLogo";
 import {
   Lock,
@@ -25,12 +25,26 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const { data: session, status } = useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // If already authenticated, redirect directly to appropriate dashboard
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      if (callbackUrl && callbackUrl !== "/" && !callbackUrl.includes("/auth/")) {
+        router.replace(callbackUrl);
+      } else if (session.user.role === "ADMIN") {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/student/dashboard");
+      }
+    }
+  }, [status, session, callbackUrl, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,13 +64,19 @@ function LoginForm() {
         return;
       }
 
-      // Check session to determine correct landing page if no explicit callback
-      if (callbackUrl && callbackUrl !== "/") {
+      // Fetch the updated session directly to route by role immediately
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+      const userRole = sessionData?.user?.role;
+
+      if (callbackUrl && callbackUrl !== "/" && !callbackUrl.includes("/auth/")) {
         router.push(callbackUrl);
+      } else if (userRole === "ADMIN") {
+        router.push("/admin/dashboard");
       } else {
-        router.refresh();
-        router.push("/");
+        router.push("/student/dashboard");
       }
+      router.refresh();
     } catch (err) {
       console.error("Sign-in error:", err);
       setError("Terjadi kesalahan jaringan. Silakan coba lagi.");
