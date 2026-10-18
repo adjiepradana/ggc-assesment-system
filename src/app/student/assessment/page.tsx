@@ -17,6 +17,7 @@ import {
   Send,
   Grid,
   ChevronRight,
+  ChevronDown,
   ShieldCheck,
   CheckCircle,
   RotateCcw,
@@ -218,6 +219,7 @@ export default function StudentAssessmentPage() {
   const [isKeyboardHelpOpen, setIsKeyboardHelpOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompletedSuccess, setIsCompletedSuccess] = useState(false);
+  const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
 
   // Celebrated section tracking to prevent repeat celebration popups
   const [celebratedSections, setCelebratedSections] = useState<number[]>([]);
@@ -738,35 +740,35 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Top Breadcrumb & Control Bar                                       */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+        <div className="flex items-center gap-2 text-xs">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3.5 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            className="inline-flex items-center gap-1.5 font-bold text-gray-500 hover:text-ggc transition-colors bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
             title="Kembali ke Halaman Utama"
           >
             <Compass className="w-3.5 h-3.5 text-ggc-gold" />
             <span className="hidden sm:inline">Halaman Utama</span>
           </Link>
-          <span className="text-xs text-gray-400">/</span>
+          <span className="text-gray-300">/</span>
           <Link
             href="/student/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3.5 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            className="inline-flex items-center gap-1.5 font-bold text-gray-500 hover:text-ggc transition-colors bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Dashboard Siswa</span>
           </Link>
-          <span className="text-xs text-gray-400">/</span>
-          <span className="text-xs font-bold text-ggc-dark">Lembar Asesmen</span>
+          <span className="text-gray-300">/</span>
+          <span className="font-bold text-ggc-dark">Lembar Asesmen</span>
         </div>
 
-        {/* View Mode Switcher & Sound Toggle */}
-        <div className="flex items-center gap-2 self-end sm:self-auto">
+        {/* View Mode Switcher, Audio, & Keyboard Help */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Audio Feedback Toggle */}
           <button
             type="button"
             onClick={toggleSound}
-            className={`p-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`p-1.5 px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${
               soundEnabled
                 ? "bg-white text-ggc-dark border-gray-200 hover:border-ggc-gold shadow-2xs"
                 : "bg-gray-100 text-gray-400 border-gray-200"
@@ -775,192 +777,234 @@ export default function StudentAssessmentPage() {
             aria-label="Toggle suara efek"
           >
             {soundEnabled ? (
-              <Volume2 className="w-4 h-4 text-ggc" />
+              <Volume2 className="w-3.5 h-3.5 text-ggc" />
             ) : (
-              <VolumeX className="w-4 h-4 text-gray-400" />
+              <VolumeX className="w-3.5 h-3.5 text-gray-400" />
             )}
-            <span className="hidden md:inline text-[11px]">{soundEnabled ? "Audio On" : "Mute"}</span>
+            <span className="hidden sm:inline text-[11px]">{soundEnabled ? "Audio On" : "Mute"}</span>
           </button>
 
           {/* Keyboard Shortcuts Guide Pill */}
           <button
             type="button"
             onClick={() => setIsKeyboardHelpOpen(true)}
-            className="p-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-ggc hover:border-ggc/40 transition-colors shadow-2xs text-xs font-bold flex items-center gap-1.5"
+            className="p-1.5 px-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-ggc transition-colors shadow-2xs text-xs font-bold flex items-center gap-1.5"
             title="Petunjuk Shortcut Keyboard (Tekan ?)"
           >
-            <Keyboard className="w-4 h-4 text-ggc-gold" />
-            <span className="hidden md:inline text-[11px]">Shortcut</span>
+            <Keyboard className="w-3.5 h-3.5 text-ggc-gold" />
+            <span className="hidden sm:inline text-[11px]">Shortcut</span>
           </button>
 
           {/* Mode Segmented Control */}
-          <div className="p-1 rounded-2xl bg-gray-100/90 border border-gray-200 flex items-center gap-1">
+          <div className="p-1 rounded-xl bg-gray-100/90 border border-gray-200 flex items-center gap-0.5">
             <button
               type="button"
               onClick={() => setViewMode("focus")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                 viewMode === "focus"
-                  ? "bg-white text-ggc-dark shadow-sm ring-1 ring-ggc/20"
+                  ? "bg-white text-ggc-dark shadow-2xs ring-1 ring-ggc/20"
                   : "text-gray-500 hover:text-gray-900"
               }`}
               title="Mode Fokus Soal-per-Soal (Tekan F)"
             >
-              <Maximize2 className="w-3.5 h-3.5 text-ggc" />
-              <span>Fokus (1 Soal)</span>
+              <Maximize2 className="w-3 h-3 text-ggc" />
+              <span className="text-[11px]">Fokus</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                 viewMode === "list"
-                  ? "bg-white text-ggc-dark shadow-sm ring-1 ring-ggc/20"
+                  ? "bg-white text-ggc-dark shadow-2xs ring-1 ring-ggc/20"
                   : "text-gray-500 hover:text-gray-900"
               }`}
               title="Mode Daftar 12 Soal (Tekan F)"
             >
-              <LayoutList className="w-3.5 h-3.5 text-ggc" />
-              <span>Daftar (12 Soal)</span>
+              <LayoutList className="w-3 h-3 text-ggc" />
+              <span className="text-[11px]">Daftar</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 1. STICKY TOP PROGRESS & CONTROLS BAR                              */}
+      {/* 1. ULTRA-SLIM RESPONSIVE STICKY HUD (DOES NOT BLOCK THE QUESTION)  */}
       {/* ------------------------------------------------------------------ */}
-      <div className="sticky top-20 z-40 bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-ggc-subtle shadow-lg transition-all">
-        {/* Top Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Milestone Badge & Section Title */}
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ggc-gold-dark px-3 py-0.5 rounded-full bg-ggc-gold-subtle border border-ggc-gold/30">
-                <MilestoneIcon className="w-3.5 h-3.5 text-ggc-gold-dark" />
-                {currentMilestone.dimensionBadge}
-              </span>
-              <span className="text-xs font-semibold text-gray-500">
-                ({currentMilestone.rangeText} · {currentSectionAnsweredCount}/{QUESTIONS_PER_SECTION} Terisi)
-              </span>
+      <div className="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 shadow-sm transition-all overflow-hidden">
+        {/* Main Compact Row */}
+        <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2.5">
+          {/* Left: Dimension Pill & Question Counter */}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ggc-dark px-2.5 py-1 rounded-xl bg-ggc-gold-subtle border border-ggc-gold/30 shrink-0">
+              <MilestoneIcon className="w-3.5 h-3.5 text-ggc-gold-dark" />
+              <span className="hidden sm:inline font-bold">{currentMilestone.dimensionBadge}</span>
+              <span className="sm:hidden font-bold">P{currentSectionIndex + 1}</span>
+            </span>
 
-              {/* Focus Streak Glow Pill */}
-              {streakCount >= 3 && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300 animate-streak-glow">
-                  <Flame className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-                  <span>{streakCount} Soal Beruntun!</span>
-                </span>
-              )}
-            </div>
-            <h1 className="text-lg sm:text-xl font-black text-ggc-dark mt-1 tracking-tight">
-              {currentMilestone.title}
-            </h1>
+            <span className="text-xs font-bold text-gray-700 whitespace-nowrap">
+              Soal <strong className="text-ggc">{viewMode === "focus" ? activeQuestion?.number : `${currentSectionIndex * 12 + 1}–${currentSectionIndex * 12 + 12}`}</strong>{" "}
+              <span className="text-gray-400">/ {totalQuestions}</span>
+            </span>
+
+            {streakCount >= 3 && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-300 shrink-0 animate-streak-glow">
+                <Flame className="w-3 h-3 text-amber-600 fill-amber-500" />
+                <span>{streakCount} beruntun</span>
+              </span>
+            )}
           </div>
 
-          {/* Controls: Auto-save status & Question Palette toggle */}
-          <div className="flex items-center gap-2.5">
-            {/* Auto-save status pill */}
+          {/* Center: Slim Progress Bar (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center gap-2.5 flex-1 max-w-xs mx-auto">
+            <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden border border-gray-200">
+              <div
+                className="h-full bg-gradient-to-r from-ggc via-ggc-light to-ggc-gold rounded-full transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="text-xs font-black text-ggc-gold-dark tabular-nums shrink-0">
+              {progressPercent}%
+            </span>
+          </div>
+
+          {/* Right: Controls & Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Auto-save status */}
             <div
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border bg-gray-50/80 text-gray-700"
+              className="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 px-2 py-1 rounded-lg bg-gray-50 border border-gray-200"
               aria-live="polite"
             >
               {saveStatus === "saving" && (
                 <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-ggc-gold" />
-                  <span className="text-[11px] font-medium text-gray-500">Menyimpan...</span>
+                  <RefreshCw className="w-3 h-3 animate-spin text-ggc-gold" />
+                  <span className="hidden lg:inline text-[10px]">Menyimpan</span>
                 </>
               )}
               {saveStatus === "saved" && (
                 <>
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-[11px] font-medium text-gray-600">Tersimpan Otomatis</span>
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  <span className="hidden lg:inline text-[10px]">Tersimpan</span>
                 </>
               )}
               {saveStatus === "error" && (
                 <>
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="text-[11px] font-medium text-amber-700">Tersimpan Lokal</span>
+                  <AlertCircle className="w-3 h-3 text-amber-600" />
+                  <span className="hidden lg:inline text-[10px]">Lokal</span>
                 </>
               )}
             </div>
 
-            {/* Question Palette Trigger Button */}
+            {/* 7 Dimensi Dropdown Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsDimensionsOpen((prev) => !prev)}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all ${
+                isDimensionsOpen
+                  ? "bg-ggc text-white border-ggc shadow-2xs"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-ggc-gold"
+              }`}
+              title="Buka / Tutup 7 Tahap Asesmen"
+            >
+              <Layers className="w-3.5 h-3.5 text-ggc-gold" />
+              <span className="hidden sm:inline">7 Tahap</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  isDimensionsOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {/* Palet 84 Soal Trigger */}
             <button
               type="button"
               onClick={() => setIsPaletteOpen(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 transition-colors shadow-2xs"
               title="Buka Lembar Nomor Soal (Tekan P)"
             >
-              <Grid className="w-4 h-4 text-ggc-gold-dark" />
-              <span>Palet 84 Soal</span>
+              <Grid className="w-3.5 h-3.5 text-ggc-gold-dark" />
+              <span className="hidden sm:inline">Palet</span>
+              <span className="tabular-nums font-black text-ggc">({answeredCount}/84)</span>
             </button>
           </div>
         </div>
 
-        {/* Global Progress Bar */}
-        <div className="mt-4 pt-3 border-t border-gray-100">
-          <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="text-gray-500 font-medium">
-              Kemajuan Keseluruhan: <strong className="text-ggc font-bold">{answeredCount}</strong> dari {totalQuestions} Soal
-            </span>
-            <span className="font-black text-ggc-gold-dark tabular-nums">
-              {progressPercent}%
-            </span>
-          </div>
+        {/* Ultra-slim progress bar running across bottom edge */}
+        <div className="w-full h-[2.5px] bg-gray-100 overflow-hidden">
           <div
-            className="w-full h-3 rounded-full bg-gray-100 overflow-hidden p-0.5 border border-gray-200"
-            role="progressbar"
-            aria-valuenow={progressPercent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-ggc via-ggc-light to-ggc-gold transition-all duration-300"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+            className="h-full bg-gradient-to-r from-ggc via-ggc-light to-ggc-gold transition-all duration-300"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
 
-        {/* Section 7-step Milestone Breadcrumb */}
-        <div className="mt-3.5 grid grid-cols-7 gap-1.5 sm:gap-2">
-          {SECTION_MILESTONES.map((m) => {
-            const isCurrent = m.index === currentSectionIndex;
-            const secStart = m.index * QUESTIONS_PER_SECTION;
-            const secEnd = secStart + QUESTIONS_PER_SECTION;
-            const secQuestions = questions.slice(secStart, secEnd);
-            const secAnswered = secQuestions.filter((q) => answers[q.id] !== undefined).length;
-            const isDone = secAnswered === QUESTIONS_PER_SECTION;
-
-            return (
-              <button
-                key={m.index}
-                type="button"
-                onClick={() => {
-                  setCurrentSectionIndex(m.index);
-                  if (viewMode === "focus") {
-                    setActiveQuestionIndex(m.index * QUESTIONS_PER_SECTION);
-                  }
-                }}
-                className={`p-2 rounded-xl border text-center transition-all ${
-                  isCurrent
-                    ? "bg-ggc text-white border-ggc-gold ring-2 ring-ggc-gold/40 shadow-xs"
-                    : isDone
-                    ? "bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100"
-                    : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
-                }`}
-                title={`${m.title} (${secAnswered}/12)`}
-              >
-                <div className="flex items-center justify-center gap-1 text-[11px] font-bold">
-                  <span>P{m.index + 1}</span>
-                  {isDone && (
-                    <CheckCircle className={`w-3.5 h-3.5 ${isCurrent ? "text-ggc-gold" : "text-emerald-600"}`} />
-                  )}
-                </div>
-                <span className={`text-[10px] tabular-nums ${isCurrent ? "text-ggc-subtle" : "text-gray-400"}`}>
-                  {secAnswered}/{QUESTIONS_PER_SECTION}
+        {/* Collapsible 7-Dimensi Drawer: Only appears when toggled */}
+        {isDimensionsOpen && (
+          <div className="p-3.5 sm:p-4 bg-gray-50/90 border-t border-gray-100 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ggc-gold-dark">
+                  Tahap Aktif: {currentMilestone.dimensionBadge}
                 </span>
-              </button>
-            );
-          })}
-        </div>
+                <h4 className="text-xs sm:text-sm font-black text-ggc-dark">
+                  {currentMilestone.title} ({currentMilestone.rangeText})
+                </h4>
+              </div>
+              <span className="text-[11px] font-semibold text-gray-500">
+                {currentSectionAnsweredCount} dari {QUESTIONS_PER_SECTION} Terisi di Tahap Ini
+              </span>
+            </div>
+
+            {/* Responsive 7-step buttons */}
+            <div className="grid grid-cols-7 gap-1.5 sm:gap-2 overflow-x-auto pb-1">
+              {SECTION_MILESTONES.map((m) => {
+                const isCurrent = m.index === currentSectionIndex;
+                const secStart = m.index * QUESTIONS_PER_SECTION;
+                const secEnd = secStart + QUESTIONS_PER_SECTION;
+                const secQuestions = questions.slice(secStart, secEnd);
+                const secAnswered = secQuestions.filter((q) => answers[q.id] !== undefined).length;
+                const isDone = secAnswered === QUESTIONS_PER_SECTION;
+
+                return (
+                  <button
+                    key={m.index}
+                    type="button"
+                    onClick={() => {
+                      setCurrentSectionIndex(m.index);
+                      if (viewMode === "focus") {
+                        setActiveQuestionIndex(m.index * QUESTIONS_PER_SECTION);
+                      }
+                    }}
+                    className={`p-2 rounded-xl border text-center transition-all ${
+                      isCurrent
+                        ? "bg-ggc text-white border-ggc-gold ring-2 ring-ggc-gold/40 shadow-xs"
+                        : isDone
+                        ? "bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100"
+                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
+                    }`}
+                    title={`${m.title} (${secAnswered}/12)`}
+                  >
+                    <div className="flex items-center justify-center gap-1 text-[11px] font-bold">
+                      <span>P{m.index + 1}</span>
+                      {isDone && (
+                        <CheckCircle
+                          className={`w-3.5 h-3.5 ${
+                            isCurrent ? "text-ggc-gold" : "text-emerald-600"
+                          }`}
+                        />
+                      )}
+                    </div>
+                    <span
+                      className={`text-[10px] tabular-nums block mt-0.5 ${
+                        isCurrent ? "text-ggc-subtle" : "text-gray-400"
+                      }`}
+                    >
+                      {secAnswered}/{QUESTIONS_PER_SECTION}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------------ */}
