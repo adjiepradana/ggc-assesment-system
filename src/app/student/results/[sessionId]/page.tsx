@@ -7,6 +7,7 @@ import {
   Sparkles,
   Download,
   ArrowLeft,
+  ArrowRight,
   Award,
   Layers,
   GraduationCap,
@@ -26,11 +27,21 @@ import {
   Star,
   Printer,
   FileText,
+  Share2,
+  Scale,
+  Search,
+  CheckCircle2,
+  X,
 } from "lucide-react";
-import { ScoringResult } from "@/lib/scoring";
+import { ScoringResult, DimensionScore } from "@/lib/scoring";
 import CountUp from "@/components/results/CountUp";
 import ScoreRing from "@/components/results/ScoreRing";
 import RadarChart from "@/components/results/RadarChart";
+import AudioNarrator from "@/components/results/AudioNarrator";
+import MajorCompareModal from "@/components/results/MajorCompareModal";
+import DimensionDetailModal from "@/components/results/DimensionDetailModal";
+import ActionPlanRoadmap from "@/components/results/ActionPlanRoadmap";
+import ShareCardModal from "@/components/results/ShareCardModal";
 
 /* -------------------------------------------------------------------------- */
 /* Small presentational helpers                                               */
@@ -132,6 +143,28 @@ export default function StudentResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  // Interactive Features State
+  const [selectedDimension, setSelectedDimension] = useState<DimensionScore | null>(null);
+  const [selectedMajorsForCompare, setSelectedMajorsForCompare] = useState<string[]>([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [clusterFilter, setClusterFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [activeNav, setActiveNav] = useState<string>("overview");
+
+  const handleToggleCompare = (majorId: string) => {
+    setSelectedMajorsForCompare((prev) => {
+      if (prev.includes(majorId)) {
+        return prev.filter((id) => id !== majorId);
+      }
+      if (prev.length >= 3) {
+        alert("Maksimal 3 jurusan dapat dibandingkan secara bersamaan.");
+        return prev;
+      }
+      return [...prev, majorId];
+    });
+  };
 
   useEffect(() => {
     async function loadResults() {
@@ -238,6 +271,16 @@ export default function StudentResultsPage() {
   const strongestDimension = [...results.dimensionScores].sort((a, b) => b.percentage - a.percentage)[0];
   const sortedTalents = [...results.talentSubdimensions].sort((a, b) => b.score - a.score);
 
+  const filteredRecommendations = results.studyRecommendations.filter((rec) => {
+    const matchesCluster = clusterFilter === "ALL" || rec.cluster === clusterFilter;
+    const matchesSearch =
+      searchQuery.trim() === "" ||
+      rec.majorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rec.faculty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rec.careerProspects.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCluster && matchesSearch;
+  });
+
   const quickStats = [
     {
       icon: ListChecks,
@@ -305,16 +348,27 @@ export default function StudentResultsPage() {
           </span>
         </nav>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Share Card Modal Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 shadow-2xs hover:shadow transition-all"
+            title="Bagikan Kartu Prestasi Siswa"
+          >
+            <Share2 className="w-3.5 h-3.5 text-ggc-gold-dark" />
+            <span className="hidden sm:inline">Bagikan Kartu</span>
+          </button>
+
           {/* Primary Action: Direct Print / Save as PDF of this exact page */}
           <button
             type="button"
             onClick={handlePrintPage}
-            className="group relative inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden cursor-pointer"
+            className="group relative inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden cursor-pointer"
             title="Cetak langsung halaman ini atau simpan sebagai file PDF berkualitas tinggi"
           >
             <Printer className="w-4 h-4 text-ggc-dark group-hover:scale-110 transition-transform" />
-            <span>Cetak / Simpan PDF Laporan</span>
+            <span>Cetak / Simpan PDF</span>
           </button>
 
           {/* Secondary Action: Server-generated standalone PDF */}
@@ -322,7 +376,7 @@ export default function StudentResultsPage() {
             type="button"
             onClick={handleDownloadPdf}
             disabled={isDownloadingPdf}
-            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 shadow-2xs hover:shadow transition-all disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 shadow-2xs hover:shadow transition-all disabled:opacity-60"
             title="Unduh berkas PDF terpisah yang di-generate server"
           >
             {isDownloadingPdf ? (
@@ -331,6 +385,48 @@ export default function StudentResultsPage() {
               <Download className="w-3.5 h-3.5 text-gray-600" />
             )}
             <span className="hidden sm:inline">{isDownloadingPdf ? "Memproses..." : "File .pdf"}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* STICKY IN-PAGE SUB-NAVIGATION (SMOOTH ANCHORS)                     */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="no-print sticky top-20 z-30 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 shadow-sm p-1.5 sm:p-2 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none snap-x">
+        <div className="flex items-center gap-1 shrink-0">
+          {[
+            { id: "overview", label: "Ringkasan" },
+            { id: "dimensi", label: "7 Dimensi" },
+            { id: "signatures", label: "Signature" },
+            { id: "jurusan", label: "Rekomendasi Jurusan" },
+            { id: "bakat", label: "Subdimensi Bakat" },
+            { id: "rencana-aksi", label: "Rencana Aksi" },
+            { id: "sintesis", label: "Sintesis Sukses" },
+          ].map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              onClick={() => setActiveNav(item.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
+                activeNav === item.id
+                  ? "bg-ggc text-white shadow-2xs"
+                  : "text-gray-600 hover:text-ggc hover:bg-gray-100"
+              }`}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 ml-auto pl-2 border-l border-gray-200">
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="p-1.5 sm:px-2.5 rounded-xl text-xs font-bold text-ggc hover:bg-ggc-subtle flex items-center gap-1 transition-colors"
+            title="Bagikan Kartu Prestasi"
+          >
+            <Share2 className="w-3.5 h-3.5 text-ggc-gold" />
+            <span className="hidden md:inline text-[11px]">Bagikan</span>
           </button>
         </div>
       </div>
@@ -387,6 +483,7 @@ export default function StudentResultsPage() {
       {/* HERO: Certificate-style Potential Signature                         */}
       {/* ------------------------------------------------------------------ */}
       <section
+        id="overview"
         aria-labelledby="signature-title"
         className="relative overflow-hidden rounded-[2rem] bg-emerald-luxury text-white shadow-2xl ring-1 ring-ggc-gold/40"
       >
@@ -513,6 +610,15 @@ export default function StudentResultsPage() {
         </div>
       </section>
 
+      {/* Interactive Voice Narration Player */}
+      <AudioNarrator
+        studentName={firstName}
+        signatureTitle={primarySignature?.title || ""}
+        topMajorName={topMajor?.majorName || ""}
+        fitScore={topMajor?.fitScore || 0}
+        narrativeText={results.summaryNarrative}
+      />
+
       {/* ------------------------------------------------------------------ */}
       {/* Quick Stats                                                        */}
       {/* ------------------------------------------------------------------ */}
@@ -549,7 +655,7 @@ export default function StudentResultsPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Holistic Map: Radar + 7 Dimensions                                 */}
       {/* ------------------------------------------------------------------ */}
-      <section aria-labelledby="holistic-title">
+      <section id="dimensi" aria-labelledby="holistic-title">
         <SectionHeader
           id="holistic-title"
           eyebrow="Peta Profil Holistik"
@@ -571,26 +677,45 @@ export default function StudentResultsPage() {
                   </span>
                 </div>
               )}
+              <div className="mt-3 pt-3 border-t border-gray-100 text-center">
+                <span className="text-[11px] text-gray-500 italic">
+                  💡 Klik salah satu dimensi di samping untuk membuka panduan pengembangan praktis.
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Dimension list */}
-          <div className="reveal-on-scroll rounded-3xl bg-white border border-gray-200 shadow-sm p-6 space-y-4">
+          {/* Dimension list with interactive drill-down */}
+          <div className="reveal-on-scroll rounded-3xl bg-white border border-gray-200 shadow-sm p-6 space-y-2">
             {results.dimensionScores.map((dim) => {
               const isTop = dim.category === strongestDimension?.category;
               return (
-                <div key={dim.category}>
+                <div
+                  key={dim.category}
+                  onClick={() => setSelectedDimension(dim)}
+                  className="group p-2.5 -mx-2 rounded-2xl hover:bg-ggc-subtle/50 border border-transparent hover:border-ggc/20 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-ggc/30"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedDimension(dim);
+                    }
+                  }}
+                  title="Klik untuk membuka analisis mendalam & panduan pengembangan dimensi ini"
+                >
                   <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-                    <span className="text-gray-800 flex items-center gap-1.5">
+                    <span className="text-gray-800 flex items-center gap-1.5 group-hover:text-ggc transition-colors">
                       {isTop && <Crown className="w-3.5 h-3.5 text-ggc-gold-dark" aria-label="Tertinggi" />}
                       {dim.name}
                     </span>
-                    <span className="text-ggc font-black tabular-nums">
+                    <span className="text-ggc font-black tabular-nums flex items-center gap-1">
                       {dim.score.toFixed(1)}
                       <span className="text-gray-400 font-semibold"> / 5 · {dim.percentage}%</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-ggc-gold opacity-0 group-hover:opacity-100 transition-opacity" />
                     </span>
                   </div>
-                  <div className="w-full h-2.5 rounded-full bg-ggc-subtle overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-ggc-subtle overflow-hidden">
                     <div
                       className={`bar-grow h-full rounded-full ${
                         isTop
@@ -600,7 +725,12 @@ export default function StudentResultsPage() {
                       style={{ width: `${dim.percentage}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-gray-500 mt-1 line-clamp-1">{dim.description}</p>
+                  <div className="flex items-center justify-between mt-1 text-[11px] text-gray-500">
+                    <p className="line-clamp-1">{dim.description}</p>
+                    <span className="hidden sm:inline text-ggc font-bold text-[10px] shrink-0 ml-2 group-hover:underline">
+                      Detail Tips →
+                    </span>
+                  </div>
                 </div>
               );
             })}
@@ -611,7 +741,7 @@ export default function StudentResultsPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Top 3 Signatures: Podium                                           */}
       {/* ------------------------------------------------------------------ */}
-      <section aria-labelledby="signatures-title">
+      <section id="signatures" aria-labelledby="signatures-title">
         <SectionHeader
           id="signatures-title"
           eyebrow="Matrix 1 · Person Profile"
@@ -693,7 +823,7 @@ export default function StudentResultsPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Matrix 2: Study Recommendations                                    */}
       {/* ------------------------------------------------------------------ */}
-      <section aria-labelledby="majors-title">
+      <section id="jurusan" aria-labelledby="majors-title">
         <SectionHeader
           id="majors-title"
           eyebrow="Matrix 2 · Study Profile Matching"
@@ -701,145 +831,272 @@ export default function StudentResultsPage() {
           description="Komparasi profil bakat, minat, dan kesiapan akademik Anda terhadap benchmark jurusan perguruan tinggi."
           icon={Compass}
           aside={
-            <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-              <Target className="w-3.5 h-3.5" />
-              Top Match: {topMajor?.majorName} ({topMajor?.fitScore}%)
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                <Target className="w-3.5 h-3.5" />
+                Top Match: {topMajor?.majorName} ({topMajor?.fitScore}%)
+              </span>
+              {selectedMajorsForCompare.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setIsCompareModalOpen(true)}
+                  className="no-print inline-flex items-center gap-1.5 text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark px-3 py-1.5 rounded-xl shadow-xs hover:shadow"
+                >
+                  <Scale className="w-3.5 h-3.5" />
+                  <span>Bandingkan ({selectedMajorsForCompare.length})</span>
+                </button>
+              )}
+            </div>
           }
         />
 
-        <div className="space-y-5">
-          {results.studyRecommendations.map((rec, idx) => {
-            const isFirst = idx === 0;
-            return (
-              <article
-                key={rec.id}
-                className={`reveal-on-scroll relative overflow-hidden rounded-3xl bg-white border shadow-sm transition-all duration-300 hover:shadow-xl ${
-                  isFirst ? "border-ggc-gold/70 ring-2 ring-ggc-gold/25" : "border-gray-200 hover:border-ggc/30"
+        {/* Interactive Search & Cluster Filter Toolbar */}
+        <div className="no-print my-4 p-3 sm:p-4 rounded-2xl bg-white border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Cluster filter pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+            {[
+              { id: "ALL", label: "Semua Klaster" },
+              { id: "Saintek", label: "Sains & Teknologi" },
+              { id: "Soshum", label: "Sosial Humaniora" },
+              { id: "Seni & Industri Kreatif", label: "Seni & Kreatif" },
+            ].map((cl) => (
+              <button
+                key={cl.id}
+                type="button"
+                onClick={() => setClusterFilter(cl.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  clusterFilter === cl.id
+                    ? "bg-ggc text-white shadow-2xs"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
-                {isFirst && (
-                  <div className="absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl bg-gradient-to-r from-ggc-gold to-ggc-gold-dark text-ggc-dark text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Best Match
-                  </div>
-                )}
-                <div
-                  className={`absolute left-0 inset-y-0 w-1.5 ${
-                    isFirst ? "bg-gradient-to-b from-ggc-gold to-ggc" : "bg-ggc-subtle"
+                {cl.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search bar */}
+          <div className="relative w-full md:w-72 shrink-0">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari jurusan atau profesi..."
+              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ggc/30 focus:border-ggc"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          {filteredRecommendations.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-3xl border border-gray-200">
+              <Search className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-xs text-gray-600 font-semibold">
+                Tidak ada program studi yang cocok dengan kata kunci & filter Anda.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setClusterFilter("ALL");
+                  setSearchQuery("");
+                }}
+                className="mt-3 px-4 py-2 rounded-xl text-xs font-bold text-ggc bg-ggc-subtle hover:bg-ggc/15 transition-colors"
+              >
+                Reset Filter & Pencarian
+              </button>
+            </div>
+          ) : (
+            filteredRecommendations.map((rec, idx) => {
+              const isFirst = idx === 0 && clusterFilter === "ALL" && searchQuery === "";
+              const isSelectedForCompare = selectedMajorsForCompare.includes(rec.id);
+
+              return (
+                <article
+                  key={rec.id}
+                  className={`reveal-on-scroll relative overflow-hidden rounded-3xl bg-white border shadow-sm transition-all duration-300 hover:shadow-xl ${
+                    isFirst ? "border-ggc-gold/70 ring-2 ring-ggc-gold/25" : "border-gray-200 hover:border-ggc/30"
                   }`}
-                  aria-hidden="true"
-                />
-
-                <div className="p-6 sm:p-7 pl-7 sm:pl-9">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-5 border-b border-gray-100">
-                    <ScoreRing value={rec.fitScore} size={84} stroke={8} label="Fit" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[11px] font-black text-gray-400">#{idx + 1}</span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${rec.badgeColor}`}>
-                          {rec.fitLevel}
-                        </span>
-                        <span className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2 py-0.5 rounded-full">
-                          {rec.cluster}
-                        </span>
-                      </div>
-                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark mt-1.5">{rec.majorName}</h3>
-                      <p className="text-xs text-gray-500">{rec.faculty}</p>
-                    </div>
-                  </div>
-
-                  {/* Key attributes vs benchmark */}
-                  {rec.keyAttributes?.length > 0 && (
-                    <div className="mt-5">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
-                        Atribut Kunci vs Benchmark Jurusan
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                        {rec.keyAttributes.map((attr) => {
-                          const pct = (attr.score / 5) * 100;
-                          const benchPct = (attr.benchmark / 5) * 100;
-                          const meets = attr.score >= attr.benchmark;
-                          return (
-                            <div key={attr.name}>
-                              <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
-                                <span className="text-gray-700 truncate pr-2">{attr.name}</span>
-                                <span className={`tabular-nums ${meets ? "text-emerald-700" : "text-amber-700"}`}>
-                                  {attr.score.toFixed(1)}
-                                  <span className="text-gray-400"> / {attr.benchmark.toFixed(1)}</span>
-                                </span>
-                              </div>
-                              <div className="relative h-2 rounded-full bg-gray-100">
-                                <div className="absolute inset-0 overflow-hidden rounded-full">
-                                  <div
-                                    className={`bar-grow h-full rounded-full ${
-                                      meets ? "bg-gradient-to-r from-ggc to-emerald-500" : "bg-gradient-to-r from-amber-400 to-ggc-gold"
-                                    }`}
-                                    style={{ width: `${pct}%` }}
-                                  />
-                                </div>
-                                <div
-                                  className="absolute -top-1 -bottom-1 w-0.5 bg-ggc-dark rounded"
-                                  style={{ left: `${benchPct}%` }}
-                                  title={`Benchmark ${attr.benchmark.toFixed(1)}`}
-                                  aria-hidden="true"
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                >
+                  {isFirst && (
+                    <div className="absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl bg-gradient-to-r from-ggc-gold to-ggc-gold-dark text-ggc-dark text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> Best Match
                     </div>
                   )}
+                  <div
+                    className={`absolute left-0 inset-y-0 w-1.5 ${
+                      isFirst ? "bg-gradient-to-b from-ggc-gold to-ggc" : "bg-ggc-subtle"
+                    }`}
+                    aria-hidden="true"
+                  />
 
-                  {/* Insights */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-200/80 flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                        <Lightbulb className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold text-emerald-900 mb-1">Mengapa Jurusan Ini Cocok?</h5>
-                        <p className="text-xs text-emerald-950/80 leading-relaxed">{rec.whyThisFit}</p>
+                  <div className="p-6 sm:p-7 pl-7 sm:pl-9">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-5 border-b border-gray-100">
+                      <ScoreRing value={rec.fitScore} size={84} stroke={8} label="Fit" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[11px] font-black text-gray-400">#{idx + 1}</span>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${rec.badgeColor}`}>
+                              {rec.fitLevel}
+                            </span>
+                            <span className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2 py-0.5 rounded-full">
+                              {rec.cluster}
+                            </span>
+                          </div>
+
+                          {/* Compare Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCompare(rec.id)}
+                            className={`no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                              isSelectedForCompare
+                                ? "bg-ggc text-white border-ggc shadow-2xs"
+                                : "bg-gray-50 text-gray-700 border-gray-200 hover:border-ggc hover:text-ggc"
+                            }`}
+                            title="Pilih jurusan ini untuk komparasi multi-matriks"
+                          >
+                            <Scale className="w-3.5 h-3.5 text-ggc-gold" />
+                            <span>{isSelectedForCompare ? "✓ Terpilih" : "+ Bandingkan"}</span>
+                          </button>
+                        </div>
+                        <h3 className="text-lg sm:text-xl font-black text-ggc-dark mt-1.5">{rec.majorName}</h3>
+                        <p className="text-xs text-gray-500">{rec.faculty}</p>
                       </div>
                     </div>
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-white border border-amber-200/80 flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-                        <AlertTriangle className="w-4 h-4" />
+
+                    {/* Key attributes vs benchmark */}
+                    {rec.keyAttributes?.length > 0 && (
+                      <div className="mt-5">
+                        <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
+                          Atribut Kunci vs Benchmark Jurusan
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                          {rec.keyAttributes.map((attr) => {
+                            const pct = (attr.score / 5) * 100;
+                            const benchPct = (attr.benchmark / 5) * 100;
+                            const meets = attr.score >= attr.benchmark;
+                            return (
+                              <div key={attr.name}>
+                                <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
+                                  <span className="text-gray-700 truncate pr-2">{attr.name}</span>
+                                  <span className={`tabular-nums ${meets ? "text-emerald-700" : "text-amber-700"}`}>
+                                    {attr.score.toFixed(1)}
+                                    <span className="text-gray-400"> / {attr.benchmark.toFixed(1)}</span>
+                                  </span>
+                                </div>
+                                <div className="relative h-2 rounded-full bg-gray-100">
+                                  <div className="absolute inset-0 overflow-hidden rounded-full">
+                                    <div
+                                      className={`bar-grow h-full rounded-full ${
+                                        meets ? "bg-gradient-to-r from-ggc to-emerald-500" : "bg-gradient-to-r from-amber-400 to-ggc-gold"
+                                      }`}
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                  <div
+                                    className="absolute -top-1 -bottom-1 w-0.5 bg-ggc-dark rounded"
+                                    style={{ left: `${benchPct}%` }}
+                                    title={`Benchmark ${attr.benchmark.toFixed(1)}`}
+                                    aria-hidden="true"
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <div>
-                        <h5 className="text-xs font-bold text-amber-900 mb-1">Hal yang Perlu Diantisipasi</h5>
-                        <p className="text-xs text-amber-950/80 leading-relaxed">{rec.whatToWatchOutFor}</p>
+                    )}
+
+                    {/* Insights */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-200/80 flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                          <Lightbulb className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-emerald-900 mb-1">Mengapa Jurusan Ini Cocok?</h5>
+                          <p className="text-xs text-emerald-950/80 leading-relaxed">{rec.whyThisFit}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-white border border-amber-200/80 flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                          <AlertTriangle className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-amber-900 mb-1">Hal yang Perlu Diantisipasi</h5>
+                          <p className="text-xs text-amber-950/80 leading-relaxed">{rec.whatToWatchOutFor}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Career prospects */}
-                  <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-bold text-gray-500 flex items-center gap-1 mr-1">
-                      <Briefcase className="w-3.5 h-3.5 text-ggc" />
-                      Prospek Profesi:
-                    </span>
-                    {rec.careerProspects.map((career) => (
-                      <span
-                        key={career}
-                        className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-1 rounded-lg border border-ggc/15 hover:bg-ggc hover:text-white transition-colors"
-                      >
-                        {career}
+                    {/* Career prospects */}
+                    <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-bold text-gray-500 flex items-center gap-1 mr-1">
+                        <Briefcase className="w-3.5 h-3.5 text-ggc" />
+                        Prospek Profesi:
                       </span>
-                    ))}
+                      {rec.careerProspects.map((career) => (
+                        <span
+                          key={career}
+                          className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-1 rounded-lg border border-ggc/15 hover:bg-ggc hover:text-white transition-colors"
+                        >
+                          {career}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })
+          )}
         </div>
+
+        {/* Floating Compare Dock Bar when >= 1 major is selected */}
+        {selectedMajorsForCompare.length > 0 && (
+          <div className="no-print fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-ggc-dark/95 backdrop-blur-md text-white px-4 sm:px-6 py-3 rounded-2xl shadow-2xl border border-ggc-gold/40 flex items-center gap-3 sm:gap-4 animate-slide-up max-w-lg w-[92%] sm:w-auto justify-between">
+            <div className="flex items-center gap-2">
+              <Scale className="w-4 h-4 text-ggc-gold shrink-0" />
+              <span className="text-xs font-bold truncate">
+                {selectedMajorsForCompare.length} Jurusan Siap Dibandingkan
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsCompareModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-md transition-all flex items-center gap-1"
+              >
+                <span>Buka Komparasi</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedMajorsForCompare([])}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white transition-colors"
+                title="Batal pilih"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ------------------------------------------------------------------ */}
       {/* Talent Subdimensions                                               */}
       {/* ------------------------------------------------------------------ */}
-      <section aria-labelledby="talent-title">
+      <section id="bakat" aria-labelledby="talent-title">
         <SectionHeader
           id="talent-title"
           eyebrow="Talent Matrix"
@@ -889,9 +1146,28 @@ export default function StudentResultsPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
+      {/* Interactive 100-Day Action Plan Roadmap                            */}
+      {/* ------------------------------------------------------------------ */}
+      <section id="rencana-aksi" aria-labelledby="action-plan-title">
+        <SectionHeader
+          id="action-plan-title"
+          eyebrow="Interactive Roadmap"
+          title="Rencana Aksi 100 Hari Menuju Kampus Impian"
+          description="Checklist persiapan bertahap menuju universitas target. Centang langkah yang telah Anda selesaikan untuk memantau kemajuan Anda."
+          icon={Target}
+        />
+        <ActionPlanRoadmap
+          sessionId={results.sessionId}
+          topMajorName={topMajor?.majorName || "Jurusan Impian"}
+          signatureTitle={primarySignature?.title || "Potential Signature"}
+        />
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
       {/* Narrative Synthesis & CTA                                          */}
       {/* ------------------------------------------------------------------ */}
       <section
+        id="sintesis"
         aria-labelledby="synthesis-title"
         className="reveal-on-scroll relative overflow-hidden rounded-[2rem] bg-ggc-dark text-white p-8 sm:p-10 shadow-2xl ring-1 ring-ggc-gold/30"
       >
@@ -953,6 +1229,33 @@ export default function StudentResultsPage() {
           </div>
         </div>
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* INTERACTIVE MODALS                                                 */}
+      {/* ------------------------------------------------------------------ */}
+      <DimensionDetailModal
+        dimension={selectedDimension}
+        onClose={() => setSelectedDimension(null)}
+      />
+
+      <MajorCompareModal
+        isOpen={isCompareModalOpen}
+        onClose={() => setIsCompareModalOpen(false)}
+        majors={results.studyRecommendations.filter((m) => selectedMajorsForCompare.includes(m.id))}
+        onRemoveMajor={(id) => setSelectedMajorsForCompare((prev) => prev.filter((mId) => mId !== id))}
+      />
+
+      <ShareCardModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        studentName={student.name}
+        schoolName={student.school}
+        signatureTitle={primarySignature?.title || ""}
+        signatureArchetype={primarySignature?.archetype || ""}
+        topMajorName={topMajor?.majorName || ""}
+        fitScore={topMajor?.fitScore || 0}
+        sessionId={results.sessionId}
+      />
     </div>
   );
 }
