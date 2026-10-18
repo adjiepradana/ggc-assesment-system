@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -29,6 +29,13 @@ import {
   Coffee,
   X,
   Layers,
+  Volume2,
+  VolumeX,
+  Keyboard,
+  Flame,
+  LayoutList,
+  Maximize2,
+  Trophy,
 } from "lucide-react";
 
 interface QuestionItem {
@@ -135,6 +142,50 @@ const SECTION_MILESTONES: SectionMilestone[] = [
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/* Web Audio API Synthesizer (Zero External Audio Assets)                     */
+/* -------------------------------------------------------------------------- */
+function playAudioFeedback(type: "select" | "milestone" = "select", enabled: boolean = true) {
+  if (!enabled || typeof window === "undefined") return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    if (type === "select") {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(480, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(620, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.07, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } else if (type === "milestone") {
+      // Harmonic arpeggio (C5 - E5 - G5 - C6)
+      const chord = [523.25, 659.25, 783.99, 1046.5];
+      chord.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        const startTime = ctx.currentTime + i * 0.08;
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.08, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.24);
+      });
+    }
+  } catch {
+    // Autoplay or audio context permission error handled silently
+  }
+}
+
 export default function StudentAssessmentPage() {
   const router = useRouter();
 
@@ -145,8 +196,18 @@ export default function StudentAssessmentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // View Mode: "focus" (One question at a time) vs "list" (12 questions stacked)
+  const [viewMode, setViewMode] = useState<"focus" | "list">("focus");
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+
   // Pagination / Section state (0-indexed: 0 to 6)
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+
+  // Focus Rhythm Streak Counter
+  const [streakCount, setStreakCount] = useState(0);
+
+  // Sound Feedback Toggle
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Auto-save feedback state: "saved" | "saving" | "error"
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
@@ -154,10 +215,33 @@ export default function StudentAssessmentPage() {
   // Modals & Drawers
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isKeyboardHelpOpen, setIsKeyboardHelpOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompletedSuccess, setIsCompletedSuccess] = useState(false);
 
+  // Celebrated section tracking to prevent repeat celebration popups
+  const [celebratedSections, setCelebratedSections] = useState<number[]>([]);
+  const [celebratingMilestone, setCelebratingMilestone] = useState<{
+    sectionIndex: number;
+    title: string;
+    dimensionBadge: string;
+    quote: string;
+    icon: React.ElementType;
+    completedCount: number;
+  } | null>(null);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const advanceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load sound setting from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSound = localStorage.getItem("ggc_assessment_sound");
+      if (storedSound !== null) {
+        setSoundEnabled(storedSound === "true");
+      }
+    }
+  }, []);
 
   // 1. Fetch initial questions and session
   useEffect(() => {
@@ -172,9 +256,21 @@ export default function StudentAssessmentPage() {
           throw new Error(data.error || "Gagal memuat instrumen asesmen.");
         }
 
-        setQuestions(data.questions || []);
-        setAnswers(data.answers || {});
+        const qList: QuestionItem[] = data.questions || [];
+        const ansMap: Record<string, number> = data.answers || {};
+
+        setQuestions(qList);
+        setAnswers(ansMap);
         setSessionData(data.session || null);
+
+        // Find first unanswered question to jump to
+        if (qList.length > 0) {
+          const firstUnanswered = qList.findIndex((q) => ansMap[q.id] === undefined);
+          if (firstUnanswered !== -1) {
+            setActiveQuestionIndex(firstUnanswered);
+            setCurrentSectionIndex(Math.floor(firstUnanswered / QUESTIONS_PER_SECTION));
+          }
+        }
 
         // If already completed, redirect or show message
         if (data.session?.status === "COMPLETED") {
@@ -191,6 +287,14 @@ export default function StudentAssessmentPage() {
     loadAssessment();
   }, []);
 
+  // Sync currentSectionIndex with activeQuestionIndex when in Focus Mode
+  useEffect(() => {
+    const targetSection = Math.floor(activeQuestionIndex / QUESTIONS_PER_SECTION);
+    if (targetSection !== currentSectionIndex) {
+      setCurrentSectionIndex(targetSection);
+    }
+  }, [activeQuestionIndex, currentSectionIndex]);
+
   // 2. Calculated metrics
   const totalQuestions = questions.length || 84;
   const answeredCount = useMemo(() => {
@@ -206,7 +310,6 @@ export default function StudentAssessmentPage() {
     return questions.slice(startIdx, endIdx);
   }, [questions, currentSectionIndex]);
 
-  // Section answered count for current step
   const currentSectionAnsweredCount = useMemo(() => {
     return currentSectionQuestions.filter((q) => answers[q.id] !== undefined).length;
   }, [currentSectionQuestions, answers]);
@@ -224,50 +327,126 @@ export default function StudentAssessmentPage() {
       .map((q) => q.number);
   }, [questions, answers]);
 
-  // 4. Handle selecting an answer (Auto-save)
-  const handleSelectAnswer = async (questionId: string, value: number) => {
-    if (!sessionData?.id) return;
+  // Active question in Focus Mode
+  const activeQuestion = questions[activeQuestionIndex] || questions[0];
 
-    // Optimistic UI update
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: value,
-    }));
-    setSaveStatus("saving");
+  // 4. Handle selecting an answer (Optimistic UI + Auto-Save + Audio)
+  const handleSelectAnswer = useCallback(
+    async (questionId: string, value: number, autoAdvance = false) => {
+      if (!sessionData?.id) return;
 
-    try {
-      const res = await fetch("/api/assessment/answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionData.id,
-          question_id: questionId,
-          selected_value: value,
-        }),
+      // Play pleasant audio chime
+      playAudioFeedback("select", soundEnabled);
+
+      // Increment streak
+      setStreakCount((prev) => prev + 1);
+
+      // Optimistic UI update
+      setAnswers((prev) => {
+        const next = { ...prev, [questionId]: value };
+
+        // Check if this answer completes the section
+        const secStart = currentSectionIndex * QUESTIONS_PER_SECTION;
+        const secEnd = secStart + QUESTIONS_PER_SECTION;
+        const secQuestions = questions.slice(secStart, secEnd);
+        const willCompleteSection = secQuestions.every((q) => (q.id === questionId ? true : next[q.id] !== undefined));
+
+        if (willCompleteSection && !celebratedSections.includes(currentSectionIndex)) {
+          // Trigger milestone celebration popup
+          setCelebratedSections((c) => [...c, currentSectionIndex]);
+          setTimeout(() => {
+            playAudioFeedback("milestone", soundEnabled);
+            setCelebratingMilestone({
+              sectionIndex: currentSectionIndex,
+              title: currentMilestone.title,
+              dimensionBadge: currentMilestone.dimensionBadge,
+              quote: currentMilestone.quote,
+              icon: currentMilestone.icon,
+              completedCount: Object.keys(next).length,
+            });
+          }, 320);
+        }
+
+        return next;
       });
 
-      if (!res.ok) {
-        throw new Error("Gagal menyimpan jawaban.");
+      setSaveStatus("saving");
+
+      // Auto-advance in Focus Mode after a short 260ms delay
+      if (autoAdvance && viewMode === "focus") {
+        if (advanceTimerRef.current) {
+          clearTimeout(advanceTimerRef.current);
+        }
+        advanceTimerRef.current = setTimeout(() => {
+          if (activeQuestionIndex < totalQuestions - 1) {
+            setActiveQuestionIndex((prev) => prev + 1);
+          } else {
+            // Reached final question
+            setIsSubmitModalOpen(true);
+          }
+        }, 260);
       }
 
-      setSaveStatus("saved");
-    } catch (err) {
-      console.error("Auto-save error:", err);
-      setSaveStatus("error");
-      // Keep optimistic answer locally so student isn't disrupted
+      try {
+        const res = await fetch("/api/assessment/answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: sessionData.id,
+            question_id: questionId,
+            selected_value: value,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Gagal menyimpan jawaban.");
+        }
+
+        setSaveStatus("saved");
+      } catch (err) {
+        console.error("Auto-save error:", err);
+        setSaveStatus("error");
+      }
+    },
+    [
+      sessionData,
+      soundEnabled,
+      currentSectionIndex,
+      questions,
+      celebratedSections,
+      currentMilestone,
+      viewMode,
+      activeQuestionIndex,
+      totalQuestions,
+    ]
+  );
+
+  // 5. Navigation Handlers
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 120, behavior: "smooth" });
     }
   };
 
-  // 5. Scroll to top of question list when switching section
-  const scrollToTop = () => {
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 140, behavior: "smooth" });
+  const handleFocusPrev = () => {
+    if (activeQuestionIndex > 0) {
+      setActiveQuestionIndex((prev) => prev - 1);
+    }
+  };
+
+  const handleFocusNext = () => {
+    if (activeQuestionIndex < totalQuestions - 1) {
+      setActiveQuestionIndex((prev) => prev + 1);
+    } else {
+      setIsSubmitModalOpen(true);
     }
   };
 
   const handleNextSection = () => {
     if (currentSectionIndex < TOTAL_SECTIONS - 1) {
-      setCurrentSectionIndex((prev) => prev + 1);
+      const nextSec = currentSectionIndex + 1;
+      setCurrentSectionIndex(nextSec);
+      setActiveQuestionIndex(nextSec * QUESTIONS_PER_SECTION);
       scrollToTop();
     } else {
       setIsSubmitModalOpen(true);
@@ -276,26 +455,29 @@ export default function StudentAssessmentPage() {
 
   const handlePrevSection = () => {
     if (currentSectionIndex > 0) {
-      setCurrentSectionIndex((prev) => prev - 1);
+      const prevSec = currentSectionIndex - 1;
+      setCurrentSectionIndex(prevSec);
+      setActiveQuestionIndex(prevSec * QUESTIONS_PER_SECTION);
       scrollToTop();
     }
   };
 
   const handleJumpToQuestion = (questionNumber: number) => {
-    // 1-based question number: determine section (0 to 6)
-    const targetSection = Math.floor((questionNumber - 1) / QUESTIONS_PER_SECTION);
-    setCurrentSectionIndex(targetSection);
+    const targetIdx = questionNumber - 1;
+    setActiveQuestionIndex(targetIdx);
+    setCurrentSectionIndex(Math.floor(targetIdx / QUESTIONS_PER_SECTION));
     setIsPaletteOpen(false);
 
-    // Scroll to specific question after render
-    setTimeout(() => {
-      const el = document.getElementById(`question-card-${questionNumber}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      } else {
-        scrollToTop();
-      }
-    }, 150);
+    if (viewMode === "list") {
+      setTimeout(() => {
+        const el = document.getElementById(`question-card-${questionNumber}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else {
+          scrollToTop();
+        }
+      }, 150);
+    }
   };
 
   const handleJumpToFirstUnanswered = () => {
@@ -304,7 +486,120 @@ export default function StudentAssessmentPage() {
     }
   };
 
-  // 6. Handle Final Completion
+  const handleDismissMilestone = () => {
+    setCelebratingMilestone(null);
+    if (currentSectionIndex < TOTAL_SECTIONS - 1) {
+      const nextSec = currentSectionIndex + 1;
+      setCurrentSectionIndex(nextSec);
+      setActiveQuestionIndex(nextSec * QUESTIONS_PER_SECTION);
+    } else {
+      setIsSubmitModalOpen(true);
+    }
+  };
+
+  const toggleSound = () => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("ggc_assessment_sound", String(next));
+      }
+      return next;
+    });
+  };
+
+  // 6. Global Keyboard Shortcut Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Do not intercept if user is typing in form controls
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+
+      // Ignore modifier keys
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
+
+      // 1. Milestone Modal Active: Enter or Space or Esc advances
+      if (celebratingMilestone) {
+        if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
+          e.preventDefault();
+          handleDismissMilestone();
+        }
+        return;
+      }
+
+      // 2. Modals Active: Esc closes them
+      if (isSubmitModalOpen || isPaletteOpen || isKeyboardHelpOpen) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setIsSubmitModalOpen(false);
+          setIsPaletteOpen(false);
+          setIsKeyboardHelpOpen(false);
+        }
+        return;
+      }
+
+      // 3. Number Keys [1, 2, 3, 4, 5] -> Select Likert answer in Focus Mode
+      if (["1", "2", "3", "4", "5"].includes(e.key)) {
+        if (viewMode === "focus" && activeQuestion) {
+          e.preventDefault();
+          handleSelectAnswer(activeQuestion.id, parseInt(e.key, 10), true);
+        }
+      }
+
+      // 4. Navigation Keys: ArrowLeft / ArrowRight / A / D
+      else if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+        if (viewMode === "focus") {
+          e.preventDefault();
+          handleFocusPrev();
+        }
+      } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+        if (viewMode === "focus") {
+          e.preventDefault();
+          handleFocusNext();
+        }
+      }
+
+      // 5. Toggle View Mode: [F]
+      else if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        setViewMode((prev) => (prev === "focus" ? "list" : "focus"));
+      }
+
+      // 6. Open Palette: [P] or [M]
+      else if (e.key === "p" || e.key === "P" || e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        setIsPaletteOpen((prev) => !prev);
+      }
+
+      // 7. Toggle Sound: [S]
+      else if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        toggleSound();
+      }
+
+      // 8. Help Shortcuts: [?]
+      else if (e.key === "?") {
+        e.preventDefault();
+        setIsKeyboardHelpOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    celebratingMilestone,
+    isSubmitModalOpen,
+    isPaletteOpen,
+    isKeyboardHelpOpen,
+    viewMode,
+    activeQuestion,
+    handleSelectAnswer,
+  ]);
+
+  // 7. Handle Final Completion
   const handleFinalSubmit = async () => {
     if (!sessionData?.id) return;
     setIsSubmitting(true);
@@ -439,9 +734,9 @@ export default function StudentAssessmentPage() {
   // ================= MAIN ASSESSMENT UI =================
 
   return (
-    <div ref={containerRef} className="space-y-6 pb-24">
+    <div ref={containerRef} className="space-y-6 pb-28">
       {/* ------------------------------------------------------------------ */}
-      {/* Top Navigation Breadcrumb                                          */}
+      {/* Top Breadcrumb & Control Bar                                       */}
       {/* ------------------------------------------------------------------ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -465,13 +760,73 @@ export default function StudentAssessmentPage() {
           <span className="text-xs font-bold text-ggc-dark">Lembar Asesmen</span>
         </div>
 
-        <span className="text-xs font-semibold text-gray-500 hidden sm:inline">
-          Instrumen 84 Butir • Zero Bias Multi-Matrix
-        </span>
+        {/* View Mode Switcher & Sound Toggle */}
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          {/* Audio Feedback Toggle */}
+          <button
+            type="button"
+            onClick={toggleSound}
+            className={`p-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${
+              soundEnabled
+                ? "bg-white text-ggc-dark border-gray-200 hover:border-ggc-gold shadow-2xs"
+                : "bg-gray-100 text-gray-400 border-gray-200"
+            }`}
+            title={`Suara Efek Audio: ${soundEnabled ? "Aktif" : "Mati"} (Tekan S)`}
+            aria-label="Toggle suara efek"
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-4 h-4 text-ggc" />
+            ) : (
+              <VolumeX className="w-4 h-4 text-gray-400" />
+            )}
+            <span className="hidden md:inline text-[11px]">{soundEnabled ? "Audio On" : "Mute"}</span>
+          </button>
+
+          {/* Keyboard Shortcuts Guide Pill */}
+          <button
+            type="button"
+            onClick={() => setIsKeyboardHelpOpen(true)}
+            className="p-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-ggc hover:border-ggc/40 transition-colors shadow-2xs text-xs font-bold flex items-center gap-1.5"
+            title="Petunjuk Shortcut Keyboard (Tekan ?)"
+          >
+            <Keyboard className="w-4 h-4 text-ggc-gold" />
+            <span className="hidden md:inline text-[11px]">Shortcut</span>
+          </button>
+
+          {/* Mode Segmented Control */}
+          <div className="p-1 rounded-2xl bg-gray-100/90 border border-gray-200 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("focus")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                viewMode === "focus"
+                  ? "bg-white text-ggc-dark shadow-sm ring-1 ring-ggc/20"
+                  : "text-gray-500 hover:text-gray-900"
+              }`}
+              title="Mode Fokus Soal-per-Soal (Tekan F)"
+            >
+              <Maximize2 className="w-3.5 h-3.5 text-ggc" />
+              <span>Fokus (1 Soal)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                viewMode === "list"
+                  ? "bg-white text-ggc-dark shadow-sm ring-1 ring-ggc/20"
+                  : "text-gray-500 hover:text-gray-900"
+              }`}
+              title="Mode Daftar 12 Soal (Tekan F)"
+            >
+              <LayoutList className="w-3.5 h-3.5 text-ggc" />
+              <span>Daftar (12 Soal)</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 1. STICKY TOP NAVIGATION & REAL-TIME PROGRESS BAR                  */}
+      {/* 1. STICKY TOP PROGRESS & CONTROLS BAR                              */}
       {/* ------------------------------------------------------------------ */}
       <div className="sticky top-20 z-40 bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-ggc-subtle shadow-lg transition-all">
         {/* Top Header Row */}
@@ -486,6 +841,14 @@ export default function StudentAssessmentPage() {
               <span className="text-xs font-semibold text-gray-500">
                 ({currentMilestone.rangeText} · {currentSectionAnsweredCount}/{QUESTIONS_PER_SECTION} Terisi)
               </span>
+
+              {/* Focus Streak Glow Pill */}
+              {streakCount >= 3 && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300 animate-streak-glow">
+                  <Flame className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                  <span>{streakCount} Soal Beruntun!</span>
+                </span>
+              )}
             </div>
             <h1 className="text-lg sm:text-xl font-black text-ggc-dark mt-1 tracking-tight">
               {currentMilestone.title}
@@ -499,84 +862,95 @@ export default function StudentAssessmentPage() {
               className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border bg-gray-50/80 text-gray-700"
               aria-live="polite"
             >
-              {saveStatus === "saving" ? (
+              {saveStatus === "saving" && (
                 <>
-                  <RefreshCw className="w-3.5 h-3.5 text-amber-500 animate-spin" />
-                  <span className="text-[11px] font-semibold text-amber-700">Menyimpan...</span>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-ggc-gold" />
+                  <span className="text-[11px] font-medium text-gray-500">Menyimpan...</span>
                 </>
-              ) : saveStatus === "saved" ? (
+              )}
+              {saveStatus === "saved" && (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                  <span className="text-[11px] font-semibold text-emerald-700">Tersimpan otomatis</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-[11px] font-medium text-gray-600">Tersimpan Otomatis</span>
                 </>
-              ) : (
+              )}
+              {saveStatus === "error" && (
                 <>
-                  <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                  <span className="text-[11px] font-semibold text-red-700">Gagal simpan</span>
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="text-[11px] font-medium text-amber-700">Tersimpan Lokal</span>
                 </>
               )}
             </div>
 
-            {/* Question Palette Button */}
+            {/* Question Palette Trigger Button */}
             <button
               type="button"
               onClick={() => setIsPaletteOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-ggc bg-ggc-subtle hover:bg-ggc/15 border border-ggc/20 transition-all shadow-xs group"
-              title="Buka daftar 84 nomor soal"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 transition-colors shadow-2xs"
+              title="Buka Lembar Nomor Soal (Tekan P)"
             >
-              <Grid className="w-4 h-4 text-ggc-gold group-hover:scale-110 transition-transform" />
-              <span>Daftar Soal ({answeredCount}/84)</span>
+              <Grid className="w-4 h-4 text-ggc-gold-dark" />
+              <span>Palet 84 Soal</span>
             </button>
           </div>
         </div>
 
         {/* Global Progress Bar */}
-        <div className="mt-3.5">
-          <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-            <span className="text-gray-600 flex items-center gap-1.5">
-              <span>Kemajuan Evaluasi:</span>
-              <strong className="text-ggc">{answeredCount}</strong> dari {totalQuestions} Butir Selesai
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between text-xs mb-1.5">
+            <span className="text-gray-500 font-medium">
+              Kemajuan Keseluruhan: <strong className="text-ggc font-bold">{answeredCount}</strong> dari {totalQuestions} Soal
             </span>
-            <span className="text-ggc-gold-dark font-black tabular-nums">{progressPercent}%</span>
+            <span className="font-black text-ggc-gold-dark tabular-nums">
+              {progressPercent}%
+            </span>
           </div>
-          <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden relative">
+          <div
+            className="w-full h-3 rounded-full bg-gray-100 overflow-hidden p-0.5 border border-gray-200"
+            role="progressbar"
+            aria-valuenow={progressPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
             <div
-              className="h-full bg-gradient-to-r from-ggc via-ggc-light to-ggc-gold transition-all duration-300 rounded-full"
+              className="h-full rounded-full bg-gradient-to-r from-ggc via-ggc-light to-ggc-gold transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
 
-        {/* 7 Section Step Tabs */}
-        <div className="mt-3.5 pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5 overflow-x-auto no-scrollbar py-1">
-          {SECTION_MILESTONES.map((milestone) => {
-            const idx = milestone.index;
-            const isCurrent = idx === currentSectionIndex;
-            const secStart = idx * QUESTIONS_PER_SECTION;
+        {/* Section 7-step Milestone Breadcrumb */}
+        <div className="mt-3.5 grid grid-cols-7 gap-1.5 sm:gap-2">
+          {SECTION_MILESTONES.map((m) => {
+            const isCurrent = m.index === currentSectionIndex;
+            const secStart = m.index * QUESTIONS_PER_SECTION;
             const secEnd = secStart + QUESTIONS_PER_SECTION;
             const secQuestions = questions.slice(secStart, secEnd);
             const secAnswered = secQuestions.filter((q) => answers[q.id] !== undefined).length;
-            const isFullyAnswered = secAnswered === QUESTIONS_PER_SECTION;
+            const isDone = secAnswered === QUESTIONS_PER_SECTION;
 
             return (
               <button
-                key={idx}
+                key={m.index}
                 type="button"
                 onClick={() => {
-                  setCurrentSectionIndex(idx);
-                  scrollToTop();
+                  setCurrentSectionIndex(m.index);
+                  if (viewMode === "focus") {
+                    setActiveQuestionIndex(m.index * QUESTIONS_PER_SECTION);
+                  }
                 }}
-                className={`flex-1 min-w-[76px] py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 border ${
+                className={`p-2 rounded-xl border text-center transition-all ${
                   isCurrent
-                    ? "bg-ggc text-white border-ggc shadow-sm ring-1 ring-ggc-gold/40"
-                    : isFullyAnswered
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                    ? "bg-ggc text-white border-ggc-gold ring-2 ring-ggc-gold/40 shadow-xs"
+                    : isDone
+                    ? "bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100"
+                    : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
                 }`}
+                title={`${m.title} (${secAnswered}/12)`}
               >
-                <div className="flex items-center gap-1">
-                  <span>Bagian {idx + 1}</span>
-                  {isFullyAnswered && (
+                <div className="flex items-center justify-center gap-1 text-[11px] font-bold">
+                  <span>P{m.index + 1}</span>
+                  {isDone && (
                     <CheckCircle className={`w-3.5 h-3.5 ${isCurrent ? "text-ggc-gold" : "text-emerald-600"}`} />
                   )}
                 </div>
@@ -590,243 +964,385 @@ export default function StudentAssessmentPage() {
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 2. SECTION INSPIRATIONAL BANNER                                    */}
+      {/* 2. MODE FOKUS: SINGLE-QUESTION HERO CARD (RECOMMENDED EXPERIENCE)  */}
       {/* ------------------------------------------------------------------ */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-ggc-tint via-white to-ggc-gold-subtle border border-ggc/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-sm">
-            <MilestoneIcon className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-ggc">
-                Fokus Evaluasi Saat Ini
-              </span>
-              <span className="text-gray-300">•</span>
-              <span className="text-[11px] font-semibold text-gray-500">
-                {currentMilestone.rangeText}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5">
-              {currentMilestone.subtitle}
-            </p>
-            <p className="text-xs text-gray-500 italic mt-1 leading-relaxed">
-              &ldquo;{currentMilestone.quote}&rdquo;
-            </p>
-          </div>
-        </div>
+      {viewMode === "focus" && activeQuestion && (
+        <div className="animate-focus-slide max-w-3xl mx-auto" key={activeQuestion.id}>
+          {/* Card Wrapper */}
+          <div className="p-6 sm:p-10 rounded-3xl bg-white border-2 border-ggc-gold/30 shadow-xl relative overflow-hidden">
+            {/* Background Accent Glow */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-ggc-gold/10 via-emerald-50/40 to-transparent rounded-full blur-2xl pointer-events-none" />
 
-        <div className="shrink-0 flex items-center gap-2 text-xs bg-white/80 backdrop-blur-xs px-3.5 py-2 rounded-2xl border border-gray-200 text-gray-600 self-start sm:self-auto">
-          <HelpCircle className="w-4 h-4 text-ggc-gold-dark shrink-0" />
-          <span>Skala: 1 (Sangat Tidak Sesuai) s/d 5 (Sangat Sesuai)</span>
-        </div>
-      </div>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* 3. QUESTIONS LIST FOR CURRENT SECTION                              */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="space-y-4 animate-section-in" key={currentSectionIndex}>
-        {currentSectionQuestions.map((q) => {
-          const selectedValue = answers[q.id];
-          const isAnswered = selectedValue !== undefined;
-
-          return (
-            <article
-              key={q.id}
-              id={`question-card-${q.number}`}
-              className={`p-6 sm:p-7 rounded-3xl transition-all duration-200 border relative ${
-                isAnswered
-                  ? "bg-white border-ggc/40 shadow-sm border-l-4 border-l-ggc"
-                  : "bg-white border-gray-200 shadow-sm hover:border-gray-300"
-              }`}
-            >
-              {/* Question Header */}
-              <div className="flex items-start justify-between gap-4 mb-5">
-                <div className="flex items-start gap-3.5">
-                  <div
-                    className={`w-9 h-9 rounded-2xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${
-                      isAnswered
-                        ? "bg-ggc text-ggc-gold shadow-xs ring-1 ring-ggc-gold/40"
-                        : "bg-gray-100 text-gray-600 border border-gray-200"
-                    }`}
-                  >
-                    {q.number}
+            {/* Header: Dimension Badge & Question Counter */}
+            <div className="relative z-10 flex items-center justify-between pb-5 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-2xs">
+                  <MilestoneIcon className="w-4 h-4" />
+                </span>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ggc-gold-dark">
+                    {currentMilestone.dimensionBadge}
+                  </span>
+                  <div className="text-xs font-semibold text-gray-500">
+                    {currentMilestone.subtitle}
                   </div>
-                  <div>
-                    <h2
-                      id={`question-text-${q.id}`}
-                      className="text-base sm:text-lg font-bold text-gray-900 leading-relaxed"
-                    >
-                      {q.question_text}
-                    </h2>
-                  </div>
-                </div>
-
-                {/* Status indicator badge */}
-                <div className="shrink-0">
-                  {isAnswered ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                      <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> Terjawab
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center text-[11px] font-semibold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-200">
-                      Belum diisi
-                    </span>
-                  )}
                 </div>
               </div>
 
-              {/* Likert Scale Cards (1 to 5) */}
-              <fieldset className="mt-4 pt-4 border-t border-gray-100">
-                <legend className="sr-only">
-                  Pilihan jawaban untuk butir nomor {q.number}: {q.question_text}
-                </legend>
-                <div
-                  className="grid grid-cols-1 sm:grid-cols-5 gap-2.5"
-                  role="radiogroup"
-                  aria-labelledby={`question-text-${q.id}`}
-                >
-                  {q.options.map((opt) => {
-                    const isSelected = selectedValue === opt.value;
+              {/* Question Number Pill */}
+              <div className="flex items-center gap-2">
+                <span className="px-3.5 py-1.5 rounded-2xl bg-gray-100 text-ggc-dark font-black text-xs border border-gray-200 shadow-inner">
+                  Soal <strong className="text-ggc">{activeQuestion.number}</strong> / {totalQuestions}
+                </span>
+              </div>
+            </div>
 
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        onClick={() => handleSelectAnswer(q.id, opt.value)}
-                        className={`group relative min-h-[58px] sm:min-h-[72px] p-3 rounded-2xl border text-center transition-all duration-200 flex sm:flex-col items-center justify-between sm:justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ggc focus-visible:ring-offset-2 ${
+            {/* Question Text Body */}
+            <div className="py-8 sm:py-10 relative z-10 text-center sm:text-left">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-2">
+                Pernyataan Evaluasi Bakat & Minat
+              </span>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-900 leading-snug tracking-tight">
+                &ldquo;{activeQuestion.question_text}&rdquo;
+              </h2>
+              <p className="text-xs text-gray-500 mt-3 italic">
+                Pilih seberapa sesuai pernyataan ini dengan kecenderungan alami Anda (1 s/d 5).
+              </p>
+            </div>
+
+            {/* 5 Likert Buttons */}
+            <div className="pt-2 pb-6 border-t border-gray-100 relative z-10">
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                {activeQuestion.options.map((opt) => {
+                  const isSelected = answers[activeQuestion.id] === opt.value;
+
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleSelectAnswer(activeQuestion.id, opt.value, true)}
+                      className={`group relative min-h-[76px] p-3.5 rounded-2xl border text-center transition-all duration-200 flex sm:flex-col items-center justify-between sm:justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ggc focus-visible:ring-offset-2 ${
+                        isSelected
+                          ? "bg-gradient-to-r sm:bg-gradient-to-b from-ggc to-ggc-light text-white border-ggc-gold ring-2 ring-ggc-gold/50 shadow-md scale-[1.02]"
+                          : "bg-gray-50/80 text-gray-700 border-gray-200 hover:border-ggc-gold/60 hover:bg-ggc-subtle/50 hover:shadow-xs active:scale-98"
+                      }`}
+                    >
+                      {/* Keyboard Shortcut Indicator & Value */}
+                      <span
+                        className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-colors shrink-0 ${
                           isSelected
-                            ? "bg-gradient-to-r sm:bg-gradient-to-b from-ggc to-ggc-light text-white border-ggc-gold ring-2 ring-ggc-gold/50 shadow-md scale-[1.01]"
-                            : "bg-gray-50/70 text-gray-700 border-gray-200 hover:border-ggc/40 hover:bg-ggc-subtle/40 active:scale-98"
+                            ? "bg-ggc-gold text-ggc-dark shadow-xs"
+                            : "bg-white text-gray-600 border border-gray-300 group-hover:border-ggc group-hover:text-ggc"
                         }`}
                       >
-                        {/* Option Value Badge */}
-                        <span
-                          className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-colors shrink-0 ${
-                            isSelected
-                              ? "bg-ggc-gold text-ggc-dark shadow-xs"
-                              : "bg-white text-gray-600 border border-gray-300 group-hover:border-ggc group-hover:text-ggc"
-                          }`}
-                        >
-                          {isSelected ? (
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          ) : (
-                            opt.value
-                          )}
-                        </span>
+                        {isSelected ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : opt.value}
+                      </span>
 
-                        {/* Option Label Text */}
-                        <span
-                          className={`text-xs leading-tight text-right sm:text-center ${
-                            isSelected ? "text-white font-bold" : "text-gray-700 font-medium"
-                          }`}
-                        >
-                          {opt.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </fieldset>
-            </article>
-          );
-        })}
-      </div>
+                      {/* Label Text */}
+                      <span
+                        className={`text-xs leading-tight text-right sm:text-center ${
+                          isSelected ? "text-white font-bold" : "text-gray-700 font-semibold"
+                        }`}
+                      >
+                        {opt.label}
+                      </span>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* 4. SECTION COMPLETE CELEBRATION CARD                               */}
-      {/* ------------------------------------------------------------------ */}
-      {isCurrentSectionComplete && (
-        <div className="animate-milestone-pop p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-emerald-luxury to-[#063424] text-white border border-ggc-gold/40 shadow-xl relative overflow-hidden my-6">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-ggc-gold/15 rounded-full blur-2xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-ggc-gold text-ggc-dark font-black flex items-center justify-center shrink-0 shadow-md">
-                <CheckCircle2 className="w-7 h-7 stroke-[2.5]" />
-              </div>
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-ggc-gold/20 text-ggc-gold text-[10px] font-bold uppercase tracking-wider border border-ggc-gold/30">
-                  <Sparkles className="w-3 h-3" />
-                  Milestone Bagian {currentSectionIndex + 1} Tuntas!
-                </span>
-                <h3 className="text-lg sm:text-xl font-black text-white mt-1">
-                  12 dari 12 Soal di Bagian Ini Selesai Terjawab
-                </h3>
-                <p className="text-xs sm:text-sm text-ggc-subtle/85 mt-1 max-w-xl leading-relaxed">
-                  Kerja hebat! Anda telah menyelesaikan total <strong>{answeredCount} dari {totalQuestions} butir</strong>. Tarik napas sejenak, rileks, lalu lanjutkan saat siap.
-                </p>
+                      {/* Keyboard shortcut badge for desktop */}
+                      <span
+                        className={`hidden sm:inline-block text-[9px] uppercase tracking-wider font-mono opacity-50 ${
+                          isSelected ? "text-white" : "text-gray-400"
+                        }`}
+                      >
+                        Tekan [{opt.value}]
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="shrink-0">
-              {currentSectionIndex < TOTAL_SECTIONS - 1 ? (
-                <button
-                  type="button"
-                  onClick={handleNextSection}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-md"
-                >
-                  <span>Lanjut ke Bagian {currentSectionIndex + 2}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsSubmitModalOpen(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg hover:-translate-y-0.5 transition-all shadow-md"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Kunci & Tinjau Hasil Asesmen</span>
-                </button>
-              )}
+            {/* Bottom Card Navigation */}
+            <div className="pt-5 border-t border-gray-100 relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <button
+                type="button"
+                onClick={handleFocusPrev}
+                disabled={activeQuestionIndex === 0}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                title="Soal Sebelumnya (Tekan A atau ←)"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Sebelumnya [A]</span>
+              </button>
+
+              <div className="text-center text-xs text-gray-500 font-medium">
+                {answers[activeQuestion.id] !== undefined ? (
+                  <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" /> Jawaban tersimpan
+                  </span>
+                ) : (
+                  <span>Tekan angka <strong>[1-5]</strong> di keyboard untuk jawab cepat</span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleFocusNext}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md"
+                title="Soal Berikutnya (Tekan D atau →)"
+              >
+                <span>{activeQuestionIndex < totalQuestions - 1 ? "Berikutnya [D]" : "Selesaikan Asesmen"}</span>
+                <ArrowRight className="w-4 h-4 text-ggc-gold" />
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* ------------------------------------------------------------------ */}
-      {/* 5. NAVIGATION FOOTER BAR                                           */}
+      {/* 3. MODE DAFTAR: 12 SOAL BERTUMPUK (CLASSIC LIST VIEW)              */}
       {/* ------------------------------------------------------------------ */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white border border-ggc-subtle shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={handlePrevSection}
-          disabled={currentSectionIndex === 0}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Bagian Sebelumnya</span>
-        </button>
+      {viewMode === "list" && (
+        <div className="space-y-4 animate-section-in" key={currentSectionIndex}>
+          {/* Section Banner */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-ggc-tint via-white to-ggc-gold-subtle border border-ggc/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-sm">
+                <MilestoneIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ggc">
+                    Fokus Evaluasi Saat Ini
+                  </span>
+                  <span className="text-gray-300">•</span>
+                  <span className="text-[11px] font-semibold text-gray-500">
+                    {currentMilestone.rangeText}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5">
+                  {currentMilestone.subtitle}
+                </p>
+                <p className="text-xs text-gray-500 italic mt-1 leading-relaxed">
+                  &ldquo;{currentMilestone.quote}&rdquo;
+                </p>
+              </div>
+            </div>
 
-        <div className="text-xs text-gray-600 font-medium text-center">
-          Bagian <strong>{currentSectionIndex + 1}</strong> dari {TOTAL_SECTIONS} •{" "}
-          <strong className="text-ggc">{currentSectionAnsweredCount}</strong> dari {QUESTIONS_PER_SECTION} terjawab di bagian ini
+            <div className="shrink-0 flex items-center gap-2 text-xs bg-white/80 backdrop-blur-xs px-3.5 py-2 rounded-2xl border border-gray-200 text-gray-600 self-start sm:self-auto">
+              <HelpCircle className="w-4 h-4 text-ggc-gold-dark shrink-0" />
+              <span>Skala: 1 (Sangat Tidak Sesuai) s/d 5 (Sangat Sesuai)</span>
+            </div>
+          </div>
+
+          {/* List of 12 Questions */}
+          {currentSectionQuestions.map((q) => {
+            const selectedValue = answers[q.id];
+            const isAnswered = selectedValue !== undefined;
+
+            return (
+              <article
+                key={q.id}
+                id={`question-card-${q.number}`}
+                className={`p-6 sm:p-7 rounded-3xl transition-all duration-200 border relative ${
+                  isAnswered
+                    ? "bg-white border-ggc/40 shadow-sm border-l-4 border-l-ggc"
+                    : "bg-white border-gray-200 shadow-sm hover:border-gray-300"
+                }`}
+              >
+                {/* Question Header */}
+                <div className="flex items-start justify-between gap-4 mb-5">
+                  <div className="flex items-start gap-3.5">
+                    <div
+                      className={`w-9 h-9 rounded-2xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${
+                        isAnswered
+                          ? "bg-ggc text-ggc-gold shadow-xs ring-1 ring-ggc-gold/40"
+                          : "bg-gray-100 text-gray-600 border border-gray-200"
+                      }`}
+                    >
+                      {q.number}
+                    </div>
+                    <div>
+                      <h2
+                        id={`question-text-${q.id}`}
+                        className="text-base sm:text-lg font-bold text-gray-900 leading-relaxed"
+                      >
+                        {q.question_text}
+                      </h2>
+                    </div>
+                  </div>
+
+                  {/* Status indicator badge */}
+                  <div className="shrink-0">
+                    {isAnswered ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> Terjawab
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center text-[11px] font-semibold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-200">
+                        Belum diisi
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Likert Scale Cards (1 to 5) */}
+                <fieldset className="mt-4 pt-4 border-t border-gray-100">
+                  <legend className="sr-only">
+                    Pilihan jawaban untuk butir nomor {q.number}: {q.question_text}
+                  </legend>
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-5 gap-2.5"
+                    role="radiogroup"
+                    aria-labelledby={`question-text-${q.id}`}
+                  >
+                    {q.options.map((opt) => {
+                      const isSelected = selectedValue === opt.value;
+
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={isSelected}
+                          onClick={() => handleSelectAnswer(q.id, opt.value, false)}
+                          className={`group relative min-h-[58px] sm:min-h-[72px] p-3 rounded-2xl border text-center transition-all duration-200 flex sm:flex-col items-center justify-between sm:justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ggc focus-visible:ring-offset-2 ${
+                            isSelected
+                              ? "bg-gradient-to-r sm:bg-gradient-to-b from-ggc to-ggc-light text-white border-ggc-gold ring-2 ring-ggc-gold/50 shadow-md scale-[1.01]"
+                              : "bg-gray-50/70 text-gray-700 border-gray-200 hover:border-ggc/40 hover:bg-ggc-subtle/40 active:scale-98"
+                          }`}
+                        >
+                          <span
+                            className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-colors shrink-0 ${
+                              isSelected
+                                ? "bg-ggc-gold text-ggc-dark shadow-xs"
+                                : "bg-white text-gray-600 border border-gray-300 group-hover:border-ggc group-hover:text-ggc"
+                            }`}
+                          >
+                            {isSelected ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : opt.value}
+                          </span>
+
+                          <span
+                            className={`text-xs leading-tight text-right sm:text-center ${
+                              isSelected ? "text-white font-bold" : "text-gray-700 font-medium"
+                            }`}
+                          >
+                            {opt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+              </article>
+            );
+          })}
+
+          {/* Section Navigation Footer Bar */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-white border border-ggc-subtle shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+            <button
+              type="button"
+              onClick={handlePrevSection}
+              disabled={currentSectionIndex === 0}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Bagian Sebelumnya</span>
+            </button>
+
+            <div className="text-xs text-gray-600 font-medium text-center">
+              Bagian <strong>{currentSectionIndex + 1}</strong> dari {TOTAL_SECTIONS} •{" "}
+              <strong className="text-ggc">{currentSectionAnsweredCount}</strong> dari {QUESTIONS_PER_SECTION} terjawab di bagian ini
+            </div>
+
+            {currentSectionIndex < TOTAL_SECTIONS - 1 ? (
+              <button
+                type="button"
+                onClick={handleNextSection}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md hover:shadow-lg"
+              >
+                <span>Lanjut ke Bagian {currentSectionIndex + 2}</span>
+                <ArrowRight className="w-4 h-4 text-ggc-gold" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsSubmitModalOpen(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all shadow-md"
+              >
+                <Send className="w-4 h-4" />
+                <span>Tinjau & Selesaikan Asesmen</span>
+              </button>
+            )}
+          </div>
         </div>
-
-        {currentSectionIndex < TOTAL_SECTIONS - 1 ? (
-          <button
-            type="button"
-            onClick={handleNextSection}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md hover:shadow-lg"
-          >
-            <span>Lanjut ke Bagian {currentSectionIndex + 2}</span>
-            <ArrowRight className="w-4 h-4 text-ggc-gold" />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsSubmitModalOpen(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all shadow-md"
-          >
-            <Send className="w-4 h-4" />
-            <span>Tinjau & Selesaikan Asesmen</span>
-          </button>
-        )}
-      </div>
+      )}
 
       {/* ------------------------------------------------------------------ */}
-      {/* 6. QUESTION PALETTE MODAL / DRAWER                                 */}
+      {/* 4. CELEBRATORY MILESTONE POPUP DIALOG                              */}
+      {/* ------------------------------------------------------------------ */}
+      {celebratingMilestone && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="milestone-celebrate-title"
+          aria-describedby="milestone-celebrate-desc"
+        >
+          {/* Confetti Particles (CSS Animated) */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+            <div className="absolute top-10 left-1/4 w-3 h-3 rounded-full bg-ggc-gold animate-confetti" style={{ animationDelay: "0s" }} />
+            <div className="absolute top-8 left-1/2 w-4 h-2 bg-emerald-400 rotate-45 animate-confetti" style={{ animationDelay: "0.3s" }} />
+            <div className="absolute top-12 left-3/4 w-3 h-3 rounded-full bg-amber-300 animate-confetti" style={{ animationDelay: "0.6s" }} />
+            <div className="absolute top-6 left-1/3 w-2 h-4 bg-teal-300 -rotate-12 animate-confetti" style={{ animationDelay: "0.9s" }} />
+            <div className="absolute top-10 left-2/3 w-3 h-3 bg-yellow-400 rotate-12 animate-confetti" style={{ animationDelay: "1.2s" }} />
+          </div>
+
+          <div className="bg-white rounded-[2.5rem] max-w-lg w-full p-6 sm:p-10 shadow-2xl border-2 border-ggc-gold/50 text-center relative overflow-hidden animate-milestone-pop">
+            {/* Top Glow Orb */}
+            <div className="absolute -top-16 -right-16 w-48 h-48 bg-ggc-gold/25 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark text-ggc-dark flex items-center justify-center mx-auto mb-5 shadow-xl ring-4 ring-ggc-gold/20">
+              <Trophy className="w-10 h-10" />
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-ggc-gold/15 text-ggc-gold-dark text-xs font-bold uppercase tracking-wider mb-2 border border-ggc-gold/30">
+              <Sparkles className="w-3.5 h-3.5" />
+              Milestone Dimensi Tuntas!
+            </span>
+
+            <h2 id="milestone-celebrate-title" className="text-2xl sm:text-3xl font-black text-ggc-dark tracking-tight">
+              {celebratingMilestone.dimensionBadge} Selesai!
+            </h2>
+
+            <p id="milestone-celebrate-desc" className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
+              &ldquo;{celebratingMilestone.quote}&rdquo;
+            </p>
+
+            {/* Achievement Card */}
+            <div className="my-6 p-4 rounded-2xl bg-ggc-tint border border-ggc-subtle flex items-center justify-between text-xs font-bold text-ggc-dark">
+              <span>Progres Asesmen:</span>
+              <span className="text-emerald-700 font-extrabold text-sm">
+                {celebratingMilestone.completedCount} / {totalQuestions} Soal ({Math.round((celebratingMilestone.completedCount / totalQuestions) * 100)}%)
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={handleDismissMilestone}
+                className="w-full py-4 px-6 rounded-2xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.02] active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg"
+              >
+                <span>Lanjut ke Dimensi Berikutnya</span>
+                <ArrowRight className="w-4 h-4" />
+                <span className="text-[10px] opacity-60 font-mono ml-1">[Enter]</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 5. QUESTION PALETTE MODAL (84 NUMBERS GRID)                         */}
       {/* ------------------------------------------------------------------ */}
       {isPaletteOpen && (
         <div
@@ -888,7 +1404,7 @@ export default function StudentAssessmentPage() {
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3.5 h-3.5 rounded-md ring-2 ring-ggc-gold bg-ggc text-white" />
-                <span>Bagian Aktif</span>
+                <span>Soal Aktif</span>
               </div>
             </div>
 
@@ -914,7 +1430,7 @@ export default function StudentAssessmentPage() {
                     <div className="grid grid-cols-6 sm:grid-cols-12 gap-1.5">
                       {secQuestions.map((q) => {
                         const isAnswered = answers[q.id] !== undefined;
-                        const isInCurrentSection = secIdx === currentSectionIndex;
+                        const isCurrentActive = q.number === activeQuestionIndex + 1;
 
                         return (
                           <button
@@ -922,13 +1438,11 @@ export default function StudentAssessmentPage() {
                             type="button"
                             onClick={() => handleJumpToQuestion(q.number)}
                             className={`h-9 rounded-xl text-xs font-black transition-all flex items-center justify-center border ${
-                              isAnswered
-                                ? isInCurrentSection
-                                  ? "bg-ggc text-white border-ggc-gold ring-2 ring-ggc-gold/60"
-                                  : "bg-ggc text-white border-ggc hover:bg-ggc-light"
-                                : isInCurrentSection
-                                ? "bg-white text-gray-700 border-ggc font-bold ring-2 ring-ggc/30"
-                                : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                              isCurrentActive
+                                ? "bg-ggc-gold text-ggc-dark border-ggc-gold ring-2 ring-ggc-gold-dark shadow-xs"
+                                : isAnswered
+                                ? "bg-ggc text-white border-ggc hover:bg-ggc-light"
+                                : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
                             }`}
                           >
                             {q.number}
@@ -947,7 +1461,83 @@ export default function StudentAssessmentPage() {
                 onClick={() => setIsPaletteOpen(false)}
                 className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light transition-all"
               >
-                Tutup Lembar Soal
+                Tutup Palet Soal [Esc]
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 6. KEYBOARD SHORTCUTS MODAL                                        */}
+      {/* ------------------------------------------------------------------ */}
+      {isKeyboardHelpOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="keyboard-help-title"
+        >
+          <div className="bg-white rounded-[2rem] max-w-md w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0">
+                  <Keyboard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 id="keyboard-help-title" className="text-lg font-black text-ggc-dark">
+                    Shortcut Keyboard
+                  </h2>
+                  <p className="text-xs text-gray-500">Mengerjakan asesmen lebih cepat tanpa mouse</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsKeyboardHelpOpen(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-2.5 text-xs">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="font-semibold text-gray-700">Pilih Skala Jawaban (1 s/d 5)</span>
+                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">1, 2, 3, 4, 5</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="font-semibold text-gray-700">Soal Sebelumnya</span>
+                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">A / ←</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="font-semibold text-gray-700">Soal Berikutnya</span>
+                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">D / →</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="font-semibold text-gray-700">Ganti Mode (Fokus / Daftar)</span>
+                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">F</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="font-semibold text-gray-700">Buka Palet 84 Nomor Soal</span>
+                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">P</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="font-semibold text-gray-700">Toggle Efek Suara (Audio)</span>
+                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">S</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="font-semibold text-gray-700">Tutup Dialog / Batal</span>
+                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">Esc</span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-gray-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsKeyboardHelpOpen(false)}
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light transition-all text-center"
+              >
+                Mengerti
               </button>
             </div>
           </div>
@@ -1045,6 +1635,27 @@ export default function StudentAssessmentPage() {
           </div>
         </div>
       )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 8. FLOATING QUICK SHORTCUT BAR (DESKTOP HELPER)                     */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 hidden md:flex items-center gap-3 px-4 py-2 rounded-2xl bg-ggc-dark/90 backdrop-blur-md text-white text-[11px] shadow-xl border border-white/20 select-none">
+        <span className="flex items-center gap-1 font-mono text-ggc-gold">
+          <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-bold">1-5</kbd> Jawab Cepat
+        </span>
+        <span className="text-white/30">•</span>
+        <span className="flex items-center gap-1 font-mono text-ggc-subtle">
+          <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-bold">← / →</kbd> Navigasi
+        </span>
+        <span className="text-white/30">•</span>
+        <span className="flex items-center gap-1 font-mono text-ggc-subtle">
+          <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-bold">F</kbd> Ganti Mode
+        </span>
+        <span className="text-white/30">•</span>
+        <span className="flex items-center gap-1 font-mono text-ggc-subtle">
+          <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-bold">P</kbd> Palet Soal
+        </span>
+      </div>
     </div>
   );
 }
