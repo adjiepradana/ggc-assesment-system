@@ -33,6 +33,7 @@ import {
   BarChart3,
   Check,
   AlertCircle,
+  Printer,
 } from "lucide-react";
 
 export default async function StudentDashboardPage() {
@@ -475,15 +476,13 @@ export default async function StudentDashboardPage() {
               </Link>
 
               {activeSession?.id && (
-                <a
-                  href={`/api/assessment/results/${activeSession.id}/pdf`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={`/student/results/${activeSession.id}?print=true`}
                   className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-gray-800 bg-white hover:bg-gray-50 border border-gray-300 shadow-2xs transition-all text-xs"
                 >
-                  <Download className="w-4 h-4 text-ggc-gold-dark" />
-                  <span>Unduh Dokumen PDF Resmi</span>
-                </a>
+                  <Printer className="w-4 h-4 text-ggc-gold-dark" />
+                  <span>Cetak / Simpan PDF Laporan</span>
+                </Link>
               )}
 
               <Link

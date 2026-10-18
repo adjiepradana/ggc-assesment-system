@@ -311,3 +311,73 @@ html {
     animation: milestonePop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
   }
 }
+
+/* ==========================================================================
+   High-Fidelity PDF & Print Stylesheet for Student Assessment Results
+   ========================================================================== */
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+  }
+
+  /* Force background colors and gradients to print */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  /* Hide navigation, headers, footers, and non-printable buttons */
+  header,
+  nav,
+  footer,
+  .no-print,
+  button,
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Reveal print-only elements */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Ensure page contents fit neatly on A4 */
+  main, .max-w-7xl, .space-y-12 {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Prevent ugly breaks through cards and charts */
+  section,
+  .rounded-3xl,
+  .rounded-2xl,
+  .rounded-\[2rem\],
+  article,
+  .print-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Keep shadows soft or bordered for clear print */
+  .shadow-xl, .shadow-2xl, .shadow-lg, .shadow-md {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+}

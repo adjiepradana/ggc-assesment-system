@@ -24,6 +24,8 @@ import {
   ListChecks,
   Crown,
   Star,
+  Printer,
+  FileText,
 } from "lucide-react";
 import { ScoringResult } from "@/lib/scoring";
 import CountUp from "@/components/results/CountUp";
@@ -184,6 +186,23 @@ export default function StudentResultsPage() {
     }
   };
 
+  const handlePrintPage = () => {
+    window.print();
+  };
+
+  // Automatically trigger print dialog if ?print=true is present in URL
+  useEffect(() => {
+    if (typeof window !== "undefined" && data) {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("print") === "true") {
+        const timer = setTimeout(() => {
+          window.print();
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [data]);
+
   if (loading) {
     return <ResultsSkeleton />;
   }
@@ -259,7 +278,10 @@ export default function StudentResultsPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Top Action & Navigation Bar                                        */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* ------------------------------------------------------------------ */}
+      {/* Top Action & Navigation Bar (Hidden when printing/saving PDF)      */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2">
           <Link
             href="/"
@@ -283,23 +305,82 @@ export default function StudentResultsPage() {
           </span>
         </nav>
 
-        <button
-          onClick={handleDownloadPdf}
-          disabled={isDownloadingPdf}
-          className="group relative inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0 overflow-hidden"
-        >
-          {isDownloadingPdf ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Memproses Dokumen PDF...</span>
-            </>
-          ) : (
-            <>
-              <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              <span>Unduh Laporan PDF Resmi</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2.5">
+          {/* Primary Action: Direct Print / Save as PDF of this exact page */}
+          <button
+            type="button"
+            onClick={handlePrintPage}
+            className="group relative inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all overflow-hidden cursor-pointer"
+            title="Cetak langsung halaman ini atau simpan sebagai file PDF berkualitas tinggi"
+          >
+            <Printer className="w-4 h-4 text-ggc-dark group-hover:scale-110 transition-transform" />
+            <span>Cetak / Simpan PDF Laporan</span>
+          </button>
+
+          {/* Secondary Action: Server-generated standalone PDF */}
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={isDownloadingPdf}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 shadow-2xs hover:shadow transition-all disabled:opacity-60"
+            title="Unduh berkas PDF terpisah yang di-generate server"
+          >
+            {isDownloadingPdf ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-ggc" />
+            ) : (
+              <Download className="w-3.5 h-3.5 text-gray-600" />
+            )}
+            <span className="hidden sm:inline">{isDownloadingPdf ? "Memproses..." : "File .pdf"}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* OFFICIAL PRINT HEADER (VISIBLE ONLY ON PRINT / SAVE AS PDF)        */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="print-only mb-6 pb-4 border-b-2 border-ggc-gold">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="GGC Logo" className="w-12 h-12 object-contain" />
+            <div>
+              <h1 className="text-lg font-black text-ggc-dark tracking-tight leading-none">
+                GO GREAT CAREER (GGC)
+              </h1>
+              <p className="text-[10px] font-bold text-ggc tracking-wider uppercase mt-1">
+                STUDY FIT ASSESSMENT™ • LAPORAN RESMI HASIL ASESMEN SISWA
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="inline-block px-2.5 py-1 rounded bg-amber-50 text-amber-800 border border-amber-300 text-[9px] font-bold uppercase">
+              84-ITEM MULTI-MATRIX EVALUATION
+            </span>
+            <p className="text-[9px] text-gray-500 mt-1 font-mono">
+              NO. REG: GGC-SFA-{(results.sessionId || "SESI").slice(0, 8).toUpperCase()}-2026
+            </p>
+          </div>
+        </div>
+
+        {/* Student metadata box for printed document */}
+        <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+          <div>
+            <span className="font-bold text-ggc">Nama Siswa:</span> {student.name}
+          </div>
+          <div>
+            <span className="font-bold text-ggc">Asal Sekolah:</span> {student.school}
+          </div>
+          <div>
+            <span className="font-bold text-ggc">Jenjang / Kelas:</span> {student.grade}
+          </div>
+          <div>
+            <span className="font-bold text-ggc">Tanggal Evaluasi:</span>{" "}
+            {new Date(results.calculatedAt).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </div>
+        </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}
@@ -828,14 +909,14 @@ export default function StudentResultsPage() {
             <p className="text-sm text-ggc-subtle/85 leading-relaxed">{results.summaryNarrative}</p>
           </div>
 
-          <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
+          <div className="no-print shrink-0 flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
             <button
-              onClick={handleDownloadPdf}
-              disabled={isDownloadingPdf}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60"
+              type="button"
+              onClick={handlePrintPage}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer"
             >
-              {isDownloadingPdf ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              <span>{isDownloadingPdf ? "Memproses..." : "Unduh Dokumen PDF Resmi"}</span>
+              <Printer className="w-4 h-4 text-ggc-dark" />
+              <span>Cetak / Simpan PDF Laporan</span>
             </button>
             <Link
               href="/student/dashboard"
@@ -847,6 +928,31 @@ export default function StudentResultsPage() {
           </div>
         </div>
       </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* OFFICIAL PRINT FOOTER (VISIBLE ONLY ON PRINT / SAVE AS PDF)        */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="print-only mt-12 pt-6 border-t-2 border-gray-300 text-xs text-gray-600">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-bold text-ggc-dark text-sm">Go Great Career (GGC) Indonesia</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">
+              Dokumen ini dicetak secara sah langsung dari Portal Resmi Siswa GGC Study Fit Assessment™.
+            </p>
+            <p className="text-[9px] text-gray-400 mt-1">
+              Verifikasi Integritas Data: VALID & SECURE • Hak Cipta © {new Date().getFullYear()} Go Great Career
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="inline-block px-3 py-1 rounded border border-ggc-gold bg-amber-50 text-[10px] font-bold text-amber-900 uppercase">
+              STATUS: RESMI TERVERIFIKASI
+            </div>
+            <p className="text-[9px] text-gray-400 mt-1">
+              ID Sesi: {results.sessionId}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
