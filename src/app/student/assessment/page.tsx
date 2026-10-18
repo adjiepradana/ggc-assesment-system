@@ -738,28 +738,23 @@ export default function StudentAssessmentPage() {
   return (
     <div ref={containerRef} className="space-y-6 pb-28">
       {/* ------------------------------------------------------------------ */}
-      {/* Top Breadcrumb & Control Bar                                       */}
+      {/* Top Breadcrumb & Control Bar (Responsive)                          */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
-        <div className="flex items-center gap-2 text-xs">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 font-bold text-gray-500 hover:text-ggc transition-colors bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
-            title="Kembali ke Halaman Utama"
-          >
-            <Compass className="w-3.5 h-3.5 text-ggc-gold" />
-            <span className="hidden sm:inline">Halaman Utama</span>
-          </Link>
-          <span className="text-gray-300">/</span>
+      <div className="flex items-center justify-between gap-2 pt-1 pb-0.5">
+        <div className="flex items-center gap-1.5 text-xs">
           <Link
             href="/student/dashboard"
-            className="inline-flex items-center gap-1.5 font-bold text-gray-500 hover:text-ggc transition-colors bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            className="inline-flex items-center gap-1 font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-2.5 sm:px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            title="Kembali ke Dashboard Siswa"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Dashboard Siswa</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-ggc shrink-0" />
+            <span className="text-[11px] font-bold hidden sm:inline">Dashboard Siswa</span>
+            <span className="text-[11px] font-bold sm:hidden">Dashboard</span>
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="font-bold text-ggc-dark">Lembar Asesmen</span>
+          <span className="font-bold text-ggc-dark text-[11px] sm:text-xs truncate max-w-[130px] sm:max-w-none">
+            Lembar Asesmen
+          </span>
         </div>
 
         {/* View Mode Switcher, Audio, & Keyboard Help */}
@@ -768,7 +763,7 @@ export default function StudentAssessmentPage() {
           <button
             type="button"
             onClick={toggleSound}
-            className={`p-1.5 px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`p-1.5 sm:px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 ${
               soundEnabled
                 ? "bg-white text-ggc-dark border-gray-200 hover:border-ggc-gold shadow-2xs"
                 : "bg-gray-100 text-gray-400 border-gray-200"
@@ -781,26 +776,26 @@ export default function StudentAssessmentPage() {
             ) : (
               <VolumeX className="w-3.5 h-3.5 text-gray-400" />
             )}
-            <span className="hidden sm:inline text-[11px]">{soundEnabled ? "Audio On" : "Mute"}</span>
+            <span className="hidden md:inline text-[11px]">{soundEnabled ? "Audio On" : "Mute"}</span>
           </button>
 
           {/* Keyboard Shortcuts Guide Pill */}
           <button
             type="button"
             onClick={() => setIsKeyboardHelpOpen(true)}
-            className="p-1.5 px-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-ggc transition-colors shadow-2xs text-xs font-bold flex items-center gap-1.5"
+            className="p-1.5 sm:px-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-ggc transition-colors shadow-2xs text-xs font-bold flex items-center gap-1"
             title="Petunjuk Shortcut Keyboard (Tekan ?)"
           >
             <Keyboard className="w-3.5 h-3.5 text-ggc-gold" />
-            <span className="hidden sm:inline text-[11px]">Shortcut</span>
+            <span className="hidden md:inline text-[11px]">Shortcut</span>
           </button>
 
           {/* Mode Segmented Control */}
-          <div className="p-1 rounded-xl bg-gray-100/90 border border-gray-200 flex items-center gap-0.5">
+          <div className="p-0.5 sm:p-1 rounded-xl bg-gray-100/90 border border-gray-200 flex items-center">
             <button
               type="button"
               onClick={() => setViewMode("focus")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                 viewMode === "focus"
                   ? "bg-white text-ggc-dark shadow-2xs ring-1 ring-ggc/20"
                   : "text-gray-500 hover:text-gray-900"
@@ -813,7 +808,7 @@ export default function StudentAssessmentPage() {
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                 viewMode === "list"
                   ? "bg-white text-ggc-dark shadow-2xs ring-1 ring-ggc/20"
                   : "text-gray-500 hover:text-gray-900"
@@ -830,13 +825,13 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {/* 1. ULTRA-SLIM RESPONSIVE STICKY HUD (DOES NOT BLOCK THE QUESTION)  */}
       {/* ------------------------------------------------------------------ */}
-      <div className="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 shadow-sm transition-all overflow-hidden">
+      <div className="sticky top-20 z-30 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 shadow-sm transition-all overflow-hidden">
         {/* Main Compact Row */}
-        <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2.5">
+        <div className="px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2">
           {/* Left: Dimension Pill & Question Counter */}
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ggc-dark px-2.5 py-1 rounded-xl bg-ggc-gold-subtle border border-ggc-gold/30 shrink-0">
-              <MilestoneIcon className="w-3.5 h-3.5 text-ggc-gold-dark" />
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="inline-flex items-center gap-1 sm:gap-1.5 text-xs font-bold text-ggc-dark px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl bg-ggc-gold-subtle border border-ggc-gold/30 shrink-0">
+              <MilestoneIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-ggc-gold-dark" />
               <span className="hidden sm:inline font-bold">{currentMilestone.dimensionBadge}</span>
               <span className="sm:hidden font-bold">P{currentSectionIndex + 1}</span>
             </span>
@@ -849,7 +844,8 @@ export default function StudentAssessmentPage() {
             {streakCount >= 3 && (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-300 shrink-0 animate-streak-glow">
                 <Flame className="w-3 h-3 text-amber-600 fill-amber-500" />
-                <span>{streakCount} beruntun</span>
+                <span className="hidden sm:inline">{streakCount} beruntun</span>
+                <span className="sm:hidden">{streakCount}</span>
               </span>
             )}
           </div>
@@ -898,7 +894,7 @@ export default function StudentAssessmentPage() {
             <button
               type="button"
               onClick={() => setIsDimensionsOpen((prev) => !prev)}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all ${
+              className={`px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all ${
                 isDimensionsOpen
                   ? "bg-ggc text-white border-ggc shadow-2xs"
                   : "bg-white text-gray-700 border-gray-200 hover:border-ggc-gold"
@@ -918,7 +914,7 @@ export default function StudentAssessmentPage() {
             <button
               type="button"
               onClick={() => setIsPaletteOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 transition-colors shadow-2xs"
               title="Buka Lembar Nomor Soal (Tekan P)"
             >
               <Grid className="w-3.5 h-3.5 text-ggc-gold-dark" />
@@ -938,7 +934,7 @@ export default function StudentAssessmentPage() {
 
         {/* Collapsible 7-Dimensi Drawer: Only appears when toggled */}
         {isDimensionsOpen && (
-          <div className="p-3.5 sm:p-4 bg-gray-50/90 border-t border-gray-100 animate-fadeIn">
+          <div className="p-3 sm:p-4 bg-gray-50/90 border-t border-gray-100 animate-fadeIn">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-ggc-gold-dark">
@@ -953,8 +949,8 @@ export default function StudentAssessmentPage() {
               </span>
             </div>
 
-            {/* Responsive 7-step buttons */}
-            <div className="grid grid-cols-7 gap-1.5 sm:gap-2 overflow-x-auto pb-1">
+            {/* Responsive 7-step buttons (horizontal scroll on mobile) */}
+            <div className="flex sm:grid sm:grid-cols-7 gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
               {SECTION_MILESTONES.map((m) => {
                 const isCurrent = m.index === currentSectionIndex;
                 const secStart = m.index * QUESTIONS_PER_SECTION;
@@ -973,7 +969,7 @@ export default function StudentAssessmentPage() {
                         setActiveQuestionIndex(m.index * QUESTIONS_PER_SECTION);
                       }
                     }}
-                    className={`p-2 rounded-xl border text-center transition-all ${
+                    className={`min-w-[70px] sm:min-w-0 flex-1 snap-start p-2 rounded-xl border text-center transition-all ${
                       isCurrent
                         ? "bg-ggc text-white border-ggc-gold ring-2 ring-ggc-gold/40 shadow-xs"
                         : isDone
@@ -1013,50 +1009,50 @@ export default function StudentAssessmentPage() {
       {viewMode === "focus" && activeQuestion && (
         <div className="animate-focus-slide max-w-3xl mx-auto" key={activeQuestion.id}>
           {/* Card Wrapper */}
-          <div className="p-6 sm:p-10 rounded-3xl bg-white border-2 border-ggc-gold/30 shadow-xl relative overflow-hidden">
+          <div className="p-4 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-white border border-ggc-gold/30 shadow-xl relative overflow-hidden">
             {/* Background Accent Glow */}
             <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-ggc-gold/10 via-emerald-50/40 to-transparent rounded-full blur-2xl pointer-events-none" />
 
             {/* Header: Dimension Badge & Question Counter */}
-            <div className="relative z-10 flex items-center justify-between pb-5 border-b border-gray-100">
+            <div className="relative z-10 flex items-center justify-between pb-3 sm:pb-5 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-2xs">
-                  <MilestoneIcon className="w-4 h-4" />
+                <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-2xs">
+                  <MilestoneIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </span>
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-ggc-gold-dark">
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-ggc-gold-dark block">
                     {currentMilestone.dimensionBadge}
                   </span>
-                  <div className="text-xs font-semibold text-gray-500">
+                  <div className="text-[11px] sm:text-xs font-semibold text-gray-500 line-clamp-1">
                     {currentMilestone.subtitle}
                   </div>
                 </div>
               </div>
 
               {/* Question Number Pill */}
-              <div className="flex items-center gap-2">
-                <span className="px-3.5 py-1.5 rounded-2xl bg-gray-100 text-ggc-dark font-black text-xs border border-gray-200 shadow-inner">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl bg-gray-100 text-ggc-dark font-black text-[11px] sm:text-xs border border-gray-200 shadow-inner">
                   Soal <strong className="text-ggc">{activeQuestion.number}</strong> / {totalQuestions}
                 </span>
               </div>
             </div>
 
             {/* Question Text Body */}
-            <div className="py-8 sm:py-10 relative z-10 text-center sm:text-left">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-2">
+            <div className="py-4 sm:py-7 relative z-10 text-left">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 block mb-1.5 sm:mb-2">
                 Pernyataan Evaluasi Bakat & Minat
               </span>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-900 leading-snug tracking-tight">
+              <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 leading-snug sm:leading-relaxed tracking-tight">
                 &ldquo;{activeQuestion.question_text}&rdquo;
               </h2>
-              <p className="text-xs text-gray-500 mt-3 italic">
+              <p className="text-[11px] sm:text-xs text-gray-500 mt-2 sm:mt-2.5 italic">
                 Pilih seberapa sesuai pernyataan ini dengan kecenderungan alami Anda (1 s/d 5).
               </p>
             </div>
 
             {/* 5 Likert Buttons */}
-            <div className="pt-2 pb-6 border-t border-gray-100 relative z-10">
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <div className="pt-2 pb-4 sm:pb-6 border-t border-gray-100 relative z-10">
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-3">
                 {activeQuestion.options.map((opt) => {
                   const isSelected = answers[activeQuestion.id] === opt.value;
 
@@ -1065,10 +1061,10 @@ export default function StudentAssessmentPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => handleSelectAnswer(activeQuestion.id, opt.value, true)}
-                      className={`group relative min-h-[76px] p-3.5 rounded-2xl border text-center transition-all duration-200 flex sm:flex-col items-center justify-between sm:justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ggc focus-visible:ring-offset-2 ${
+                      className={`group relative min-h-[50px] sm:min-h-[76px] px-3.5 py-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border text-center transition-all duration-200 flex sm:flex-col items-center justify-between sm:justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ggc focus-visible:ring-offset-2 ${
                         isSelected
-                          ? "bg-gradient-to-r sm:bg-gradient-to-b from-ggc to-ggc-light text-white border-ggc-gold ring-2 ring-ggc-gold/50 shadow-md scale-[1.02]"
-                          : "bg-gray-50/80 text-gray-700 border-gray-200 hover:border-ggc-gold/60 hover:bg-ggc-subtle/50 hover:shadow-xs active:scale-98"
+                          ? "bg-gradient-to-r sm:bg-gradient-to-b from-ggc to-ggc-light text-white border-ggc-gold ring-2 ring-ggc-gold/50 shadow-md scale-[1.01]"
+                          : "bg-gray-50/80 text-gray-700 border-gray-200 hover:border-ggc-gold/60 hover:bg-ggc-subtle/50 active:scale-98"
                       }`}
                     >
                       {/* Keyboard Shortcut Indicator & Value */}
@@ -1084,7 +1080,7 @@ export default function StudentAssessmentPage() {
 
                       {/* Label Text */}
                       <span
-                        className={`text-xs leading-tight text-right sm:text-center ${
+                        className={`text-xs sm:text-[11px] lg:text-xs leading-tight text-right sm:text-center ${
                           isSelected ? "text-white font-bold" : "text-gray-700 font-semibold"
                         }`}
                       >
@@ -1097,7 +1093,7 @@ export default function StudentAssessmentPage() {
                           isSelected ? "text-white" : "text-gray-400"
                         }`}
                       >
-                        Tekan [{opt.value}]
+                        [{opt.value}]
                       </span>
                     </button>
                   );
@@ -1106,36 +1102,36 @@ export default function StudentAssessmentPage() {
             </div>
 
             {/* Bottom Card Navigation */}
-            <div className="pt-5 border-t border-gray-100 relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="pt-4 sm:pt-5 border-t border-gray-100 relative z-10 flex items-center justify-between gap-2.5">
               <button
                 type="button"
                 onClick={handleFocusPrev}
                 disabled={activeQuestionIndex === 0}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 title="Soal Sebelumnya (Tekan A atau ←)"
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Sebelumnya [A]</span>
+                <ArrowLeft className="w-4 h-4 shrink-0" />
+                <span>Sebelumnya</span>
               </button>
 
-              <div className="text-center text-xs text-gray-500 font-medium">
+              <div className="hidden sm:block text-center text-xs text-gray-500 font-medium">
                 {answers[activeQuestion.id] !== undefined ? (
                   <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
                     <CheckCircle className="w-3.5 h-3.5" /> Jawaban tersimpan
                   </span>
                 ) : (
-                  <span>Tekan angka <strong>[1-5]</strong> di keyboard untuk jawab cepat</span>
+                  <span>Tekan angka <strong>[1-5]</strong> di keyboard</span>
                 )}
               </div>
 
               <button
                 type="button"
                 onClick={handleFocusNext}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md"
                 title="Soal Berikutnya (Tekan D atau →)"
               >
-                <span>{activeQuestionIndex < totalQuestions - 1 ? "Berikutnya [D]" : "Selesaikan Asesmen"}</span>
-                <ArrowRight className="w-4 h-4 text-ggc-gold" />
+                <span>{activeQuestionIndex < totalQuestions - 1 ? "Berikutnya" : "Selesai"}</span>
+                <ArrowRight className="w-4 h-4 text-ggc-gold shrink-0" />
               </button>
             </div>
           </div>
@@ -1282,41 +1278,65 @@ export default function StudentAssessmentPage() {
           })}
 
           {/* Section Navigation Footer Bar */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-white border border-ggc-subtle shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-            <button
-              type="button"
-              onClick={handlePrevSection}
-              disabled={currentSectionIndex === 0}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Bagian Sebelumnya</span>
-            </button>
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-ggc-subtle shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
+            <div className="flex items-center justify-between w-full sm:w-auto gap-2.5 order-2 sm:order-1">
+              <button
+                type="button"
+                onClick={handlePrevSection}
+                disabled={currentSectionIndex === 0}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <ArrowLeft className="w-4 h-4 shrink-0" />
+                <span>Sebelumnya</span>
+              </button>
 
-            <div className="text-xs text-gray-600 font-medium text-center">
-              Bagian <strong>{currentSectionIndex + 1}</strong> dari {TOTAL_SECTIONS} •{" "}
-              <strong className="text-ggc">{currentSectionAnsweredCount}</strong> dari {QUESTIONS_PER_SECTION} terjawab di bagian ini
+              {currentSectionIndex < TOTAL_SECTIONS - 1 ? (
+                <button
+                  type="button"
+                  onClick={handleNextSection}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md hover:shadow-lg sm:hidden"
+                >
+                  <span>Lanjut (P{currentSectionIndex + 2})</span>
+                  <ArrowRight className="w-4 h-4 text-ggc-gold shrink-0" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsSubmitModalOpen(true)}
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all shadow-md sm:hidden"
+                >
+                  <Send className="w-4 h-4 shrink-0" />
+                  <span>Selesai</span>
+                </button>
+              )}
             </div>
 
-            {currentSectionIndex < TOTAL_SECTIONS - 1 ? (
-              <button
-                type="button"
-                onClick={handleNextSection}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md hover:shadow-lg"
-              >
-                <span>Lanjut ke Bagian {currentSectionIndex + 2}</span>
-                <ArrowRight className="w-4 h-4 text-ggc-gold" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsSubmitModalOpen(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all shadow-md"
-              >
-                <Send className="w-4 h-4" />
-                <span>Tinjau & Selesaikan Asesmen</span>
-              </button>
-            )}
+            <div className="text-xs text-gray-600 font-medium text-center order-1 sm:order-2">
+              Bagian <strong>{currentSectionIndex + 1}</strong> dari {TOTAL_SECTIONS} •{" "}
+              <strong className="text-ggc">{currentSectionAnsweredCount}</strong> dari {QUESTIONS_PER_SECTION} terjawab
+            </div>
+
+            <div className="hidden sm:block order-3">
+              {currentSectionIndex < TOTAL_SECTIONS - 1 ? (
+                <button
+                  type="button"
+                  onClick={handleNextSection}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md hover:shadow-lg"
+                >
+                  <span>Lanjut ke Bagian {currentSectionIndex + 2}</span>
+                  <ArrowRight className="w-4 h-4 text-ggc-gold" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsSubmitModalOpen(true)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all shadow-md"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Tinjau & Selesaikan Asesmen</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
