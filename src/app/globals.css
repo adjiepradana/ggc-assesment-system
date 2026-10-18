@@ -83,24 +83,84 @@ html {
   animation: floatReverse 7s ease-in-out infinite;
 }
 
-/* Modern CSS Scroll-driven Animation parallax support */
+/* Modern CSS Scroll-driven Animation parallax support (modern-web-guidance: parallax-scroll-effects) */
 @supports ((animation-timeline: view()) and (animation-range: entry)) {
   .parallax-hero-wrapper {
     view-timeline: --heroWrapper;
   }
 
   .parallax-layer-back {
-    animation: parallaxShift linear both;
+    animation: parallaxBack linear both;
     animation-timeline: --heroWrapper;
     animation-range: entry 0% exit 100%;
   }
 
-  @keyframes parallaxShift {
+  .parallax-layer-slow {
+    animation: parallaxSlow linear both;
+    animation-timeline: --heroWrapper;
+    animation-range: entry 0% exit 100%;
+  }
+
+  .parallax-layer-medium {
+    animation: parallaxMedium linear both;
+    animation-timeline: --heroWrapper;
+    animation-range: entry 0% exit 100%;
+  }
+
+  .parallax-layer-fast {
+    animation: parallaxFast linear both;
+    animation-timeline: --heroWrapper;
+    animation-range: entry 0% exit 100%;
+  }
+
+  .parallax-layer-reverse {
+    animation: parallaxReverse linear both;
+    animation-timeline: --heroWrapper;
+    animation-range: entry 0% exit 100%;
+  }
+
+  @keyframes parallaxBack {
+    from {
+      transform: translateY(-40px) scale(0.96);
+    }
+    to {
+      transform: translateY(60px) scale(1.04);
+    }
+  }
+
+  @keyframes parallaxSlow {
     from {
       transform: translateY(-30px);
     }
     to {
-      transform: translateY(60px);
+      transform: translateY(40px);
+    }
+  }
+
+  @keyframes parallaxMedium {
+    from {
+      transform: translateY(-60px);
+    }
+    to {
+      transform: translateY(80px);
+    }
+  }
+
+  @keyframes parallaxFast {
+    from {
+      transform: translateY(-90px);
+    }
+    to {
+      transform: translateY(110px);
+    }
+  }
+
+  @keyframes parallaxReverse {
+    from {
+      transform: translateY(70px);
+    }
+    to {
+      transform: translateY(-70px);
     }
   }
 }
@@ -109,9 +169,13 @@ html {
   .animate-float-slow,
   .animate-float-reverse,
   .parallax-layer-back,
+  .parallax-layer-slow,
+  .parallax-layer-medium,
+  .parallax-layer-fast,
+  .parallax-layer-reverse,
   .spotlight-overlay {
     animation: none !important;
-    transition: none !important;
+    transform: none !important;
   }
   html {
     scroll-behavior: auto;

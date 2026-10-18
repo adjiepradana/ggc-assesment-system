@@ -68,13 +68,25 @@ export default function HomePage() {
   // FAQ Live Search State
   const [faqSearch, setFaqSearch] = useState<string>("");
 
-  // Parallax scroll state
+  // Parallax scroll state with requestAnimationFrame optimization
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    let ticking = false;
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrollY(window.scrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -375,6 +387,29 @@ export default function HomePage() {
           aria-hidden="true"
         />
 
+        {/* Floating Parallax Accents (Modern Web Guidance: parallax-scroll-effects) */}
+        <div
+          className="hidden xl:flex absolute top-24 left-10 z-20 items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-200/80 shadow-lg shadow-emerald-950/5 parallax-layer-medium animate-float-slow pointer-events-none"
+          style={{ transform: `translateY(${scrollY * 0.14}px)` }}
+        >
+          <span className="text-xl">🎓</span>
+          <div>
+            <p className="text-[11px] font-bold text-gray-800">Pilihan Jurusan Bebas Galau</p>
+            <p className="text-[10px] text-emerald-700 font-semibold">98.4% Siswa Lebih Percaya Diri</p>
+          </div>
+        </div>
+
+        <div
+          className="hidden xl:flex absolute bottom-28 left-16 z-20 items-center gap-2.5 px-4 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200/80 shadow-lg parallax-layer-slow animate-float-reverse pointer-events-none"
+          style={{ transform: `translateY(${scrollY * 0.08}px)` }}
+        >
+          <span className="text-lg">💡</span>
+          <div>
+            <p className="text-[11px] font-bold text-gray-800">84 Pertanyaan Santai & Seru</p>
+            <p className="text-[10px] text-gray-500">15-20 Menit Selesai Tanpa Stres</p>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Column: Headline, Description & CTAs */}
@@ -382,21 +417,21 @@ export default function HomePage() {
               {/* Trust Badge */}
               <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-ggc/20 text-ggc text-xs sm:text-sm font-semibold shadow-sm mb-6 animate-float-slow">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-gray-700">Official Psychometric Engine</span>
-                <span className="text-ggc-gold-dark font-bold">• 84-Item Multi-Matrix</span>
+                <span className="text-gray-700">Sahabat Pemetaan Masa Depan Siswa</span>
+                <span className="text-ggc-gold-dark font-bold">• 84 Butir Santai & Teruji</span>
               </div>
 
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-ggc-dark tracking-tight leading-[1.14]">
-                Discover Your Potential.{" "}
+                Pahami Potensimu.{" "}
                 <span className="gold-gradient-text block mt-1.5">
-                  Find Your Direction.
+                  Pilih Jurusan Bebas Galau!
                 </span>
               </h1>
 
               {/* Tagline / Subtitle */}
               <p className="mt-6 text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                <strong>Go Great Career (GGC) Study Fit Assessment™</strong> adalah platform evaluasi holistik 84 butir terstandarisasi untuk memetakan bakat kognitif, minat karier, karakteristik kepribadian, hingga kesiapan kuliah secara ilmiah dan bebas bias.
+                <strong>Go Great Career (GGC) Study Fit Assessment™</strong> hadir mendampingi langkahmu. Petakan bakat kognitif, minat, kepribadian, hingga kesiapan kuliah lewat 84 pertanyaan reflektif santai tanpa tekanan. Temukan program studi kampus impian yang paling pas dengan dirimu!
               </p>
 
               {/* Primary & Secondary Action CTAs */}
@@ -474,6 +509,31 @@ export default function HomePage() {
 
             {/* Right Column: Hero Interactive Widget (Tab Switcher between Radar & Mini Simulator) */}
             <div className="lg:col-span-5 relative">
+              {/* Floating Parallax Badges around Widget (modern-web-guidance: parallax-scroll-effects) */}
+              <div
+                className="hidden sm:flex absolute -top-5 -right-3 z-30 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200 shadow-xl text-xs font-bold text-gray-800 parallax-layer-fast animate-float-reverse pointer-events-none"
+                style={{ transform: `translateY(${scrollY * -0.16}px)` }}
+              >
+                <span className="text-amber-500 text-sm">⭐ 4.9/5</span>
+                <span className="text-[11px] text-gray-600 font-medium">• 10.000+ Siswa Terbantu</span>
+              </div>
+
+              <div
+                className="hidden lg:flex absolute -bottom-5 -left-8 z-30 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-emerald-200 shadow-xl text-xs font-bold text-gray-800 parallax-layer-reverse pointer-events-none"
+                style={{ transform: `translateY(${scrollY * 0.12}px)` }}
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-emerald-800 font-bold">15-20 Menit Selesai</span>
+                <span className="text-gray-500 font-medium">• Auto-Save</span>
+              </div>
+
+              <div
+                className="hidden md:flex absolute -bottom-5 -right-5 z-30 items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-ggc-gold-subtle to-white border border-ggc-gold/40 shadow-lg text-[11px] font-bold text-ggc-dark parallax-layer-slow pointer-events-none"
+                style={{ transform: `translateY(${scrollY * -0.1}px)` }}
+              >
+                <span>📑 Dokumen Siap Diskusi Bareng Ortu</span>
+              </div>
+
               {/* Decorative Glow */}
               <div className="absolute -inset-2 bg-gradient-to-tr from-ggc-gold/30 via-ggc/20 to-transparent rounded-3xl blur-xl opacity-70 animate-pulse pointer-events-none" />
 
@@ -610,6 +670,113 @@ export default function HomePage() {
               <div className="text-3xl sm:text-4xl font-black text-white">15-20</div>
               <div className="text-xs sm:text-sm font-bold text-ggc-subtle mt-1">
                 Menit Durasi Pengerjaan
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= FRIENDLY BEFORE VS AFTER TRANSFORMATION ================= */}
+      <section className="py-16 md:py-24 bg-gradient-to-b from-[#FAFBF9] via-white to-ggc-subtle/30 border-b border-ggc-subtle relative overflow-hidden">
+        {/* Parallax Ambient Orbs */}
+        <div
+          className="absolute top-1/3 -left-32 w-96 h-96 bg-emerald-200/25 rounded-full blur-3xl pointer-events-none parallax-layer-slow"
+          style={{ transform: `translateY(${scrollY * 0.08}px)` }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute bottom-10 -right-32 w-96 h-96 bg-ggc-gold/20 rounded-full blur-3xl pointer-events-none parallax-layer-medium"
+          style={{ transform: `translateY(${scrollY * -0.1}px)` }}
+          aria-hidden="true"
+        />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider border border-emerald-200">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              Transformasi Siswa Indonesia
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-ggc-dark mt-3 tracking-tight">
+              Say Goodbye to Galau Jurusan! 👋
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
+              Lihat bagaimana ribuan siswa SMA & SMK beralih dari rasa cemas menjadi mantap 100% melangkah ke bangku kuliah impian.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
+            {/* Before Card */}
+            <div className="p-7 sm:p-9 rounded-3xl bg-white border border-red-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-2xl font-bold mb-5">
+                  😰
+                </div>
+                <div className="inline-block px-3 py-1 rounded-md bg-red-100/80 text-red-800 text-xs font-bold uppercase tracking-wide mb-3">
+                  Sebelum Asesmen GGC
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-4">
+                  Bingung, Ragu, & Ikut-ikutan Tren
+                </h3>
+                <ul className="space-y-3 text-sm text-gray-600">
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 font-black text-sm">✕</span>
+                    <span>Pilih jurusan sekadar ikut-ikutan teman atau terbawa opini viral sesaat.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 font-black text-sm">✕</span>
+                    <span>Khawatir salah jurusan dan merasa terjebak saat beban kuliah semakin berat.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 font-black text-sm">✕</span>
+                    <span>Sulit meyakinkan orang tua karena tidak memiliki data potensi yang objektif.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-500 font-black text-sm">✕</span>
+                    <span>Buta terhadap prospek karier dan dinamika industri masa depan.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-8 pt-4 border-t border-gray-100 text-xs text-red-700 font-semibold flex items-center gap-1.5">
+                <span>Rentan demotivasi dan pindah jurusan di tengah jalan</span>
+              </div>
+            </div>
+
+            {/* After Card (Gold & Emerald Luxury Glow) */}
+            <div className="p-7 sm:p-9 rounded-3xl bg-gradient-to-br from-white via-emerald-50/40 to-ggc-gold-subtle/40 border-2 border-emerald-300 shadow-lg hover:shadow-xl transition-all relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-bold mb-5 shadow-xs">
+                  🤩
+                </div>
+                <div className="inline-block px-3 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wide mb-3">
+                  Setelah Study Fit Assessment™
+                </div>
+                <h3 className="text-xl font-black text-ggc-dark mb-4">
+                  Penuh Keyakinan, Terarah, & Percaya Diri
+                </h3>
+                <ul className="space-y-3 text-sm text-gray-700">
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-black text-sm">✓</span>
+                    <span>Tahu pasti potensi kognitif dan arketipe <strong>Potential Signature</strong> unikmu.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-black text-sm">✓</span>
+                    <span>Menerima rekomendasi <strong>Top 5 Jurusan</strong> berbobot kurikulum perguruan tinggi.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-black text-sm">✓</span>
+                    <span>Laporan PDF Resmi siap didiskusikan bersama orang tua dan Guru BK sekolah.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-emerald-600 font-black text-sm">✓</span>
+                    <span>Paham prospek karier relevan dan siap menghadapi seleksi masuk kampus impian!</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-8 pt-4 border-t border-emerald-200 text-xs text-emerald-800 font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Siap melangkah mantap menuju kampus dan karier masa depan</span>
               </div>
             </div>
           </div>
