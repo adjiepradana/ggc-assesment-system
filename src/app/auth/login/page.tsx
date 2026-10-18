@@ -15,6 +15,10 @@ import {
   ShieldCheck,
   GraduationCap,
   Sparkles,
+  Compass,
+  CheckCircle2,
+  Layers,
+  Award,
 } from "lucide-react";
 
 function LoginForm() {
@@ -72,35 +76,43 @@ function LoginForm() {
   };
 
   return (
-    <div className="bg-white/95 backdrop-blur-lg py-8 px-6 sm:px-10 shadow-2xl rounded-3xl border border-ggc-gold/30">
+    <div className="w-full">
       {error && (
-        <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-800 text-xs">
+        <div
+          className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-800 text-xs shadow-xs"
+          role="alert"
+        >
           <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
-          <span>{error}</span>
+          <span className="leading-relaxed font-medium">{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         {/* Email Field */}
         <div>
           <label
             htmlFor="email"
-            className="block text-xs font-bold text-ggc-dark mb-1.5"
+            className="block text-xs font-bold text-gray-800 mb-1.5"
           >
-            Alamat Email
+            Alamat Email Akun
           </label>
-          <div className="relative rounded-xl shadow-sm">
+          <div className="relative rounded-2xl shadow-xs">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
               <Mail className="h-4 w-4" />
             </div>
             <input
               id="email"
+              name="email"
               type="email"
+              autoComplete="email"
+              spellCheck="false"
+              inputMode="email"
+              enterKeyHint="next"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@email.com"
-              className="block w-full pl-10 pr-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-ggc-tint/30 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
+              className="block w-full pl-10 pr-4 py-3 text-sm rounded-2xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
             />
           </div>
         </div>
@@ -110,29 +122,32 @@ function LoginForm() {
           <div className="flex items-center justify-between mb-1.5">
             <label
               htmlFor="password"
-              className="block text-xs font-bold text-ggc-dark"
+              className="block text-xs font-bold text-gray-800"
             >
               Kata Sandi
             </label>
           </div>
-          <div className="relative rounded-xl shadow-sm">
+          <div className="relative rounded-2xl shadow-xs">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
               <Lock className="h-4 w-4" />
             </div>
             <input
               id="password"
+              name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              enterKeyHint="done"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="block w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-gray-200 bg-ggc-tint/30 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
+              className="block w-full pl-10 pr-11 py-3 text-sm rounded-2xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
+              aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />
@@ -148,14 +163,14 @@ function LoginForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ggc shadow-md hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-2xl text-sm font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ggc shadow-md transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-ggc-dark border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <span>Masuk ke Dashboard</span>
-                <ArrowRight className="w-4 h-4 text-ggc-gold" />
+                <ArrowRight className="w-4 h-4 text-ggc-dark" />
               </>
             )}
           </button>
@@ -163,16 +178,16 @@ function LoginForm() {
       </form>
 
       {/* Demo Credentials Quick-Fill helper */}
-      <div className="mt-6 pt-6 border-t border-gray-100">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">
+      <div className="mt-7 pt-6 border-t border-gray-100">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
           <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
-          <span>Autofill Akun Percobaan (Seed Demo)</span>
+          <span>Akses Cepat Akun Percobaan (Seed Demo)</span>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => handleDemoFill("STUDENT")}
-            className="inline-flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-ggc/10 text-ggc hover:bg-ggc/20 border border-ggc/20 transition-colors"
+            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc/10 text-ggc hover:bg-ggc/20 border border-ggc/20 transition-all shadow-2xs hover:scale-101"
           >
             <GraduationCap className="w-3.5 h-3.5" />
             <span>Akun Siswa</span>
@@ -180,7 +195,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => handleDemoFill("ADMIN")}
-            className="inline-flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-ggc-gold/20 text-ggc-gold-dark hover:bg-ggc-gold/30 border border-ggc-gold/30 transition-colors"
+            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc-gold/20 text-ggc-gold-dark hover:bg-ggc-gold/30 border border-ggc-gold/30 transition-all shadow-2xs hover:scale-101"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Akun Admin</span>
@@ -189,14 +204,14 @@ function LoginForm() {
       </div>
 
       {/* Register Link */}
-      <div className="mt-6 text-center">
+      <div className="mt-6 text-center pt-2">
         <p className="text-xs text-gray-600">
-          Belum memiliki akun?{" "}
+          Belum memiliki akun terdaftar?{" "}
           <Link
             href="/auth/register"
-            className="font-bold text-ggc hover:text-ggc-light underline"
+            className="font-bold text-ggc hover:text-ggc-light underline decoration-ggc/30 underline-offset-4"
           >
-            Daftar sekarang
+            Daftar akun siswa sekarang
           </Link>
         </p>
       </div>
@@ -206,31 +221,140 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gradient-to-br from-ggc-dark via-ggc to-ggc-light relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-ggc-gold/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+    <div className="min-h-screen grid lg:grid-cols-12 bg-[#F3F8F5] overflow-x-hidden selection:bg-ggc selection:text-white">
+      {/* ------------------------------------------------------------------ */}
+      {/* LEFT COLUMN: BRAND SHOWCASE & SOCIAL PROOF (DESKTOP ONLY)          */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="hidden lg:flex lg:col-span-5 xl:col-span-5 bg-emerald-luxury p-8 xl:p-14 text-white relative flex-col justify-between border-r border-ggc-gold/30 shadow-2xl overflow-hidden">
+        {/* Background decorative atmosphere */}
+        <div className="absolute inset-0 bg-dot-grid opacity-50 pointer-events-none" aria-hidden="true" />
+        <div
+          className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-ggc-gold/15 blur-3xl animate-float-slow pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/10 blur-3xl animate-float-reverse pointer-events-none"
+          aria-hidden="true"
+        />
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
-        {/* Brand Header */}
-        <div className="text-center">
-          <div className="inline-block p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-3 shadow-lg">
-            <BrandLogo variant="light" size="lg" href="/" />
+        {/* Top: Brand Logo */}
+        <div className="relative z-10">
+          <BrandLogo variant="light" size="lg" href="/" />
+          <div className="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-bold text-ggc-gold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
+            <span>Platform Evaluasi Minat, Bakat & Studi</span>
           </div>
-          <h2 className="mt-3 text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Selamat Datang Kembali
-          </h2>
-          <p className="mt-2 text-xs sm:text-sm text-ggc-subtle/80">
-            Masuk ke portal Study Fit Assessment™ Anda
+        </div>
+
+        {/* Middle: Value Proposition & Hero Highlights */}
+        <div className="relative z-10 my-8 space-y-6">
+          <div>
+            <h1 className="font-display text-3xl xl:text-4xl font-black tracking-tight leading-tight">
+              Discover Your Potential. <br />
+              <span className="gold-gradient-text">Find Your Direction.</span>
+            </h1>
+            <p className="mt-3 text-xs xl:text-sm text-ggc-subtle/85 leading-relaxed">
+              Platform diagnostik psikometrik 84-butir multi-matriks untuk memetakan kecocokan jurusan perguruan tinggi dan arah karier masa depan Anda.
+            </p>
+          </div>
+
+          {/* 3 Core Highlights */}
+          <div className="space-y-3.5">
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
+              <div className="w-8 h-8 rounded-xl bg-ggc-gold text-ggc-dark font-black flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <Compass className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">Multi-Matrix Study Matching</h4>
+                <p className="text-[11px] text-ggc-subtle/80 mt-0.5 leading-snug">
+                  Mencocokkan profil personal bakat Anda terhadap benchmark 10+ program studi perguruan tinggi.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
+              <div className="w-8 h-8 rounded-xl bg-white/10 text-ggc-gold font-black flex items-center justify-center shrink-0 border border-white/20 mt-0.5">
+                <Layers className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">84 Butir Instrumen Objektif</h4>
+                <p className="text-[11px] text-ggc-subtle/80 mt-0.5 leading-snug">
+                  Evaluasi zero-bias yang mencakup 7 dimensi esensial mulai dari bakat hingga kesiapan kuliah.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
+              <div className="w-8 h-8 rounded-xl bg-white/10 text-ggc-gold font-black flex items-center justify-center shrink-0 border border-white/20 mt-0.5">
+                <Award className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">Laporan PDF Resmi Lengkap</h4>
+                <p className="text-[11px] text-ggc-subtle/80 mt-0.5 leading-snug">
+                  Rincian Potential Signature, skor kecocokan studi, serta analisis Strengths & Gaps.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Proof Quote Card */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-ggc-dark/80 to-ggc/80 border border-ggc-gold/30 text-xs shadow-lg">
+            <p className="text-ggc-subtle/90 italic leading-relaxed">
+              &ldquo;Hasil evaluasi GGC sangat membuka wawasan saya mengenai jurusan yang paling selaras dengan gaya belajar saya.&rdquo;
+            </p>
+            <div className="mt-2.5 flex items-center justify-between text-[11px]">
+              <span className="font-bold text-white">Sheila Amanda</span>
+              <span className="text-ggc-gold font-semibold">Siswi SMA Kelas 12</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom: Security & Trust Footer */}
+        <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-ggc-subtle/70">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-ggc-gold" />
+            <span>Enkripsi Sesi Aman</span>
+          </div>
+          <span>v1.0 • Standar GGC™</span>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* RIGHT COLUMN: LOGIN FORM CARD                                     */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="col-span-12 lg:col-span-7 xl:col-span-7 flex flex-col justify-center items-center p-6 sm:p-10 lg:p-12 relative min-h-screen">
+        {/* Subtle decorative background blur for right side */}
+        <div className="absolute top-10 right-10 w-72 h-72 bg-ggc-gold/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 left-10 w-72 h-72 bg-emerald-100/60 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Mobile Header (Hidden on Desktop) */}
+        <div className="lg:hidden mb-6 text-center w-full max-w-md">
+          <BrandLogo variant="dark" size="md" href="/" />
+          <p className="mt-2 text-xs text-gray-500">
+            Platform Evaluasi Study Fit Assessment™
           </p>
         </div>
 
-        {/* Login Card with Suspense */}
-        <div className="mt-8">
+        {/* Main Card */}
+        <div className="w-full max-w-md bg-white rounded-[2.5rem] p-7 sm:p-10 shadow-xl border border-gray-200/80 relative z-10">
+          {/* Form Header */}
+          <div className="mb-6">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ggc-gold-dark uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-ggc-gold-subtle border border-ggc-gold/30 mb-2">
+              <ShieldCheck className="w-3.5 h-3.5" /> Portal Akun Pengguna
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-ggc-dark tracking-tight">
+              Selamat Datang
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Masuk untuk melanjutkan asesmen dan mengakses laporan hasil evaluasi Anda.
+            </p>
+          </div>
+
+          {/* Login Form with Suspense */}
           <Suspense
             fallback={
-              <div className="bg-white/95 backdrop-blur-lg p-10 rounded-3xl border border-ggc-gold/30 text-center">
-                <div className="w-8 h-8 border-4 border-ggc border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <div className="py-12 text-center">
+                <div className="w-8 h-8 border-3 border-ggc border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                 <p className="text-xs text-gray-500 font-medium">Memuat form login...</p>
               </div>
             }
@@ -239,13 +363,13 @@ export default function LoginPage() {
           </Suspense>
         </div>
 
-        {/* Back to Home */}
-        <div className="mt-6 text-center">
+        {/* Bottom Back to Home */}
+        <div className="mt-6 text-center z-10">
           <Link
             href="/"
-            className="text-xs text-ggc-subtle hover:text-white transition-colors"
+            className="text-xs font-semibold text-gray-500 hover:text-ggc transition-colors inline-flex items-center gap-1.5"
           >
-            ← Kembali ke Beranda GGC
+            <span>← Kembali ke Halaman Utama</span>
           </Link>
         </div>
       </div>
