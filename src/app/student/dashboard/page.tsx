@@ -3,26 +3,54 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { calculateAssessmentScores, ScoringResult } from "@/lib/scoring";
 import {
   Sparkles,
   ArrowRight,
   Clock,
   Compass,
   CheckCircle2,
-  FileQuestion,
   GraduationCap,
   Award,
   Layers,
   BookOpen,
   HelpCircle,
+  Brain,
+  Target,
+  UserCheck,
+  ShieldCheck,
+  Briefcase,
+  Flame,
+  Zap,
+  TrendingUp,
+  Download,
+  School,
+  BadgeCheck,
+  FileText,
+  Lightbulb,
+  ChevronRight,
+  RotateCcw,
+  BarChart3,
+  Check,
+  AlertCircle,
 } from "lucide-react";
 
 export default async function StudentDashboardPage() {
   const session = await getServerSession(authOptions);
 
-  let userProfile = null;
-  let activeSession = null;
+  let userProfile: any = null;
+  let activeSession: any = null;
   let totalAnswers = 0;
+  const answersRecord: Record<string, number> = {};
+  const countsByDimension: Record<string, number> = {
+    T: 0,
+    I: 0,
+    P: 0,
+    V: 0,
+    A: 0,
+    C: 0,
+    R: 0,
+  };
 
   if (session?.user?.id) {
     try {
@@ -34,7 +62,11 @@ export default async function StudentDashboardPage() {
             orderBy: { started_at: "desc" },
             take: 1,
             include: {
-              answers: true,
+              answers: {
+                include: {
+                  question: true,
+                },
+              },
             },
           },
         },
@@ -42,198 +74,731 @@ export default async function StudentDashboardPage() {
 
       userProfile = user?.profile;
       activeSession = user?.sessions[0] || null;
-      totalAnswers = activeSession?.answers.length || 0;
+
+      if (activeSession?.answers) {
+        totalAnswers = activeSession.answers.length;
+        for (const ans of activeSession.answers) {
+          const code = ans.question?.code || "";
+          if (code) {
+            answersRecord[code] = ans.selected_value;
+            const prefix = code.charAt(0).toUpperCase();
+            if (countsByDimension[prefix] !== undefined) {
+              countsByDimension[prefix]++;
+            }
+          }
+        }
+      }
     } catch (e) {
-      // Fallback if DB connection fails in dev environment without migration
-      console.warn("DB fetch fallback for student dashboard");
+      console.warn("DB fetch fallback for student dashboard", e);
     }
   }
 
-  const dimensions = [
-    { code: "T", name: "Talent (Bakat)", count: 12, desc: "Potensi kognitif & kemampuan alami" },
-    { code: "I", name: "Interest (Minat)", count: 12, desc: "Eksplorasi kecenderungan bidang & aktivitas" },
-    { code: "P", name: "Personality (Kepribadian)", count: 12, desc: "Gaya kerja & preferensi adaptasi" },
-    { code: "V", name: "Values (Nilai Pribadi)", count: 12, desc: "Motivator internal & kepuasan hidup" },
-    { code: "A", name: "Academic (Akademik)", count: 12, desc: "Kecocokan rumpun mata pelajaran & jurusan" },
-    { code: "C", name: "Career (Karier)", count: 12, desc: "Aspirasi peran profesional masa depan" },
-    { code: "R", name: "Readiness (Kesiapan)", count: 12, desc: "Kemandirian & kesiapan mental kuliah" },
+  const totalQuestions = 84;
+  const isCompleted =
+    activeSession?.status === "COMPLETED" || totalAnswers >= totalQuestions;
+  const progressPercent = Math.min(
+    100,
+    Math.round((totalAnswers / totalQuestions) * 100)
+  );
+
+  // Compute scoring preview if user has completed or answered sufficiently
+  let scoringResult: ScoringResult | null = null;
+  if (activeSession && (isCompleted || totalAnswers >= totalQuestions)) {
+    try {
+      scoringResult = calculateAssessmentScores(activeSession.id, answersRecord);
+    } catch (err) {
+      console.warn("Scoring preview calculation error", err);
+    }
+  }
+
+  const studentName =
+    userProfile?.full_name || session?.user?.name || "Siswa Hebat";
+  const initials =
+    studentName
+      .split(" ")
+      .map((part: string) => part[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "SH";
+
+  const dimensionsList = [
+    {
+      code: "T",
+      name: "Talent (Bakat)",
+      categoryName: "Potensi Kognitif",
+      total: 12,
+      count: countsByDimension.T || 0,
+      icon: Brain,
+      gradient: "from-emerald-500 to-teal-600",
+      bgSoft: "bg-emerald-50/70",
+      borderSoft: "border-emerald-200/70",
+      textColor: "text-emerald-700",
+      badgeBg: "bg-emerald-100 text-emerald-800",
+      desc: "Logika analitikal, penalaran spasial 3D, daya ingat konseptual, dan kreativitas orisinal.",
+      tag: "Logika & Spasial",
+    },
+    {
+      code: "I",
+      name: "Interest (Minat)",
+      categoryName: "Eksplorasi Holland",
+      total: 12,
+      count: countsByDimension.I || 0,
+      icon: Compass,
+      gradient: "from-amber-500 to-orange-600",
+      bgSoft: "bg-amber-50/70",
+      borderSoft: "border-amber-200/70",
+      textColor: "text-amber-700",
+      badgeBg: "bg-amber-100 text-amber-800",
+      desc: "Kecenderungan aktivitas sains, teknologi informasi, seni kreatif, bisnis, & sosial.",
+      tag: "RIASEC Model",
+    },
+    {
+      code: "P",
+      name: "Personality (Kepribadian)",
+      categoryName: "Gaya Belajar & Kerja",
+      total: 12,
+      count: countsByDimension.P || 0,
+      icon: UserCheck,
+      gradient: "from-indigo-500 to-violet-600",
+      bgSoft: "bg-indigo-50/70",
+      borderSoft: "border-indigo-200/70",
+      textColor: "text-indigo-700",
+      badgeBg: "bg-indigo-100 text-indigo-800",
+      desc: "Keteraturan, stabilitas emosi saat tekanan, grit (daya tahan), dan kepemimpinan alami.",
+      tag: "Big Five Traits",
+    },
+    {
+      code: "V",
+      name: "Values (Nilai Pribadi)",
+      categoryName: "Motivator Internal",
+      total: 12,
+      count: countsByDimension.V || 0,
+      icon: ShieldCheck,
+      gradient: "from-teal-600 to-emerald-700",
+      bgSoft: "bg-teal-50/70",
+      borderSoft: "border-teal-200/70",
+      textColor: "text-teal-700",
+      badgeBg: "bg-teal-100 text-teal-800",
+      desc: "Kemandirian finansial, integritas moral, karya bermakna, dan kontribusi sosial.",
+      tag: "Motivasi Intrapersonal",
+    },
+    {
+      code: "A",
+      name: "Academic (Akademik)",
+      categoryName: "Kecocokan Rumpun",
+      total: 12,
+      count: countsByDimension.A || 0,
+      icon: GraduationCap,
+      gradient: "from-blue-500 to-sky-600",
+      bgSoft: "bg-blue-50/70",
+      borderSoft: "border-blue-200/70",
+      textColor: "text-blue-700",
+      badgeBg: "bg-blue-100 text-blue-800",
+      desc: "Ketertarikan rumpun mata pelajaran Saintek, Soshum, Medis, Teknik, atau Humaniora.",
+      tag: "Mata Kuliah & Jurusan",
+    },
+    {
+      code: "C",
+      name: "Career (Aspirasi Karier)",
+      categoryName: "Arah Masa Depan",
+      total: 12,
+      count: countsByDimension.C || 0,
+      icon: Briefcase,
+      gradient: "from-rose-500 to-pink-600",
+      bgSoft: "bg-rose-50/70",
+      borderSoft: "border-rose-200/70",
+      textColor: "text-rose-700",
+      badgeBg: "bg-rose-100 text-rose-800",
+      desc: "Proyeksi profesi: Inovator Teknologi, Konsultan Strategis, Peneliti, atau Wirausahawan.",
+      tag: "Peran Profesional",
+    },
+    {
+      code: "R",
+      name: "Readiness (Kesiapan)",
+      categoryName: "Kemandirian Kuliah",
+      total: 12,
+      count: countsByDimension.R || 0,
+      icon: Flame,
+      gradient: "from-orange-500 to-red-600",
+      bgSoft: "bg-orange-50/70",
+      borderSoft: "border-orange-200/70",
+      textColor: "text-orange-700",
+      badgeBg: "bg-orange-100 text-orange-800",
+      desc: "Kedisiplinan belajar mandiri, kesiapan adaptasi merantau, dan mentalitas kampus.",
+      tag: "Resiliensi Mental",
+    },
   ];
 
-  const totalQuestions = 84;
-  const progressPercent = Math.round((totalAnswers / totalQuestions) * 100);
-
   return (
-    <div className="space-y-6">
-      {/* Top Action Bar: Kembali ke Halaman Utama */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+    <div className="space-y-8 pb-12">
+      {/* ================= 1. TOP ACTION & STATUS BAR ================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-ggc transition-colors bg-white px-4 py-2 rounded-xl border border-gray-200/90 shadow-2xs hover:shadow-xs self-start"
+          className="inline-flex items-center gap-2.5 text-xs font-bold text-gray-700 hover:text-ggc transition-all duration-200 bg-white hover:bg-ggc-subtle/50 px-4 py-2.5 rounded-xl border border-gray-200/90 shadow-xs hover:shadow-sm group self-start"
         >
-          <Compass className="w-4 h-4 text-ggc-gold" />
+          <Compass className="w-4 h-4 text-ggc-gold transition-transform duration-200 group-hover:-rotate-45" />
           <span>Kembali ke Halaman Utama</span>
         </Link>
 
-        <span className="text-xs font-semibold text-gray-500">
-          Portal Siswa • Go Great Career Study Fit™
-        </span>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-gray-200/80 text-[11px] font-semibold text-gray-600 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Sistem Online • Tahun Ajaran 2026/2027</span>
+          </div>
+          <div className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/15 text-ggc-gold-dark text-[11px] font-bold border border-ggc-gold/30">
+            <BadgeCheck className="w-3.5 h-3.5" />
+            <span>Akun Siswa Terverifikasi</span>
+          </div>
+        </div>
       </div>
 
-      {/* Welcome Hero Banner */}
+      {/* ================= 2. EYE-CATCHING HERO BANNER ================= */}
       <div className="rounded-3xl bg-emerald-luxury p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-ggc-gold/30">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-ggc-gold/15 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
-        <div className="absolute top-6 right-6 hidden md:block opacity-20 pointer-events-none">
-          <img src="/logo.png" alt="GGC Logo" className="w-24 h-24 object-contain" />
+        {/* Ambient Glow Orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-ggc-gold/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-ggc-light/20 rounded-full blur-2xl pointer-events-none" />
+
+        {/* Watermark Logo */}
+        <div className="absolute top-6 right-6 hidden lg:block opacity-15 pointer-events-none">
+          <img src="/logo.png" alt="GGC Brand" className="w-32 h-32 object-contain" />
         </div>
-        
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-ggc-gold text-xs font-semibold mb-4 border border-white/20">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Dashboard Asesmen Siswa</span>
+
+        <div className="relative z-10 max-w-3xl">
+          {/* Top Pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-ggc-gold text-xs font-semibold mb-5 border border-white/20">
+            <Sparkles className="w-4 h-4 text-ggc-gold" />
+            <span>Portal Siswa • Go Great Career Study Fit™</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
-            Halo, {userProfile?.full_name || session?.user?.name || "Siswa Hebat"}! 👋
-          </h1>
-          
-          <p className="mt-3 text-sm sm:text-base text-ggc-subtle/90 leading-relaxed">
-            Selamat datang di instrumen komprehensif <strong>GGC Study Fit Assessment™</strong>. Mari ukur kecocokan potensi dirimu menuju pilihan program studi terbaik.
+          {/* Greeting with Avatar Badge */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 mb-4">
+            <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br from-ggc-gold to-ggc-gold-dark text-ggc-dark font-black text-2xl flex items-center justify-center shadow-lg shadow-black/20 shrink-0 border-2 border-white/30">
+              {initials}
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+                Halo, {studentName}! 👋
+              </h1>
+              <p className="text-xs sm:text-sm text-ggc-gold/90 font-medium mt-0.5">
+                Siap memetakan potensi terbaik dan menemukan jurusan kuliah impianmu?
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm sm:text-base text-ggc-subtle/90 leading-relaxed max-w-2xl mt-3">
+            Instrumen <strong>GGC Study Fit Assessment™</strong> mengombinasikan 84 butir reflektif lintas 7 dimensi untuk menganalisis kecocokan profilmu dengan ratusan program studi universitas secara objektif.
           </p>
 
-          {/* Quick Profile Summary Tag */}
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-ggc-subtle">
-            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">
+          {/* Quick Profile Summary Chips */}
+          <div className="mt-6 flex flex-wrap items-center gap-2.5 text-xs text-ggc-subtle font-medium">
+            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-white/10">
+              <School className="w-4 h-4 text-ggc-gold" />
+              <span>{userProfile?.school_name || "SMA / SMK Belum Diatur"}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-white/10">
               <GraduationCap className="w-4 h-4 text-ggc-gold" />
-              <span>{userProfile?.school_name || "Sekolah Belum Diatur"}</span>
+              <span>{userProfile?.grade || "Kelas 12 (Persiapan Kuliah)"}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">
-              <BookOpen className="w-4 h-4 text-ggc-gold" />
-              <span>{userProfile?.grade || "Kelas 12"}</span>
+            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-white/10">
+              <Target className="w-4 h-4 text-ggc-gold" />
+              <span>Target: PTN / PTS Favorit</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Primary Assessment Action Card */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-ggc-subtle shadow-md">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ggc">
-              <Clock className="w-4 h-4 text-ggc-gold" />
-              <span>Sesi Asesmen Anda</span>
+      {/* ================= 3. 4-GRID QUICK KPI STATS ================= */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {/* KPI 1: Progres Asesmen */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Progres Jawaban
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Target className="w-5 h-5" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-ggc-dark">
-              Status Pengerjaan 84 Instrumen
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-xl">
-              Asesmen terbagi dalam 7 dimensi evaluasi dengan skala 1-5 (Sangat Tidak Sesuai s/d Sangat Sesuai). Kerjakan secara jujur untuk hasil analisis paling presisi.
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black text-gray-900">
+              {totalAnswers}
+            </span>
+            <span className="text-xs sm:text-sm font-semibold text-gray-400">
+              / 84 Soal
+            </span>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 to-ggc rounded-full transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-bold text-emerald-700">
+              {progressPercent}%
+            </span>
+          </div>
+        </div>
+
+        {/* KPI 2: Estimasi Waktu */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Estimasi Sesi
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl sm:text-3xl font-black text-gray-900">
+              15 - 20
+            </span>
+            <span className="text-xs sm:text-sm font-semibold text-gray-500">
+              Menit
+            </span>
+          </div>
+          <p className="mt-2 text-[11px] font-medium text-gray-500 flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Fleksibel & simpan otomatis</span>
+          </p>
+        </div>
+
+        {/* KPI 3: Dimensi Matriks */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Cakupan Evaluasi
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Layers className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl sm:text-3xl font-black text-gray-900">
+              7
+            </span>
+            <span className="text-xs sm:text-sm font-semibold text-gray-500">
+              Dimensi Holistik
+            </span>
+          </div>
+          <p className="mt-2 text-[11px] font-medium text-gray-500 flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Bakat, Minat, Nilai, Kesiapan</span>
+          </p>
+        </div>
+
+        {/* KPI 4: Hasil / Rekomendasi */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Status Laporan
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-ggc-gold/20 text-ggc-gold-dark flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Award className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="truncate">
+            <span className="text-base sm:text-lg font-black text-gray-900 truncate block">
+              {isCompleted
+                ? scoringResult?.potentialSignatures[0]?.title || "Siap Diunduh"
+                : `${84 - totalAnswers} Soal Lagi`}
+            </span>
+          </div>
+          <p className="mt-2 text-[11px] font-semibold text-ggc-gold-dark flex items-center gap-1.5 truncate">
+            {isCompleted ? (
+              <>
+                <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="truncate">Laporan & PDF Tersedia</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span className="truncate">Kerjakan 84 soal untuk membuka</span>
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+
+      {/* ================= 4. PRIMARY INTERACTIVE ACTION HUB ================= */}
+      {isCompleted ? (
+        /* VARIANT A: SUDAH SELESAI */
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-white via-ggc-gold-subtle/50 to-emerald-50/40 border-2 border-ggc-gold/40 shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-ggc-gold/10 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Asesmen Selesai (84 / 84 Soal Terjawab)</span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                Laporan Hasil & Analisis Anda Siap Ditinjau! 🎉
+              </h2>
+
+              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                Algoritma multi-matriks telah berhasil memetakan profil psikometrik, Potential Signature, serta rekomendasi program studi universitas yang paling selaras dengan potensi alami Anda.
+              </p>
+
+              {scoringResult && (
+                <div className="pt-2 flex flex-wrap gap-2.5 text-xs font-semibold">
+                  <div className="px-3 py-1.5 rounded-lg bg-ggc-dark text-white flex items-center gap-2 shadow-xs">
+                    <Award className="w-3.5 h-3.5 text-ggc-gold" />
+                    <span>
+                      {scoringResult.potentialSignatures[0]?.title || "Potential Signature"}
+                    </span>
+                  </div>
+                  {scoringResult.studyRecommendations[0] && (
+                    <div className="px-3 py-1.5 rounded-lg bg-white border border-ggc/20 text-ggc-dark flex items-center gap-2 shadow-2xs">
+                      <GraduationCap className="w-3.5 h-3.5 text-ggc" />
+                      <span>
+                        Top Fit: {scoringResult.studyRecommendations[0].majorName} (
+                        {scoringResult.studyRecommendations[0].fitScore}%)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+              <Link
+                href={`/student/results/${activeSession?.id || "preview"}`}
+                className="inline-flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-md hover:shadow-lg transition-all text-sm group"
+              >
+                <BarChart3 className="w-4 h-4 text-ggc-gold" />
+                <span>Buka Laporan Hasil Lengkap</span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </Link>
+
+              {activeSession?.id && (
+                <a
+                  href={`/api/assessment/results/${activeSession.id}/pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-gray-800 bg-white hover:bg-gray-50 border border-gray-300 shadow-2xs transition-all text-xs"
+                >
+                  <Download className="w-4 h-4 text-ggc-gold-dark" />
+                  <span>Unduh Dokumen PDF Resmi</span>
+                </a>
+              )}
+
+              <Link
+                href="/student/assessment"
+                className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-gray-500 hover:text-ggc transition-colors py-1"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Tinjau Kembali Lembar Asesmen</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* VARIANT B: SEDANG / BELUM MENGERJAKAN */
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-200/90 shadow-md relative overflow-hidden">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-xl">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ggc">
+                <Clock className="w-4 h-4 text-ggc-gold" />
+                <span>
+                  {totalAnswers > 0
+                    ? `Sesi Sedang Berjalan (${totalAnswers} / 84 Soal)`
+                    : "Sesi Asesmen Siap Dimulai"}
+                </span>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-black text-ggc-dark tracking-tight">
+                {totalAnswers > 0
+                  ? "Lanjutkan Pengisian Asesmen 84 Butir"
+                  : "Mulai Asesmen Study Fit™ Anda Sekarang"}
+              </h2>
+
+              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                Asesmen terdiri dari 84 pernyataan reflektif dengan skala 1-5 (Sangat Tidak Sesuai s/d Sangat Sesuai). Tidak ada jawaban salah, jawablah secara jujur untuk hasil analisis paling presisi.
+              </p>
+
+              {/* Progress Visual Bar */}
+              <div className="pt-2 max-w-lg">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2">
+                  <span className="flex items-center gap-1.5">
+                    <span>Progres:</span>
+                    <strong className="text-ggc-dark">
+                      {totalAnswers} dari 84 Soal Terjawab
+                    </strong>
+                  </span>
+                  <span className="text-ggc font-black">{progressPercent}%</span>
+                </div>
+                <div className="w-full h-3.5 rounded-full bg-gray-100 overflow-hidden p-0.5 border border-gray-200/80">
+                  <div
+                    className="h-full bg-gradient-to-r from-ggc via-emerald-600 to-ggc-gold transition-all duration-500 rounded-full shadow-inner"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-gray-400">
+                  <span>Mulai (Soal 1)</span>
+                  <span>Pertengahan (Soal 42)</span>
+                  <span>Selesai (Soal 84)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+              <Link
+                href="/student/assessment"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-md hover:shadow-lg transition-all text-sm group"
+              >
+                <Compass className="w-4 h-4 text-ggc-gold transition-transform duration-200 group-hover:rotate-45" />
+                <span>
+                  {totalAnswers > 0
+                    ? `Lanjutkan (Soal ${totalAnswers + 1})`
+                    : "Mulai Asesmen 84 Butir"}
+                </span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </Link>
+
+              <div className="flex items-center justify-center gap-3 text-[11px] text-gray-500">
+                <span className="flex items-center gap-1">
+                  <Check className="w-3 h-3 text-emerald-600" /> Auto-Save
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Check className="w-3 h-3 text-emerald-600" /> Bebas Tekanan
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Check className="w-3 h-3 text-emerald-600" /> 15-20 Menit
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= 5. 7 DIMENSI HOLISTIK GRID ================= */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-lg sm:text-xl font-black text-gray-900 flex items-center gap-2.5">
+              <Layers className="w-5 h-5 text-ggc" />
+              <span>7 Dimensi Matriks Yang Dinilai</span>
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Setiap dimensi berisi 12 butir instrumen psikometrik terstandarisasi.
             </p>
-
-            {/* Progress Bar */}
-            <div className="pt-3 max-w-md">
-              <div className="flex items-center justify-between text-xs font-bold text-ggc-dark mb-1.5">
-                <span>Progres: {totalAnswers} / {totalQuestions} Soal</span>
-                <span className="text-ggc">{progressPercent}%</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-ggc-subtle overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-ggc to-ggc-gold transition-all duration-500 rounded-full"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
           </div>
-
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-            <Link
-              href="/student/assessment"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-md hover:shadow-lg transition-all text-sm"
-            >
-              <Compass className="w-4 h-4 text-ggc-gold" />
-              <span>{totalAnswers > 0 ? "Lanjutkan Asesmen" : "Mulai Asesmen Baru"}</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <div className="text-[11px] text-center text-gray-500">
-              Estimasi pengerjaan: 15-20 menit
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 7 Dimensions Breakdown Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-ggc-dark flex items-center gap-2">
-            <Layers className="w-5 h-5 text-ggc" />
-            7 Dimensi Yang Dinilai
-          </h3>
-          <span className="text-xs text-gray-500 font-medium">
-            Masing-masing 12 butir soal
+          <span className="text-xs font-semibold text-ggc-gold-dark bg-ggc-gold-subtle px-3 py-1 rounded-full border border-ggc-gold/30 self-start sm:self-auto">
+            Total 84 Butir Soal
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {dimensions.map((dim) => (
-            <div
-              key={dim.code}
-              className="p-5 rounded-2xl bg-white border border-ggc-subtle shadow-sm hover:border-ggc/30 transition-all flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="w-8 h-8 rounded-lg bg-ggc-subtle text-ggc font-black text-xs flex items-center justify-center border border-ggc/10">
-                    {dim.code}
-                  </span>
-                  <span className="text-[11px] font-semibold text-ggc-gold-dark bg-ggc-gold-subtle px-2 py-0.5 rounded-md border border-ggc-gold/20">
-                    {dim.count} Soal
-                  </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {dimensionsList.map((dim) => {
+            const Icon = dim.icon;
+            const dimProgress = Math.round((dim.count / dim.total) * 100);
+            const isDimDone = dim.count >= dim.total;
+
+            return (
+              <div
+                key={dim.code}
+                className={`p-5 rounded-2xl bg-white border ${
+                  isDimDone ? "border-emerald-300" : "border-gray-200/80"
+                } shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group`}
+              >
+                <div>
+                  {/* Top Header Badge & Icon */}
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div
+                      className={`w-11 h-11 rounded-xl bg-gradient-to-br ${dim.gradient} text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform`}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">
+                      {dim.tag}
+                    </span>
+                  </div>
+
+                  {/* Title & Dimension Code */}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-5 h-5 rounded-md bg-ggc/10 text-ggc font-black text-[10px] flex items-center justify-center">
+                      {dim.code}
+                    </span>
+                    <h4 className="font-bold text-gray-900 text-sm">
+                      {dim.name}
+                    </h4>
+                  </div>
+
+                  <p className="text-xs text-gray-500 leading-relaxed mb-4">
+                    {dim.desc}
+                  </p>
                 </div>
-                <h4 className="font-bold text-ggc-dark text-sm mb-1">{dim.name}</h4>
-                <p className="text-xs text-gray-500 leading-relaxed">{dim.desc}</p>
-              </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
-                <span>Skala 1 - 5</span>
-                <span className="text-ggc font-semibold">Siap Diuji</span>
+                {/* Progress bar per dimension */}
+                <div className="pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-gray-500 mb-1.5">
+                    <span>
+                      {dim.count} / {dim.total} Soal
+                    </span>
+                    <span
+                      className={
+                        isDimDone
+                          ? "text-emerald-700 font-bold"
+                          : dim.count > 0
+                          ? "text-amber-600 font-bold"
+                          : "text-gray-400"
+                      }
+                    >
+                      {isDimDone
+                        ? "✓ Selesai"
+                        : dim.count > 0
+                        ? `${dimProgress}%`
+                        : "Belum Diisi"}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        isDimDone
+                          ? "bg-emerald-500"
+                          : dim.count > 0
+                          ? "bg-amber-500"
+                          : "bg-gray-200"
+                      }`}
+                      style={{ width: `${dimProgress}%` }}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
-          {/* Result Card preview */}
+          {/* Card 8: Quick Results Preview Link */}
           <Link
             href={`/student/results/${activeSession?.id || "preview"}`}
-            className="p-5 rounded-2xl bg-ggc-gold-subtle border border-ggc-gold/40 hover:border-ggc-gold flex flex-col justify-between transition-all hover:shadow-md group"
+            className="p-5 rounded-2xl bg-gradient-to-br from-ggc-gold-subtle via-white to-amber-50/40 border border-ggc-gold/50 hover:border-ggc-gold flex flex-col justify-between transition-all duration-200 hover:shadow-md group"
           >
             <div>
-              <div className="w-8 h-8 rounded-lg bg-ggc-gold text-ggc-dark font-black text-xs flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                <Award className="w-4 h-4" />
+              <div className="flex items-center justify-between mb-3.5">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-ggc-gold to-ggc-gold-dark text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                  <Award className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-bold text-ggc-gold-dark bg-ggc-gold/20 px-2.5 py-1 rounded-md">
+                  Output Akhir
+                </span>
               </div>
-              <h4 className="font-bold text-ggc-dark text-sm mb-1 group-hover:text-ggc">
+
+              <h4 className="font-bold text-ggc-dark text-sm mb-1.5 group-hover:text-ggc">
                 Laporan & Rekomendasi
               </h4>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Tinjau Potential Signature dan kecocokan jurusan multi-matriks Anda.
+              <p className="text-xs text-gray-600 leading-relaxed mb-4">
+                Visualisasi Radar Chart 7 Dimensi, Potential Signature, dan Top Rekomendasi Jurusan.
               </p>
             </div>
-            <div className="mt-4 pt-3 border-t border-ggc-gold/30 text-[11px] font-bold text-ggc-gold-dark flex items-center justify-between">
-              <span>Study Fit Score™</span>
-              <span className="text-xs">Buka →</span>
+
+            <div className="pt-3 border-t border-ggc-gold/30 flex items-center justify-between text-xs font-bold text-ggc-gold-dark">
+              <span>Buka Analisis</span>
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </div>
           </Link>
         </div>
       </div>
 
-      {/* Guide & FAQ Box */}
-      <div className="p-6 rounded-2xl bg-white border border-ggc-subtle shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-ggc/10 text-ggc flex items-center justify-center shrink-0">
+      {/* ================= 6. 3-STEP JOURNEY ROADMAP ================= */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-200/80 shadow-xs">
+        <div className="max-w-2xl mb-6">
+          <h3 className="text-lg sm:text-xl font-black text-gray-900 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-ggc" />
+            <span>Alur Pemetaan Potensi Siswa</span>
+          </h3>
+          <p className="text-xs text-gray-500 mt-1">
+            Tiga langkah terstruktur menuju keputusan pemilihan program studi yang tepat dan mantap.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative">
+          {/* Step 1 */}
+          <div className="p-5 rounded-2xl bg-ggc-subtle/40 border border-ggc/15 relative">
+            <div className="w-8 h-8 rounded-lg bg-ggc text-white font-black text-xs flex items-center justify-center mb-3">
+              1
+            </div>
+            <h4 className="font-bold text-gray-900 text-sm mb-1">
+              Refleksi 84 Instrumen
+            </h4>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Jawab 84 pernyataan dengan skala 1-5 sesuai dorongan alami diri tanpa ragu atau tergesa-gesa.
+            </p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="p-5 rounded-2xl bg-amber-50/50 border border-amber-200/50 relative">
+            <div className="w-8 h-8 rounded-lg bg-amber-500 text-white font-black text-xs flex items-center justify-center mb-3">
+              2
+            </div>
+            <h4 className="font-bold text-gray-900 text-sm mb-1">
+              Kalkulasi Multi-Matriks
+            </h4>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Sistem memadukan bakat kognitif, RIASEC, Big Five, dan aspirasi karier menjadi profil holistik.
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-200/50 relative">
+            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white font-black text-xs flex items-center justify-center mb-3">
+              3
+            </div>
+            <h4 className="font-bold text-gray-900 text-sm mb-1">
+              Laporan & Arah Studi
+            </h4>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Dapatkan rekomendasi jurusan dengan fit score, keunggulan unik, serta dokumen PDF siap cetak.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= 7. TIPS & DUKUNGAN SISWA ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        <div className="p-5 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <Lightbulb className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-900 text-sm">
+              Tidak Ada Jawaban Salah
+            </h4>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+              Instrumen ini mengukur kecocokan (*fit*), bukan ujian kepintaran. Kejujuran Anda adalah kunci akurasi.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-900 text-sm">
+              Progres Tersimpan Otomatis
+            </h4>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+              Jika koneksi terputus atau perlu istirahat, Anda bisa keluar dan melanjutkan kapan saja tanpa hilang.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
             <HelpCircle className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="font-bold text-ggc-dark text-sm">
-              Panduan Pengisian Asesmen
+            <h4 className="font-bold text-gray-900 text-sm">
+              Pusat Dukungan Siswa
             </h4>
-            <p className="text-xs text-gray-600 mt-0.5">
-              Tidak ada jawaban benar atau salah. Pilihlah opsi yang paling mencerminkan kondisi alami diri Anda untuk mendapatkan hasil rekomendasi terbaik.
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+              Mengalami kendala teknis atau butuh konsultasi hasil? Hubungi konselor bimbingan studi kami.
             </p>
           </div>
         </div>
