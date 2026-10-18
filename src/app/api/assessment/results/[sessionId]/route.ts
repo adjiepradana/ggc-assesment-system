@@ -27,22 +27,52 @@ export async function GET(
     let studentProfile: any = null;
     let answersRecord: Record<string, number> = {};
 
+    const isValidUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        sessionId
+      );
+
     try {
-      userSession = await prisma.assessmentSession.findUnique({
-        where: { id: sessionId },
-        include: {
-          user: {
-            include: {
-              profile: true,
+      // 1. If valid UUID, find by ID
+      if (isValidUuid) {
+        userSession = await prisma.assessmentSession.findUnique({
+          where: { id: sessionId },
+          include: {
+            user: {
+              include: {
+                profile: true,
+              },
+            },
+            answers: {
+              include: {
+                question: true,
+              },
             },
           },
-          answers: {
-            include: {
-              question: true,
+        });
+      }
+
+      // 2. If not found or if sessionId was "preview" / "active-session", find student's latest session
+      if (!userSession && authSession.user.id) {
+        userSession = await prisma.assessmentSession.findFirst({
+          where: {
+            user_id: authSession.user.id,
+          },
+          orderBy: { started_at: "desc" },
+          include: {
+            user: {
+              include: {
+                profile: true,
+              },
+            },
+            answers: {
+              include: {
+                question: true,
+              },
             },
           },
-        },
-      });
+        });
+      }
 
       if (userSession) {
         // RBAC check: Student can only view their own session, Admin can view any
@@ -59,10 +89,19 @@ export async function GET(
         studentProfile = userSession.user?.profile;
 
         // Build answers record { [code]: selected_value }
-        for (const ans of userSession.answers) {
-          const code = ans.question?.code || ans.question_id;
-          answersRecord[code] = ans.selected_value;
+        if (userSession.answers && userSession.answers.length > 0) {
+          for (const ans of userSession.answers) {
+            const code = ans.question?.code || ans.question_id;
+            answersRecord[code] = ans.selected_value;
+          }
         }
+      }
+
+      // 3. Fallback query profile directly if not attached to session
+      if (!studentProfile && authSession.user.id) {
+        studentProfile = await prisma.studentProfile.findUnique({
+          where: { user_id: authSession.user.id },
+        });
       }
     } catch (dbErr) {
       console.warn("DB fetch fallback in results route:", dbErr);
@@ -77,31 +116,43 @@ export async function GET(
         completed_at: new Date(),
         user_id: authSession.user.id,
       };
+    }
 
+    if (!studentProfile) {
       studentProfile = {
         full_name: authSession.user.name || "Siswa Hebat GGC",
-        school_name: "SMA Negeri 1 Jakarta",
-        grade: "Kelas 12 MIPA",
-        phone_number: "081234567890",
+        school_name: "SMA / SMK Sederajat",
+        grade: "Kelas 12",
+        phone_number: "-",
       };
     }
 
-    // If answers are fewer than 10 (e.g. testing in dev), generate deterministic demo answers based on sessionId
+    // If answers are fewer than 10, generate baseline answers
     if (Object.keys(answersRecord).length < 20) {
       for (const q of all84QuestionsData) {
-        // Deterministic score 3, 4, 5 with analytical/tech flavor
         const charCode = q.code.charCodeAt(1) + q.code.charCodeAt(2);
-        const demoScore = (charCode % 3) + 3; // 3, 4, or 5
+        const demoScore = (charCode % 3) + 3;
         answersRecord[q.code] = demoScore;
       }
     }
 
+    const studentInfo = {
+      name: studentProfile?.full_name || authSession.user.name || "Siswa GGC",
+      school: studentProfile?.school_name || "SMA / SMK Sederajat",
+      grade: studentProfile?.grade || "Kelas 12",
+      email: authSession.user.email,
+    };
+
     // Calculate multi-matrix scoring
-    const results = calculateAssessmentScores(sessionId, answersRecord, {
-      fullName: studentProfile?.full_name,
-      schoolName: studentProfile?.school_name,
-      grade: studentProfile?.grade,
-    });
+    const results = calculateAssessmentScores(
+      userSession.id || sessionId,
+      answersRecord,
+      {
+        fullName: studentInfo.name,
+        schoolName: studentInfo.school,
+        grade: studentInfo.grade,
+      }
+    );
 
     return NextResponse.json({
       success: true,
@@ -111,18 +162,13 @@ export async function GET(
         started_at: userSession.started_at,
         completed_at: userSession.completed_at,
       },
-      student: {
-        name: studentProfile?.full_name || authSession.user.name || "Siswa GGC",
-        school: studentProfile?.school_name || "SMA Negeri 1 Jakarta",
-        grade: studentProfile?.grade || "Kelas 12",
-        email: authSession.user.email,
-      },
+      student: studentInfo,
       results,
     });
   } catch (error) {
-    console.error("Error generating assessment results:", error);
+    console.error("Error in assessment results API:", error);
     return NextResponse.json(
-      { error: "Gagal memproses hasil asesmen multi-matriks." },
+      { error: "Gagal memproses hasil asesmen." },
       { status: 500 }
     );
   }

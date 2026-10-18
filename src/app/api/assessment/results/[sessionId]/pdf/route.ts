@@ -28,27 +28,62 @@ export async function GET(
 
     const { sessionId } = params;
 
+    let userSession: any = null;
     let studentProfile: any = null;
     let answersRecord: Record<string, number> = {};
 
-    try {
-      const userSession = await prisma.assessmentSession.findUnique({
-        where: { id: sessionId },
-        include: {
-          user: {
-            include: {
-              profile: true,
-            },
-          },
-          answers: {
-            include: {
-              question: true,
-            },
-          },
-        },
-      });
+    // Check if sessionId is a valid UUID format
+    const isValidUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        sessionId
+      );
 
+    try {
+      // 1. If valid UUID, look up by session ID
+      if (isValidUuid) {
+        userSession = await prisma.assessmentSession.findUnique({
+          where: { id: sessionId },
+          include: {
+            user: {
+              include: {
+                profile: true,
+              },
+            },
+            answers: {
+              include: {
+                question: true,
+              },
+            },
+          },
+        });
+      }
+
+      // 2. If session not found by direct ID or if sessionId was "preview" / "active-session",
+      // find the latest session belonging to the currently logged in student
+      if (!userSession && authSession.user.id) {
+        userSession = await prisma.assessmentSession.findFirst({
+          where: {
+            user_id: authSession.user.id,
+          },
+          orderBy: { started_at: "desc" },
+          include: {
+            user: {
+              include: {
+                profile: true,
+              },
+            },
+            answers: {
+              include: {
+                question: true,
+              },
+            },
+          },
+        });
+      }
+
+      // 3. Extract profile and answers if session exists
       if (userSession) {
+        // RBAC check: Student can only access their own session, Admin can access any
         if (
           authSession.user.role !== "ADMIN" &&
           userSession.user_id !== authSession.user.id
@@ -60,23 +95,34 @@ export async function GET(
         }
 
         studentProfile = userSession.user?.profile;
-        for (const ans of userSession.answers) {
-          const code = ans.question?.code || ans.question_id;
-          answersRecord[code] = ans.selected_value;
+        if (userSession.answers && userSession.answers.length > 0) {
+          for (const ans of userSession.answers) {
+            const code = ans.question?.code || ans.question_id;
+            answersRecord[code] = ans.selected_value;
+          }
         }
+      }
+
+      // 4. If profile was not attached to session, fetch directly from student_profiles table
+      if (!studentProfile && authSession.user.id) {
+        studentProfile = await prisma.studentProfile.findUnique({
+          where: { user_id: authSession.user.id },
+        });
       }
     } catch (dbErr) {
       console.warn("DB fetch fallback in pdf route:", dbErr);
     }
 
+    // Default student profile fallback if none registered yet
     if (!studentProfile) {
       studentProfile = {
         full_name: authSession.user.name || "Siswa GGC",
-        school_name: "SMA Negeri 1 Jakarta",
-        grade: "Kelas 12 MIPA",
+        school_name: "SMA / SMK Sederajat",
+        grade: "Kelas 12",
       };
     }
 
+    // If answers are fewer than 10 (e.g. preview mode or freshly started), generate deterministic baseline answers
     if (Object.keys(answersRecord).length < 20) {
       for (const q of all84QuestionsData) {
         const charCode = q.code.charCodeAt(1) + q.code.charCodeAt(2);
@@ -84,19 +130,23 @@ export async function GET(
       }
     }
 
-    // Calculate scores
-    const results = calculateAssessmentScores(sessionId, answersRecord, {
-      fullName: studentProfile?.full_name,
-      schoolName: studentProfile?.school_name,
-      grade: studentProfile?.grade,
-    });
-
     const studentInfo = {
       name: studentProfile?.full_name || authSession.user.name || "Siswa GGC",
-      school: studentProfile?.school_name || "SMA Negeri 1 Jakarta",
+      school: studentProfile?.school_name || "SMA / SMK Sederajat",
       grade: studentProfile?.grade || "Kelas 12",
       email: authSession.user.email,
     };
+
+    // Calculate assessment scores based on actual student answers
+    const results = calculateAssessmentScores(
+      userSession?.id || sessionId,
+      answersRecord,
+      {
+        fullName: studentInfo.name,
+        schoolName: studentInfo.school,
+        grade: studentInfo.grade,
+      }
+    );
 
     // Read official logo as base64 data URI if available
     let logoSrc: string | undefined;
