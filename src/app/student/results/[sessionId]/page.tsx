@@ -33,12 +33,13 @@ import {
   CheckCircle2,
   X,
 } from "lucide-react";
-import { ScoringResult, DimensionScore } from "@/lib/scoring";
+import { ScoringResult, DimensionScore, StudyRecommendation } from "@/lib/scoring";
 import CountUp from "@/components/results/CountUp";
 import ScoreRing from "@/components/results/ScoreRing";
 import RadarChart from "@/components/results/RadarChart";
 import AudioNarrator from "@/components/results/AudioNarrator";
 import MajorCompareModal from "@/components/results/MajorCompareModal";
+import MajorDetailModal from "@/components/results/MajorDetailModal";
 import DimensionDetailModal from "@/components/results/DimensionDetailModal";
 import ActionPlanRoadmap from "@/components/results/ActionPlanRoadmap";
 import ShareCardModal from "@/components/results/ShareCardModal";
@@ -146,6 +147,7 @@ export default function StudentResultsPage() {
 
   // Interactive Features State
   const [selectedDimension, setSelectedDimension] = useState<DimensionScore | null>(null);
+  const [selectedMajorForDetail, setSelectedMajorForDetail] = useState<StudyRecommendation | null>(null);
   const [selectedMajorsForCompare, setSelectedMajorsForCompare] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -422,11 +424,11 @@ export default function StudentResultsPage() {
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="p-1.5 sm:px-2.5 rounded-xl text-xs font-bold text-ggc hover:bg-ggc-subtle flex items-center gap-1 transition-colors"
-            title="Bagikan Kartu Prestasi"
+            className="p-1.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-ggc hover:bg-ggc-subtle flex items-center gap-1.5 transition-colors border border-ggc/20"
+            title="Bagikan Persona Studi (Instagram Story & WA)"
           >
             <Share2 className="w-3.5 h-3.5 text-ggc-gold" />
-            <span className="hidden md:inline text-[11px]">Bagikan</span>
+            <span className="hidden md:inline text-[11px]">Bagikan Persona Studi</span>
           </button>
         </div>
       </div>
@@ -546,7 +548,18 @@ export default function StudentResultsPage() {
               ))}
             </ul>
 
-            <div className="hero-rise hero-rise-delay-3 mt-8 pt-5 border-t border-white/10 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-ggc-subtle/90">
+            <div className="hero-rise hero-rise-delay-3 mt-5 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="no-print inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark text-ggc-dark text-xs font-black shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all"
+              >
+                <Share2 className="w-4 h-4 text-ggc-dark" />
+                <span>Bagikan Persona Studi (Instagram Story & WA)</span>
+              </button>
+            </div>
+
+            <div className="hero-rise hero-rise-delay-3 mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-ggc-subtle/90">
               <div className="flex items-center gap-1.5">
                 <GraduationCap className="w-4 h-4 text-ggc-gold" />
                 <span className="font-semibold text-white">{student.name}</span>
@@ -572,7 +585,11 @@ export default function StudentResultsPage() {
 
           {/* Right: Certificate card with Study Fit ring */}
           <div className="hero-rise hero-rise-delay-2 relative">
-            <div className="relative overflow-hidden rounded-3xl bg-white/[0.07] backdrop-blur-xl border border-ggc-gold/40 p-6 sm:p-8 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
+            <div
+              onClick={() => topMajor && setSelectedMajorForDetail(topMajor)}
+              className="relative overflow-hidden rounded-3xl bg-white/[0.07] backdrop-blur-xl border border-ggc-gold/40 p-6 sm:p-8 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] cursor-pointer hover:border-ggc-gold hover:shadow-[0_25px_70px_-15px_rgba(197,168,105,0.3)] transition-all group"
+              title="Klik untuk membuka bedah kampus, prospek gaji, dan mata kuliah #1 jurusan ini"
+            >
               {/* Gold sweep (3 passes, then stops) */}
               <div
                 className="shimmer-sweep absolute inset-y-0 -left-1/2 w-1/3 bg-gradient-to-r from-transparent via-ggc-gold/25 to-transparent skew-x-[-20deg] pointer-events-none"
@@ -597,13 +614,20 @@ export default function StudentResultsPage() {
                 <p className="mt-5 text-[11px] uppercase tracking-[0.16em] text-ggc-subtle/70 font-bold">
                   Rekomendasi Jurusan #1
                 </p>
-                <p className="mt-1 text-xl font-black text-white leading-tight">{topMajor?.majorName}</p>
+                <p className="mt-1 text-xl font-black text-white leading-tight group-hover:text-ggc-gold transition-colors">
+                  {topMajor?.majorName}
+                </p>
                 <p className="text-xs text-ggc-subtle/70 mt-0.5">{topMajor?.faculty}</p>
 
-                <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold text-ggc-dark text-[11px] font-black uppercase tracking-wider shadow">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  {topMajor?.fitLevel}
-                </span>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold text-ggc-dark text-[11px] font-black uppercase tracking-wider shadow">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    {topMajor?.fitLevel}
+                  </span>
+                  <span className="no-print inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold border border-white/20 transition-colors">
+                    Bedah Detail ↗
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -955,22 +979,50 @@ export default function StudentResultsPage() {
                             </span>
                           </div>
 
-                          {/* Compare Toggle Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleCompare(rec.id)}
-                            className={`no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                              isSelectedForCompare
-                                ? "bg-ggc text-white border-ggc shadow-2xs"
-                                : "bg-gray-50 text-gray-700 border-gray-200 hover:border-ggc hover:text-ggc"
-                            }`}
-                            title="Pilih jurusan ini untuk komparasi multi-matriks"
-                          >
-                            <Scale className="w-3.5 h-3.5 text-ggc-gold" />
-                            <span>{isSelectedForCompare ? "✓ Terpilih" : "+ Bandingkan"}</span>
-                          </button>
+                          {/* Action Buttons */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMajorForDetail(rec);
+                              }}
+                              className="no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-dark transition-all shadow-xs hover:shadow-md active:scale-95"
+                              title="Buka panel rekomendasi kampus PTN/PTS, bedah gaji, dan mata kuliah kunci"
+                            >
+                              <School className="w-3.5 h-3.5 text-ggc-gold" />
+                              <span>Bedah Kampus & Gaji ↗</span>
+                            </button>
+
+                            {/* Compare Toggle Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleCompare(rec.id);
+                              }}
+                              className={`no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                                isSelectedForCompare
+                                  ? "bg-ggc text-white border-ggc shadow-2xs"
+                                  : "bg-gray-50 text-gray-700 border-gray-200 hover:border-ggc hover:text-ggc"
+                              }`}
+                              title="Pilih jurusan ini untuk komparasi multi-matriks"
+                            >
+                              <Scale className="w-3.5 h-3.5 text-ggc-gold" />
+                              <span>{isSelectedForCompare ? "✓ Terpilih" : "+ Bandingkan"}</span>
+                            </button>
+                          </div>
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-ggc-dark mt-1.5">{rec.majorName}</h3>
+                        <h3
+                          onClick={() => setSelectedMajorForDetail(rec)}
+                          className="text-lg sm:text-xl font-black text-ggc-dark mt-1.5 cursor-pointer hover:text-ggc transition-colors inline-flex items-center gap-2 group/title"
+                          title="Klik untuk membuka bedah kampus & prospek karier"
+                        >
+                          <span>{rec.majorName}</span>
+                          <span className="no-print opacity-0 group-hover/title:opacity-100 text-xs text-ggc-gold font-bold transition-opacity">
+                            (Bedah Detail ↗)
+                          </span>
+                        </h3>
                         <p className="text-xs text-gray-500">{rec.faculty}</p>
                       </div>
                     </div>
@@ -1040,20 +1092,31 @@ export default function StudentResultsPage() {
                       </div>
                     </div>
 
-                    {/* Career prospects */}
-                    <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-bold text-gray-500 flex items-center gap-1 mr-1">
-                        <Briefcase className="w-3.5 h-3.5 text-ggc" />
-                        Prospek Profesi:
-                      </span>
-                      {rec.careerProspects.map((career) => (
-                        <span
-                          key={career}
-                          className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-1 rounded-lg border border-ggc/15 hover:bg-ggc hover:text-white transition-colors"
-                        >
-                          {career}
+                    {/* Career prospects & Footer Action */}
+                    <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-gray-500 flex items-center gap-1 mr-1">
+                          <Briefcase className="w-3.5 h-3.5 text-ggc" />
+                          Prospek Profesi:
                         </span>
-                      ))}
+                        {rec.careerProspects.map((career) => (
+                          <span
+                            key={career}
+                            className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-1 rounded-lg border border-ggc/15 hover:bg-ggc hover:text-white transition-colors"
+                          >
+                            {career}
+                          </span>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMajorForDetail(rec)}
+                        className="no-print inline-flex items-center gap-1 text-xs font-bold text-ggc hover:text-ggc-dark hover:underline py-1 ml-auto"
+                      >
+                        <span>Lihat Kampus Terbaik & Gaji</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-ggc-gold" />
+                      </button>
                     </div>
                   </div>
                 </article>
@@ -1233,6 +1296,11 @@ export default function StudentResultsPage() {
       {/* ------------------------------------------------------------------ */}
       {/* INTERACTIVE MODALS                                                 */}
       {/* ------------------------------------------------------------------ */}
+      <MajorDetailModal
+        major={selectedMajorForDetail}
+        onClose={() => setSelectedMajorForDetail(null)}
+      />
+
       <DimensionDetailModal
         dimension={selectedDimension}
         onClose={() => setSelectedDimension(null)}
@@ -1252,8 +1320,12 @@ export default function StudentResultsPage() {
         schoolName={student.school}
         signatureTitle={primarySignature?.title || ""}
         signatureArchetype={primarySignature?.archetype || ""}
-        topMajorName={topMajor?.majorName || ""}
-        fitScore={topMajor?.fitScore || 0}
+        topMajors={results.studyRecommendations.map((m) => ({
+          majorName: m.majorName,
+          fitScore: m.fitScore,
+          fitLevel: m.fitLevel,
+          cluster: m.cluster,
+        }))}
         sessionId={results.sessionId}
       />
     </div>
