@@ -93,7 +93,7 @@ export default function BrandLogo({
         </div>
         {showSubtitle && (
           <span
-            className={`font-semibold tracking-wider uppercase mt-1 ${currentSize.subtitleClass} ${
+            className={`font-semibold tracking-wider uppercase mt-1 hidden sm:block ${currentSize.subtitleClass} ${
               isLight ? "text-ggc-gold" : "text-ggc"
             }`}
           >

@@ -185,11 +185,11 @@ export default function Navbar() {
             {isNotHome && (
               <Link
                 href="/"
-                className="md:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-ggc-subtle border border-gray-200"
+                className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl text-gray-700 bg-gray-50 hover:bg-ggc-subtle border border-gray-200/90 shadow-2xs"
                 title="Kembali ke Halaman Utama"
+                aria-label="Kembali ke Halaman Utama"
               >
-                <Home className="w-3.5 h-3.5 text-ggc-gold" />
-                <span className="text-[11px]">Beranda</span>
+                <Home className="w-4 h-4 text-ggc-gold" />
               </Link>
             )}
 

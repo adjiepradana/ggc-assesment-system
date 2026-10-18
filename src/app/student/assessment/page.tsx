@@ -740,30 +740,30 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Top Breadcrumb & Control Bar (Responsive)                          */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex items-center justify-between gap-2 pt-1 pb-0.5">
-        <div className="flex items-center gap-1.5 text-xs">
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pt-1 pb-0.5">
+        <div className="flex items-center gap-1.5 text-xs min-w-0">
           <Link
             href="/student/dashboard"
-            className="inline-flex items-center gap-1 font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-2.5 sm:px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            className="inline-flex items-center gap-1 font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-2 sm:px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs shrink-0"
             title="Kembali ke Dashboard Siswa"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-ggc shrink-0" />
             <span className="text-[11px] font-bold hidden sm:inline">Dashboard Siswa</span>
             <span className="text-[11px] font-bold sm:hidden">Dashboard</span>
           </Link>
-          <span className="text-gray-300">/</span>
-          <span className="font-bold text-ggc-dark text-[11px] sm:text-xs truncate max-w-[130px] sm:max-w-none">
+          <span className="text-gray-300 shrink-0">/</span>
+          <span className="font-bold text-ggc-dark text-[11px] sm:text-xs truncate">
             Lembar Asesmen
           </span>
         </div>
 
         {/* View Mode Switcher, Audio, & Keyboard Help */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
           {/* Audio Feedback Toggle */}
           <button
             type="button"
             onClick={toggleSound}
-            className={`p-1.5 sm:px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 ${
+            className={`p-1.5 sm:px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 shrink-0 ${
               soundEnabled
                 ? "bg-white text-ggc-dark border-gray-200 hover:border-ggc-gold shadow-2xs"
                 : "bg-gray-100 text-gray-400 border-gray-200"
@@ -779,11 +779,11 @@ export default function StudentAssessmentPage() {
             <span className="hidden md:inline text-[11px]">{soundEnabled ? "Audio On" : "Mute"}</span>
           </button>
 
-          {/* Keyboard Shortcuts Guide Pill */}
+          {/* Keyboard Shortcuts Guide Pill - Desktop only */}
           <button
             type="button"
             onClick={() => setIsKeyboardHelpOpen(true)}
-            className="p-1.5 sm:px-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-ggc transition-colors shadow-2xs text-xs font-bold flex items-center gap-1"
+            className="hidden sm:inline-flex p-1.5 sm:px-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-ggc transition-colors shadow-2xs text-xs font-bold items-center gap-1 shrink-0"
             title="Petunjuk Shortcut Keyboard (Tekan ?)"
           >
             <Keyboard className="w-3.5 h-3.5 text-ggc-gold" />
@@ -791,7 +791,7 @@ export default function StudentAssessmentPage() {
           </button>
 
           {/* Mode Segmented Control */}
-          <div className="p-0.5 sm:p-1 rounded-xl bg-gray-100/90 border border-gray-200 flex items-center">
+          <div className="p-0.5 sm:p-1 rounded-xl bg-gray-100/90 border border-gray-200 flex items-center shrink-0">
             <button
               type="button"
               onClick={() => setViewMode("focus")}
@@ -827,7 +827,7 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       <div className="sticky top-20 z-30 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 shadow-sm transition-all overflow-hidden">
         {/* Main Compact Row */}
-        <div className="px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2">
+        <div className="px-2.5 sm:px-4 py-1.5 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-2">
           {/* Left: Dimension Pill & Question Counter */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="inline-flex items-center gap-1 sm:gap-1.5 text-xs font-bold text-ggc-dark px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl bg-ggc-gold-subtle border border-ggc-gold/30 shrink-0">
@@ -836,13 +836,13 @@ export default function StudentAssessmentPage() {
               <span className="sm:hidden font-bold">P{currentSectionIndex + 1}</span>
             </span>
 
-            <span className="text-xs font-bold text-gray-700 whitespace-nowrap">
+            <span className="text-[11px] sm:text-xs font-bold text-gray-700 whitespace-nowrap">
               Soal <strong className="text-ggc">{viewMode === "focus" ? activeQuestion?.number : `${currentSectionIndex * 12 + 1}–${currentSectionIndex * 12 + 12}`}</strong>{" "}
               <span className="text-gray-400">/ {totalQuestions}</span>
             </span>
 
             {streakCount >= 3 && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-300 shrink-0 animate-streak-glow">
+              <span className="inline-flex items-center gap-0.5 sm:gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-amber-300 shrink-0 animate-streak-glow">
                 <Flame className="w-3 h-3 text-amber-600 fill-amber-500" />
                 <span className="hidden sm:inline">{streakCount} beruntun</span>
                 <span className="sm:hidden">{streakCount}</span>
@@ -867,7 +867,7 @@ export default function StudentAssessmentPage() {
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Auto-save status */}
             <div
-              className="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 px-2 py-1 rounded-lg bg-gray-50 border border-gray-200"
+              className="hidden lg:flex items-center gap-1 text-[11px] text-gray-500 px-2 py-1 rounded-lg bg-gray-50 border border-gray-200"
               aria-live="polite"
             >
               {saveStatus === "saving" && (
@@ -894,12 +894,13 @@ export default function StudentAssessmentPage() {
             <button
               type="button"
               onClick={() => setIsDimensionsOpen((prev) => !prev)}
-              className={`px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all ${
+              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 border transition-all shrink-0 ${
                 isDimensionsOpen
                   ? "bg-ggc text-white border-ggc shadow-2xs"
                   : "bg-white text-gray-700 border-gray-200 hover:border-ggc-gold"
               }`}
               title="Buka / Tutup 7 Tahap Asesmen"
+              aria-label="Buka / Tutup 7 Tahap Asesmen"
             >
               <Layers className="w-3.5 h-3.5 text-ggc-gold" />
               <span className="hidden sm:inline">7 Tahap</span>
@@ -914,12 +915,13 @@ export default function StudentAssessmentPage() {
             <button
               type="button"
               onClick={() => setIsPaletteOpen(true)}
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 transition-colors shadow-2xs shrink-0"
               title="Buka Lembar Nomor Soal (Tekan P)"
+              aria-label="Buka Palet 84 Soal"
             >
               <Grid className="w-3.5 h-3.5 text-ggc-gold-dark" />
               <span className="hidden sm:inline">Palet</span>
-              <span className="tabular-nums font-black text-ggc">({answeredCount}/84)</span>
+              <span className="tabular-nums font-black text-ggc text-[11px] sm:text-xs">({answeredCount}/84)</span>
             </button>
           </div>
         </div>
@@ -1139,38 +1141,38 @@ export default function StudentAssessmentPage() {
       )}
 
       {/* ------------------------------------------------------------------ */}
-      {/* 3. MODE DAFTAR: 12 SOAL BERTUMPUK (CLASSIC LIST VIEW)              */}
+      {/* 3. MODE DAFTAR: 12 SOAL BERTUMPUK (STREAMLINED LIST VIEW)          */}
       {/* ------------------------------------------------------------------ */}
       {viewMode === "list" && (
-        <div className="space-y-4 animate-section-in" key={currentSectionIndex}>
+        <div className="space-y-3 sm:space-y-4 animate-section-in" key={currentSectionIndex}>
           {/* Section Banner */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-ggc-tint via-white to-ggc-gold-subtle border border-ggc/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-sm">
-                <MilestoneIcon className="w-5 h-5" />
+          <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-ggc-tint via-white to-ggc-gold-subtle border border-ggc/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-sm">
+                <MilestoneIcon className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-ggc">
-                    Fokus Evaluasi Saat Ini
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-ggc">
+                    Fokus Evaluasi
                   </span>
                   <span className="text-gray-300">•</span>
-                  <span className="text-[11px] font-semibold text-gray-500">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-gray-500">
                     {currentMilestone.rangeText}
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5">
+                <p className="text-xs sm:text-sm font-bold text-gray-800 mt-0.5 leading-snug">
                   {currentMilestone.subtitle}
                 </p>
-                <p className="text-xs text-gray-500 italic mt-1 leading-relaxed">
+                <p className="text-[11px] sm:text-xs text-gray-500 italic mt-0.5 sm:mt-1 leading-relaxed hidden sm:block">
                   &ldquo;{currentMilestone.quote}&rdquo;
                 </p>
               </div>
             </div>
 
-            <div className="shrink-0 flex items-center gap-2 text-xs bg-white/80 backdrop-blur-xs px-3.5 py-2 rounded-2xl border border-gray-200 text-gray-600 self-start sm:self-auto">
-              <HelpCircle className="w-4 h-4 text-ggc-gold-dark shrink-0" />
-              <span>Skala: 1 (Sangat Tidak Sesuai) s/d 5 (Sangat Sesuai)</span>
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs bg-white/90 backdrop-blur-xs px-2.5 py-1.5 rounded-xl border border-gray-200 text-gray-600 self-start sm:self-auto shrink-0">
+              <HelpCircle className="w-3.5 h-3.5 text-ggc-gold-dark shrink-0" />
+              <span>Skala: 1 (STS) s/d 5 (SS)</span>
             </div>
           </div>
 
@@ -1179,21 +1181,29 @@ export default function StudentAssessmentPage() {
             const selectedValue = answers[q.id];
             const isAnswered = selectedValue !== undefined;
 
+            const shortLabels: Record<number, string> = {
+              1: "Sgt Tdk",
+              2: "Tidak",
+              3: "Netral",
+              4: "Sesuai",
+              5: "Sangat",
+            };
+
             return (
               <article
                 key={q.id}
                 id={`question-card-${q.number}`}
-                className={`p-6 sm:p-7 rounded-3xl transition-all duration-200 border relative ${
+                className={`p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl transition-all duration-200 border relative ${
                   isAnswered
                     ? "bg-white border-ggc/40 shadow-sm border-l-4 border-l-ggc"
                     : "bg-white border-gray-200 shadow-sm hover:border-gray-300"
                 }`}
               >
-                {/* Question Header */}
-                <div className="flex items-start justify-between gap-4 mb-5">
-                  <div className="flex items-start gap-3.5">
+                {/* Question Header: Number + Text */}
+                <div className="flex items-start gap-2.5 sm:gap-3.5 mb-2.5 sm:mb-4">
+                  <div className="relative shrink-0">
                     <div
-                      className={`w-9 h-9 rounded-2xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${
+                      className={`w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-xs sm:text-sm transition-all ${
                         isAnswered
                           ? "bg-ggc text-ggc-gold shadow-xs ring-1 ring-ggc-gold/40"
                           : "bg-gray-100 text-gray-600 border border-gray-200"
@@ -1201,37 +1211,30 @@ export default function StudentAssessmentPage() {
                     >
                       {q.number}
                     </div>
-                    <div>
-                      <h2
-                        id={`question-text-${q.id}`}
-                        className="text-base sm:text-lg font-bold text-gray-900 leading-relaxed"
-                      >
-                        {q.question_text}
-                      </h2>
-                    </div>
-                  </div>
-
-                  {/* Status indicator badge */}
-                  <div className="shrink-0">
-                    {isAnswered ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                        <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> Terjawab
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center text-[11px] font-semibold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-200">
-                        Belum diisi
+                    {isAnswered && (
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-xs">
+                        <Check className="w-2 h-2 stroke-[3]" />
                       </span>
                     )}
                   </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h2
+                      id={`question-text-${q.id}`}
+                      className="text-sm sm:text-base md:text-lg font-bold text-gray-900 leading-snug sm:leading-relaxed"
+                    >
+                      {q.question_text}
+                    </h2>
+                  </div>
                 </div>
 
-                {/* Likert Scale Cards (1 to 5) */}
-                <fieldset className="mt-4 pt-4 border-t border-gray-100">
+                {/* Likert Scale Cards (1 to 5) - 5-column layout */}
+                <fieldset className="pt-2 sm:pt-3 border-t border-gray-100">
                   <legend className="sr-only">
                     Pilihan jawaban untuk butir nomor {q.number}: {q.question_text}
                   </legend>
                   <div
-                    className="grid grid-cols-1 sm:grid-cols-5 gap-2.5"
+                    className="grid grid-cols-5 gap-1.5 sm:gap-2.5"
                     role="radiogroup"
                     aria-labelledby={`question-text-${q.id}`}
                   >
@@ -1245,24 +1248,32 @@ export default function StudentAssessmentPage() {
                           role="radio"
                           aria-checked={isSelected}
                           onClick={() => handleSelectAnswer(q.id, opt.value, false)}
-                          className={`group relative min-h-[58px] sm:min-h-[72px] p-3 rounded-2xl border text-center transition-all duration-200 flex sm:flex-col items-center justify-between sm:justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ggc focus-visible:ring-offset-2 ${
+                          className={`group relative min-h-[48px] sm:min-h-[72px] p-1.5 sm:p-3 rounded-xl sm:rounded-2xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 sm:gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ggc focus-visible:ring-offset-2 ${
                             isSelected
-                              ? "bg-gradient-to-r sm:bg-gradient-to-b from-ggc to-ggc-light text-white border-ggc-gold ring-2 ring-ggc-gold/50 shadow-md scale-[1.01]"
-                              : "bg-gray-50/70 text-gray-700 border-gray-200 hover:border-ggc/40 hover:bg-ggc-subtle/40 active:scale-98"
+                              ? "bg-gradient-to-b from-ggc to-ggc-light text-white border-ggc-gold ring-2 ring-ggc-gold/50 shadow-md scale-[1.02]"
+                              : "bg-gray-50/80 text-gray-700 border-gray-200 hover:border-ggc/40 hover:bg-ggc-subtle/40 active:scale-98"
                           }`}
                         >
                           <span
-                            className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-colors shrink-0 ${
+                            className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl flex items-center justify-center text-xs font-black transition-colors ${
                               isSelected
                                 ? "bg-ggc-gold text-ggc-dark shadow-xs"
-                                : "bg-white text-gray-600 border border-gray-300 group-hover:border-ggc group-hover:text-ggc"
+                                : "bg-white text-gray-700 border border-gray-300 group-hover:border-ggc group-hover:text-ggc"
                             }`}
                           >
                             {isSelected ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : opt.value}
                           </span>
 
                           <span
-                            className={`text-xs leading-tight text-right sm:text-center ${
+                            className={`sm:hidden text-[9px] leading-tight font-bold ${
+                              isSelected ? "text-white" : "text-gray-600"
+                            }`}
+                          >
+                            {shortLabels[opt.value]}
+                          </span>
+
+                          <span
+                            className={`hidden sm:inline-block text-xs leading-tight text-center ${
                               isSelected ? "text-white font-bold" : "text-gray-700 font-medium"
                             }`}
                           >
@@ -1272,19 +1283,34 @@ export default function StudentAssessmentPage() {
                       );
                     })}
                   </div>
+
+                  {/* Feedback strip under options */}
+                  <div className="mt-1.5 sm:mt-2 flex items-center justify-between text-[11px] px-0.5">
+                    {isAnswered ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
+                        <span>Pilihan: <strong>{selectedValue} - {q.options.find(o => o.value === selectedValue)?.label}</strong></span>
+                      </span>
+                    ) : (
+                      <div className="flex items-center justify-between w-full text-[10px] text-gray-400 italic">
+                        <span>← 1 (Sangat Tidak Sesuai)</span>
+                        <span>5 (Sangat Sesuai) →</span>
+                      </div>
+                    )}
+                  </div>
                 </fieldset>
               </article>
             );
           })}
 
           {/* Section Navigation Footer Bar */}
-          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-ggc-subtle shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
+          <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-ggc-subtle shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-6">
             <div className="flex items-center justify-between w-full sm:w-auto gap-2.5 order-2 sm:order-1">
               <button
                 type="button"
                 onClick={handlePrevSection}
                 disabled={currentSectionIndex === 0}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <ArrowLeft className="w-4 h-4 shrink-0" />
                 <span>Sebelumnya</span>
@@ -1294,7 +1320,7 @@ export default function StudentAssessmentPage() {
                 <button
                   type="button"
                   onClick={handleNextSection}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md hover:shadow-lg sm:hidden"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all shadow-md hover:shadow-lg sm:hidden"
                 >
                   <span>Lanjut (P{currentSectionIndex + 2})</span>
                   <ArrowRight className="w-4 h-4 text-ggc-gold shrink-0" />
@@ -1303,7 +1329,7 @@ export default function StudentAssessmentPage() {
                 <button
                   type="button"
                   onClick={() => setIsSubmitModalOpen(true)}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all shadow-md sm:hidden"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all shadow-md sm:hidden"
                 >
                   <Send className="w-4 h-4 shrink-0" />
                   <span>Selesai</span>
@@ -1312,8 +1338,8 @@ export default function StudentAssessmentPage() {
             </div>
 
             <div className="text-xs text-gray-600 font-medium text-center order-1 sm:order-2">
-              Bagian <strong>{currentSectionIndex + 1}</strong> dari {TOTAL_SECTIONS} •{" "}
-              <strong className="text-ggc">{currentSectionAnsweredCount}</strong> dari {QUESTIONS_PER_SECTION} terjawab
+              Tahap <strong>{currentSectionIndex + 1}</strong> dari {TOTAL_SECTIONS} •{" "}
+              <strong className="text-ggc">{currentSectionAnsweredCount}</strong> dari {QUESTIONS_PER_SECTION} terisi
             </div>
 
             <div className="hidden sm:block order-3">
