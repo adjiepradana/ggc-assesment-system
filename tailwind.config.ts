@@ -30,8 +30,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-playfair)", "Georgia", "serif"],
+        sans: ["var(--font-plus-jakarta-sans)", "system-ui", "-apple-system", "sans-serif"],
+        display: ["var(--font-plus-jakarta-sans)", "system-ui", "-apple-system", "sans-serif"],
       },
     },
   },

@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 
-const inter = Inter({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-plus-jakarta-sans",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -24,6 +21,11 @@ export const metadata: Metadata = {
     "Kecocokan Jurusan",
     "Asesmen Bakat Minat",
   ],
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -32,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="id" className={plusJakartaSans.variable}>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-ggc-tint text-ggc-dark">
         <SessionProvider>{children}</SessionProvider>
       </body>
