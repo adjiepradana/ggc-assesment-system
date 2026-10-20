@@ -20,6 +20,11 @@ enum SessionStatus {
   COMPLETED
 }
 
+enum AccessCodeStatus {
+  AVAILABLE
+  USED
+}
+
 enum DimensionCategory {
   TALENT
   INTEREST
@@ -35,10 +40,12 @@ model User {
   email         String              @unique
   password_hash String
   role          Role                @default(STUDENT)
+  is_active     Boolean             @default(true)
   created_at    DateTime            @default(now())
   updated_at    DateTime            @updatedAt
   profile       StudentProfile?
   sessions      AssessmentSession[]
+  access_codes  AccessCode[]
 
   @@map("users")
 }
@@ -101,4 +108,19 @@ model AssessmentAnswer {
   @@index([session_id])
   @@index([question_id])
   @@map("assessment_answers")
+}
+
+model AccessCode {
+  id         String           @id @default(cuid())
+  code       String           @unique
+  status     AccessCodeStatus @default(AVAILABLE)
+  used_by    String?
+  user       User?            @relation(fields: [used_by], references: [id], onDelete: SetNull)
+  created_at DateTime         @default(now())
+  used_at    DateTime?
+
+  @@index([status])
+  @@index([code])
+  @@index([used_by])
+  @@map("access_codes")
 }

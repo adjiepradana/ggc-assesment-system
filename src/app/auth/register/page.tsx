@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import BrandLogo from "@/components/BrandLogo";
 import {
@@ -23,12 +23,16 @@ import {
   Layers,
   Award,
   ShieldCheck,
+  KeyRound,
+  Ticket,
 } from "lucide-react";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [formData, setFormData] = useState({
+    accessCode: "",
     fullName: "",
     email: "",
     password: "",
@@ -42,12 +46,24 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Auto-populate code if provided via URL (e.g. Lynk.id redirect: /auth/register?code=XXXXXX)
+  useEffect(() => {
+    const codeFromUrl = searchParams.get("code");
+    if (codeFromUrl) {
+      setFormData((prev) => ({
+        ...prev,
+        accessCode: codeFromUrl.trim().toUpperCase(),
+      }));
+    }
+  }, [searchParams]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
+    const value = e.target.name === "accessCode" ? e.target.value.toUpperCase() : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
     if (error) setError(null);
   };
@@ -59,10 +75,15 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      if (!formData.accessCode.trim()) {
+        throw new Error("Kode Akses (Access Code) wajib diisi. Masukkan kode pembelian Lynk.id Anda.");
+      }
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          access_code: formData.accessCode.trim().toUpperCase(),
           full_name: formData.fullName.trim(),
           email: formData.email.trim(),
           password: formData.password,
@@ -78,7 +99,7 @@ export default function RegisterPage() {
         throw new Error(data.error || "Gagal melakukan pendaftaran.");
       }
 
-      setSuccess("Pendaftaran berhasil! Menyiapkan sesi Anda...");
+      setSuccess("Pendaftaran berhasil dan Kode Akses tervalidasi! Menyiapkan sesi Anda...");
 
       // Automatically sign in the user
       const loginRes = await signIn("credentials", {
@@ -245,6 +266,50 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            {/* One-Time Access Code (Lynk.id integration) */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-50/70 via-ggc-gold/10 to-amber-50/70 border-2 border-ggc-gold/60 shadow-xs">
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor="accessCode"
+                  className="block text-xs font-black text-ggc-dark uppercase tracking-wider flex items-center gap-1.5"
+                >
+                  <KeyRound className="h-3.5 w-3.5 text-ggc-gold-dark" />
+                  <span>Kode Akses / Voucher Lynk.id *</span>
+                </label>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ggc-gold/20 text-ggc-dark border border-ggc-gold/40">
+                  Wajib Diisi
+                </span>
+              </div>
+
+              <div className="relative rounded-xl shadow-xs">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ggc-gold-dark">
+                  <Ticket className="h-4 w-4" />
+                </div>
+                <input
+                  id="accessCode"
+                  name="accessCode"
+                  type="text"
+                  enterKeyHint="next"
+                  required
+                  value={formData.accessCode}
+                  onChange={handleChange}
+                  placeholder="Contoh: GGC-A8K2-9F4X"
+                  className="block w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm font-mono font-bold tracking-wider rounded-xl border border-ggc-gold/50 bg-white text-ggc-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent uppercase transition-all"
+                />
+              </div>
+              <p className="text-[11px] text-gray-600 mt-1.5 flex items-center justify-between flex-wrap gap-1">
+                <span>Masukkan kode 8 karakter unik yang Anda dapatkan setelah pembayaran.</span>
+                <a
+                  href="https://lynk.id"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ggc hover:underline font-bold"
+                >
+                  Beli Kode Akses di Lynk.id →
+                </a>
+              </p>
+            </div>
+
             {/* Full Name */}
             <div>
               <label
@@ -471,5 +536,21 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-ggc-tint dark:bg-[#031810]">
+          <div className="w-12 h-12 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center animate-spin">
+            <Compass className="w-6 h-6" />
+          </div>
+        </div>
+      }
+    >
+      <RegisterForm />
+    </React.Suspense>
   );
 }

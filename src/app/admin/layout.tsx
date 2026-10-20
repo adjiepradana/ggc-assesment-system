@@ -30,6 +30,7 @@ export default function AdminLayout({
     if (pathname === "/admin/dashboard") return "Dashboard Overview & Analitik";
     if (pathname.startsWith("/admin/questions")) return "Manajemen Bank Soal (84 Butir)";
     if (pathname.startsWith("/admin/students")) return "Data Partisipan & Sesi Siswa";
+    if (pathname.startsWith("/admin/access-codes")) return "Kode Akses Lynk.id";
     return "Admin Console";
   };
 

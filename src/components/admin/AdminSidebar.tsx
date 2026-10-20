@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Compass,
+  KeyRound,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -93,6 +94,13 @@ export default function AdminSidebar({
       href: "/admin/students",
       icon: GraduationCap,
       active: pathname.startsWith("/admin/students"),
+    },
+    {
+      name: "Kode Akses (Lynk.id)",
+      subtitle: "Voucher Satu Kali Pakai",
+      href: "/admin/access-codes",
+      icon: KeyRound,
+      active: pathname.startsWith("/admin/access-codes"),
     },
   ];
 

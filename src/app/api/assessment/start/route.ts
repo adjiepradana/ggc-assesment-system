@@ -24,10 +24,10 @@ export async function GET() {
     let dbConnected = true;
 
     try {
-      assessmentSession = await prisma.assessmentSession.findFirst({
+      // Find the student's latest session
+      const latestSession = await prisma.assessmentSession.findFirst({
         where: {
           user_id: userId,
-          status: "IN_PROGRESS",
         },
         include: {
           answers: true,
@@ -35,7 +35,20 @@ export async function GET() {
         orderBy: { started_at: "desc" },
       });
 
-      if (!assessmentSession) {
+      // AUTO-LOCK: If latest session is COMPLETED, do NOT create a new session.
+      // Student must be redirected to their results page until an Admin resets the session.
+      if (latestSession && latestSession.status === "COMPLETED") {
+        return NextResponse.json({
+          session: latestSession,
+          is_completed: true,
+          redirect_url: `/student/results/${latestSession.id}`,
+          message: "Asesmen Anda telah selesai dan terkunci resmi. Menampilkan laporan hasil evaluasi...",
+        });
+      }
+
+      if (latestSession && latestSession.status === "IN_PROGRESS") {
+        assessmentSession = latestSession;
+      } else {
         assessmentSession = await prisma.assessmentSession.create({
           data: {
             user_id: userId,

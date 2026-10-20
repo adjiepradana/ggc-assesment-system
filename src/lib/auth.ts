@@ -37,6 +37,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email atau kata sandi tidak cocok.");
         }
 
+        if (user.is_active === false) {
+          throw new Error("Akses akun telah dicabut atau tidak valid.");
+        }
+
         const isValidPassword = await bcrypt.compare(
           credentials.password,
           user.password_hash

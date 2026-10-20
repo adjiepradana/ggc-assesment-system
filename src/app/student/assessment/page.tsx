@@ -274,9 +274,12 @@ export default function StudentAssessmentPage() {
           }
         }
 
-        // If already completed, redirect or show message
-        if (data.session?.status === "COMPLETED") {
+        // AUTO-LOCK: If already completed, aggressively redirect to results page
+        if (data.is_completed || data.session?.status === "COMPLETED") {
           setIsCompletedSuccess(true);
+          const targetUrl = data.redirect_url || (data.session?.id ? `/student/results/${data.session.id}` : "/student/results");
+          router.replace(targetUrl);
+          return;
         }
       } catch (err: any) {
         console.error("Error loading assessment:", err);

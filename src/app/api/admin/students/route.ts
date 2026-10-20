@@ -81,6 +81,7 @@ export async function GET(req: Request) {
           phoneNumber: u.profile?.phone_number || "-",
           school: u.profile?.school_name || "SMA Negeri 1 Jakarta",
           grade: u.profile?.grade || "Kelas 12",
+          isActive: u.is_active,
           session: latestSession
             ? {
                 id: latestSession.id,
@@ -254,6 +255,120 @@ export async function GET(req: Request) {
     console.error("Error in /api/admin/students:", error);
     return NextResponse.json(
       { error: "Gagal memuat rekapitulasi data siswa." },
+      { status: 500 }
+    );
+  }
+}
+
+// --------------------------------------------------------------------------
+// PATCH: Participant CRUD actions (Reset Sesi & Cabut Akses / Soft Delete)
+// --------------------------------------------------------------------------
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Forbidden. Hanya Administrator yang memiliki hak akses." },
+        { status: 403 }
+      );
+    }
+
+    const body = await req.json();
+    const { action, studentId } = body;
+
+    if (!studentId || !action) {
+      return NextResponse.json(
+        { error: "Parameter studentId dan action wajib diisi." },
+        { status: 400 }
+      );
+    }
+
+    const studentUser = await prisma.user.findUnique({
+      where: { id: studentId },
+      include: {
+        profile: true,
+        sessions: {
+          orderBy: { started_at: "desc" },
+        },
+      },
+    });
+
+    if (!studentUser) {
+      return NextResponse.json(
+        { error: "Data siswa tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    // 1. Action: RESET_SESSION
+    // Resets student's assessment session back to IN_PROGRESS and clears all answers
+    if (action === "RESET_SESSION") {
+      const latestSession = studentUser.sessions[0];
+
+      if (latestSession) {
+        await prisma.$transaction([
+          prisma.assessmentAnswer.deleteMany({
+            where: { session_id: latestSession.id },
+          }),
+          prisma.assessmentSession.update({
+            where: { id: latestSession.id },
+            data: {
+              status: "IN_PROGRESS",
+              completed_at: null,
+            },
+          }),
+        ]);
+      } else {
+        await prisma.assessmentSession.create({
+          data: {
+            user_id: studentUser.id,
+            status: "IN_PROGRESS",
+          },
+        });
+      }
+
+      const studentName = studentUser.profile?.full_name || studentUser.email;
+
+      return NextResponse.json({
+        success: true,
+        message: `Sesi asesmen untuk ${studentName} berhasil di-reset. Siswa dapat mengerjakan ulang 84 butir soal dari awal.`,
+      });
+    }
+
+    // 2. Action: TOGGLE_ACTIVE (Soft delete / Ban / Restore)
+    // Toggles User.is_active. When false, NextAuth authorize callback blocks their login attempt.
+    if (action === "TOGGLE_ACTIVE" || action === "REVOKE_ACCESS" || action === "RESTORE_ACCESS") {
+      const targetActive =
+        action === "REVOKE_ACCESS"
+          ? false
+          : action === "RESTORE_ACCESS"
+          ? true
+          : !studentUser.is_active;
+
+      const updated = await prisma.user.update({
+        where: { id: studentId },
+        data: { is_active: targetActive },
+      });
+
+      const studentName = studentUser.profile?.full_name || studentUser.email;
+      const statusLabel = targetActive ? "diaktifkan kembali" : "dicabut (nonaktif)";
+
+      return NextResponse.json({
+        success: true,
+        isActive: updated.is_active,
+        message: `Hak akses akun untuk ${studentName} berhasil ${statusLabel}.`,
+      });
+    }
+
+    return NextResponse.json(
+      { error: "Aksi tidak dikenali." },
+      { status: 400 }
+    );
+  } catch (error: any) {
+    console.error("Error updating student status:", error);
+    return NextResponse.json(
+      { error: error.message || "Gagal memperbarui status siswa." },
       { status: 500 }
     );
   }
