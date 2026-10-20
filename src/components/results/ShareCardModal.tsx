@@ -405,7 +405,7 @@ ${top3.map((m, i) => `${i + 1}. ${m.majorName} (${m.fitScore}% Fit)`).join("\n")
       }}
     >
       <div
-        className="bg-white rounded-t-[2.5rem] sm:rounded-3xl max-w-xl w-full p-4 pb-safe sm:p-6 shadow-2xl border-t-2 sm:border border-ggc-gold/40 flex flex-col max-h-[90vh] sm:max-h-[95vh] overflow-hidden animate-slide-up-sheet sm:animate-scale-in"
+        className="bg-white dark:bg-[#062419] text-gray-900 dark:text-[#E8F1EC] rounded-t-[2.5rem] sm:rounded-3xl max-w-xl w-full p-4 pb-safe sm:p-6 shadow-2xl border-t-2 sm:border border-ggc-gold/40 flex flex-col max-h-[90vh] sm:max-h-[95vh] overflow-hidden animate-slide-up-sheet sm:animate-scale-in transition-colors"
         style={{ overscrollBehavior: "contain" }}
       >
         {/* Mobile Drag Indicator Handle */}
@@ -415,25 +415,25 @@ ${top3.map((m, i) => `${i + 1}. ${m.majorName} (${m.fitScore}% Fit)`).join("\n")
           onTouchEnd={handleTouchEnd}
           onClick={onClose}
         >
-          <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
-          <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+          <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 active:bg-gray-400" />
+          <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
             Geser ke bawah untuk menutup
           </span>
         </div>
 
         {/* Header */}
         <div
-          className="flex items-center justify-between pb-3 border-b border-gray-100 shrink-0"
+          className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#0E4230] shrink-0"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           <div className="flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-ggc" />
+            <Smartphone className="w-5 h-5 text-ggc dark:text-ggc-gold" />
             <div>
-              <h2 id="share-modal-title" className="text-base font-black text-ggc-dark">
+              <h2 id="share-modal-title" className="text-base font-black text-ggc-dark dark:text-white">
                 Bagikan Persona Studi Siswa
               </h2>
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-gray-500 dark:text-[#A0B9AE]">
                 Kartu visual estetik format 9:16 untuk Instagram Story & WhatsApp
               </p>
             </div>
@@ -441,7 +441,7 @@ ${top3.map((m, i) => `${i + 1}. ${m.majorName} (${m.fitScore}% Fit)`).join("\n")
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-gray-600 dark:text-gray-300 flex items-center justify-center transition-colors"
             aria-label="Tutup dialog bagikan"
           >
             <X className="w-4 h-4" />
@@ -562,7 +562,7 @@ ${top3.map((m, i) => `${i + 1}. ${m.majorName} (${m.fitScore}% Fit)`).join("\n")
         </div>
 
         {/* Modal Actions */}
-        <div className="pt-3 border-t border-gray-100 flex flex-col gap-2 shrink-0">
+        <div className="pt-3 border-t border-gray-100 dark:border-[#0E4230] flex flex-col gap-2 shrink-0">
           {/* Main Action: Download PNG */}
           <button
             type="button"
@@ -586,18 +586,18 @@ ${top3.map((m, i) => `${i + 1}. ${m.majorName} (${m.fitScore}% Fit)`).join("\n")
             <button
               type="button"
               onClick={handleCopy}
-              className="py-2.5 px-3 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all flex items-center justify-center gap-1.5"
+              className="py-2.5 px-3 rounded-xl text-xs font-bold text-gray-700 dark:text-[#D1E2DA] bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] border border-transparent dark:border-[#103D2B] transition-all flex items-center justify-center gap-1.5"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? "Teks Disalin!" : "Salin Teks Ringkasan"}</span>
             </button>
 
             <button
               type="button"
               onClick={() => window.print()}
-              className="py-2.5 px-3 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all flex items-center justify-center gap-1.5"
+              className="py-2.5 px-3 rounded-xl text-xs font-bold text-gray-700 dark:text-[#D1E2DA] bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] border border-transparent dark:border-[#103D2B] transition-all flex items-center justify-center gap-1.5"
             >
-              <Printer className="w-3.5 h-3.5 text-gray-500" />
+              <Printer className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
               <span>Cetak Laporan PDF</span>
             </button>
           </div>

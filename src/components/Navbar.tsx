@@ -52,7 +52,7 @@ export default function Navbar() {
   }, [mobileMenuOpen]);
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/95 border-b border-ggc-subtle shadow-xs transition-all">
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/95 dark:bg-[#031810]/95 border-b border-ggc-subtle dark:border-[#0E4230] shadow-xs transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo - Always points to Home "/" */}
@@ -66,7 +66,7 @@ export default function Navbar() {
             {isNotHome && (
               <Link
                 href="/"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-gray-700 hover:text-ggc bg-gray-50 hover:bg-ggc-subtle border border-gray-200/90 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold bg-gray-50 dark:bg-[#07261B] hover:bg-ggc-subtle dark:hover:bg-[#0A3324] border border-gray-200/90 dark:border-[#103D2B] transition-colors shadow-2xs"
                 title="Buka halaman utama publik GGC"
               >
                 <Compass className="w-3.5 h-3.5 text-ggc-gold" />
@@ -83,7 +83,7 @@ export default function Navbar() {
                       className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                         pathname === "/student/dashboard"
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:text-ggc hover:bg-gray-50"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold hover:bg-gray-50 dark:hover:bg-[#07261B]"
                       }`}
                     >
                       <LayoutDashboard className="w-3.5 h-3.5" />
@@ -94,7 +94,7 @@ export default function Navbar() {
                       className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                         pathname.startsWith("/student/assessment")
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:text-ggc hover:bg-gray-50"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold hover:bg-gray-50 dark:hover:bg-[#07261B]"
                       }`}
                     >
                       <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
@@ -110,7 +110,7 @@ export default function Navbar() {
                       className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                         pathname === "/admin/dashboard"
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:text-ggc hover:bg-gray-50"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold hover:bg-gray-50 dark:hover:bg-[#07261B]"
                       }`}
                     >
                       <LayoutDashboard className="w-3.5 h-3.5" />
@@ -121,7 +121,7 @@ export default function Navbar() {
                       className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                         pathname.startsWith("/admin/questions")
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:text-ggc hover:bg-gray-50"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold hover:bg-gray-50 dark:hover:bg-[#07261B]"
                       }`}
                     >
                       <FileQuestion className="w-3.5 h-3.5" />
@@ -132,7 +132,7 @@ export default function Navbar() {
                       className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                         pathname.startsWith("/admin/students")
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:text-ggc hover:bg-gray-50"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold hover:bg-gray-50 dark:hover:bg-[#07261B]"
                       }`}
                     >
                       <Users className="w-3.5 h-3.5" />
@@ -144,34 +144,34 @@ export default function Navbar() {
             )}
 
             {status !== "authenticated" && (
-              <div className="hidden lg:flex items-center gap-5 text-xs font-bold text-gray-600">
+              <div className="hidden lg:flex items-center gap-5 text-xs font-bold text-gray-600 dark:text-[#A0B9AE]">
                 <a
                   href="/#fitur"
-                  className="hover:text-ggc transition-colors"
+                  className="hover:text-ggc dark:hover:text-ggc-gold transition-colors"
                 >
                   Keunggulan
                 </a>
                 <a
                   href="/#metodologi"
-                  className="hover:text-ggc transition-colors"
+                  className="hover:text-ggc dark:hover:text-ggc-gold transition-colors"
                 >
                   7 Dimensi
                 </a>
                 <a
                   href="/#signatures"
-                  className="hover:text-ggc transition-colors"
+                  className="hover:text-ggc dark:hover:text-ggc-gold transition-colors"
                 >
                   Potential Signature
                 </a>
                 <a
                   href="/#alur"
-                  className="hover:text-ggc transition-colors"
+                  className="hover:text-ggc dark:hover:text-ggc-gold transition-colors"
                 >
                   Cara Kerja
                 </a>
                 <a
                   href="/#faq"
-                  className="hover:text-ggc transition-colors"
+                  className="hover:text-ggc dark:hover:text-ggc-gold transition-colors"
                 >
                   FAQ
                 </a>
@@ -185,7 +185,7 @@ export default function Navbar() {
             {isNotHome && (
               <Link
                 href="/"
-                className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl text-gray-700 bg-gray-50 hover:bg-ggc-subtle border border-gray-200/90 shadow-2xs"
+                className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl text-gray-700 dark:text-[#C7DCD2] bg-gray-50 dark:bg-[#07261B] hover:bg-ggc-subtle dark:hover:bg-[#0A3324] border border-gray-200/90 dark:border-[#103D2B] shadow-2xs"
                 title="Kembali ke Halaman Utama"
                 aria-label="Kembali ke Halaman Utama"
               >
@@ -194,21 +194,21 @@ export default function Navbar() {
             )}
 
             {status === "loading" ? (
-              <div className="w-20 h-9 bg-ggc-subtle animate-pulse rounded-xl" />
+              <div className="w-20 h-9 bg-ggc-subtle dark:bg-[#07261B] animate-pulse rounded-xl" />
             ) : status === "authenticated" ? (
               <div className="hidden sm:flex items-center gap-3">
                 {/* Role Badge & Name */}
                 <div className="flex flex-col text-right">
-                  <span className="text-xs font-bold text-ggc-dark truncate max-w-[130px]">
+                  <span className="text-xs font-bold text-ggc-dark dark:text-white truncate max-w-[130px]">
                     {session.user?.name || session.user?.email}
                   </span>
                   <div className="flex items-center justify-end gap-1 mt-0.5">
                     {isAdmin ? (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full bg-ggc-gold/20 text-ggc-gold-dark border border-ggc-gold/40">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full bg-ggc-gold/20 text-ggc-gold-dark dark:text-ggc-gold border border-ggc-gold/40">
                         <Shield className="w-2.5 h-2.5" /> Admin
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full bg-ggc/10 text-ggc border border-ggc/20">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full bg-ggc/10 dark:bg-emerald-950/60 text-ggc dark:text-emerald-300 border border-ggc/20 dark:border-emerald-800/40">
                         <GraduationCap className="w-2.5 h-2.5" /> Siswa
                       </span>
                     )}
@@ -232,7 +232,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                  className="hidden md:inline-flex items-center gap-1 px-3 py-2 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200/80 rounded-xl transition-all"
+                  className="hidden md:inline-flex items-center gap-1 px-3 py-2 text-xs font-bold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200/80 dark:border-red-900/50 rounded-xl transition-all"
                   title="Keluar dari akun"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -243,7 +243,7 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center gap-2">
                 <Link
                   href="/auth/login"
-                  className="px-3.5 py-2 text-xs font-bold text-gray-700 hover:text-ggc transition-colors"
+                  className="px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold transition-colors"
                 >
                   Masuk
                 </Link>
@@ -260,14 +260,14 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-ggc-subtle text-gray-800 hover:text-ggc border border-gray-200/90 shadow-2xs transition-all focus:outline-none focus:ring-2 focus:ring-ggc/30"
+              className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-[#07261B] hover:bg-ggc-subtle dark:hover:bg-[#0A3324] text-gray-800 dark:text-white border border-gray-200/90 dark:border-[#103D2B] shadow-2xs transition-all focus:outline-none focus:ring-2 focus:ring-ggc/30"
               aria-label={mobileMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? (
-                <X className="w-5 h-5 text-gray-900" />
+                <X className="w-5 h-5 text-gray-900 dark:text-white" />
               ) : (
-                <Menu className="w-5 h-5 text-gray-900" />
+                <Menu className="w-5 h-5 text-gray-900 dark:text-white" />
               )}
             </button>
           </div>
@@ -276,7 +276,7 @@ export default function Navbar() {
 
       {/* ================= MOBILE DRAWER OVERLAY & MENU ================= */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-20 z-40 bg-black/50 backdrop-blur-xs transition-opacity animate-fade-in">
+        <div className="md:hidden fixed inset-0 top-20 z-40 bg-black/60 backdrop-blur-xs transition-opacity animate-fade-in">
           {/* Backdrop click area */}
           <div
             className="absolute inset-0"
@@ -284,7 +284,7 @@ export default function Navbar() {
           />
 
           {/* Drawer Sheet */}
-          <div className="relative bg-white border-b border-gray-200/90 shadow-2xl max-h-[calc(100vh-5rem)] overflow-y-auto">
+          <div className="relative bg-white dark:bg-[#052016] border-b border-gray-200/90 dark:border-[#0E4230] shadow-2xl max-h-[calc(100vh-5rem)] overflow-y-auto">
             <div className="px-5 py-6 space-y-6 max-w-lg mx-auto">
               {/* Authenticated User Profile Summary Card */}
               {status === "authenticated" && session?.user && (
@@ -329,7 +329,7 @@ export default function Navbar() {
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                     pathname === "/"
                       ? "bg-ggc text-white shadow-xs"
-                      : "text-gray-700 hover:bg-gray-100"
+                      : "text-gray-700 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -348,7 +348,7 @@ export default function Navbar() {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                         pathname === "/student/dashboard"
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -364,7 +364,7 @@ export default function Navbar() {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                         pathname.startsWith("/student/assessment")
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -385,7 +385,7 @@ export default function Navbar() {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                         pathname === "/admin/dashboard"
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -401,7 +401,7 @@ export default function Navbar() {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                         pathname.startsWith("/admin/questions")
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -417,7 +417,7 @@ export default function Navbar() {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                         pathname.startsWith("/admin/students")
                           ? "bg-ggc text-white shadow-xs"
-                          : "text-gray-700 hover:bg-gray-100"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -431,16 +431,16 @@ export default function Navbar() {
               </div>
 
               {/* Informational Section Links (Anchor Links for Landing Page) */}
-              <div className="space-y-1.5 pt-2 border-t border-gray-100">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">
+              <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-[#0E4230]">
+                <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2">
                   Eksplorasi Platform
                 </span>
 
-                <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-gray-700">
+                <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
                   <a
                     href="/#fitur"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-2.5 rounded-xl bg-gray-50 hover:bg-ggc-subtle hover:text-ggc transition-colors flex items-center gap-2"
+                    className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] hover:bg-ggc-subtle dark:hover:bg-[#0A3324] hover:text-ggc dark:hover:text-ggc-gold border border-transparent dark:border-[#103D2B] transition-colors flex items-center gap-2"
                   >
                     <Award className="w-3.5 h-3.5 text-ggc-gold" />
                     <span>Keunggulan</span>
@@ -448,7 +448,7 @@ export default function Navbar() {
                   <a
                     href="/#metodologi"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-2.5 rounded-xl bg-gray-50 hover:bg-ggc-subtle hover:text-ggc transition-colors flex items-center gap-2"
+                    className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] hover:bg-ggc-subtle dark:hover:bg-[#0A3324] hover:text-ggc dark:hover:text-ggc-gold border border-transparent dark:border-[#103D2B] transition-colors flex items-center gap-2"
                   >
                     <Layers className="w-3.5 h-3.5 text-ggc-gold" />
                     <span>7 Dimensi</span>
@@ -456,7 +456,7 @@ export default function Navbar() {
                   <a
                     href="/#signatures"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-2.5 rounded-xl bg-gray-50 hover:bg-ggc-subtle hover:text-ggc transition-colors flex items-center gap-2"
+                    className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] hover:bg-ggc-subtle dark:hover:bg-[#0A3324] hover:text-ggc dark:hover:text-ggc-gold border border-transparent dark:border-[#103D2B] transition-colors flex items-center gap-2"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
                     <span>Potential Signature</span>
@@ -464,7 +464,7 @@ export default function Navbar() {
                   <a
                     href="/#faq"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-2.5 rounded-xl bg-gray-50 hover:bg-ggc-subtle hover:text-ggc transition-colors flex items-center gap-2"
+                    className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] hover:bg-ggc-subtle dark:hover:bg-[#0A3324] hover:text-ggc dark:hover:text-ggc-gold border border-transparent dark:border-[#103D2B] transition-colors flex items-center gap-2"
                   >
                     <HelpCircle className="w-3.5 h-3.5 text-ggc-gold" />
                     <span>FAQ & Bantuan</span>

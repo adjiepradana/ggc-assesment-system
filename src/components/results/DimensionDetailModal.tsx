@@ -123,7 +123,7 @@ export default function DimensionDetailModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2rem] max-w-xl w-full p-5 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/40 max-h-[88vh] sm:max-h-[90vh] flex flex-col overflow-hidden animate-slide-up-sheet sm:animate-scale-in">
+      <div className="bg-white dark:bg-[#062419] text-gray-900 dark:text-[#E8F1EC] rounded-t-[2.5rem] sm:rounded-[2rem] max-w-xl w-full p-5 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/40 max-h-[88vh] sm:max-h-[90vh] flex flex-col overflow-hidden animate-slide-up-sheet sm:animate-scale-in transition-colors">
         {/* Mobile Drag Indicator Handle */}
         <div
           className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
@@ -131,15 +131,15 @@ export default function DimensionDetailModal({
           onTouchEnd={handleTouchEnd}
           onClick={onClose}
         >
-          <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
-          <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+          <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 active:bg-gray-400" />
+          <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
             Geser ke bawah untuk menutup
           </span>
         </div>
 
         {/* Header */}
         <div
-          className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 shrink-0"
+          className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 dark:border-[#0E4230] shrink-0"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -148,10 +148,10 @@ export default function DimensionDetailModal({
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-ggc-gold-dark block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-ggc-gold-dark dark:text-ggc-gold block">
                 Eksplorasi Dimensi
               </span>
-              <h2 id="dimension-modal-title" className="text-lg sm:text-xl font-black text-ggc-dark">
+              <h2 id="dimension-modal-title" className="text-lg sm:text-xl font-black text-ggc-dark dark:text-white">
                 {dimension.name}
               </h2>
             </div>
@@ -159,7 +159,7 @@ export default function DimensionDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-gray-600 dark:text-gray-300 flex items-center justify-center transition-colors"
             aria-label="Tutup detail dimensi"
           >
             <X className="w-4 h-4" />
@@ -169,13 +169,13 @@ export default function DimensionDetailModal({
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto py-5 pr-1 space-y-5">
           {/* Score highlight */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-ggc-tint via-white to-ggc-gold-subtle border border-ggc/20 flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-ggc-tint via-white to-ggc-gold-subtle dark:from-[#041B12] dark:via-[#07261B] dark:to-[#041B12] border border-ggc/20 dark:border-ggc-gold/30 flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              <span className="text-[11px] font-semibold text-gray-500 dark:text-[#A0B9AE] uppercase tracking-wide">
                 Performa Skor Dimensi
               </span>
-              <div className="text-2xl font-black text-ggc mt-0.5">
-                {dimension.score.toFixed(1)} <span className="text-sm font-bold text-gray-400">/ 5.0</span>
+              <div className="text-2xl font-black text-ggc dark:text-ggc-gold mt-0.5">
+                {dimension.score.toFixed(1)} <span className="text-sm font-bold text-gray-400 dark:text-gray-500">/ 5.0</span>
               </div>
             </div>
             <div className="text-right">
@@ -187,25 +187,25 @@ export default function DimensionDetailModal({
 
           {/* Description */}
           <div>
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-ggc-gold-dark" />
+            <h4 className="text-xs font-bold text-gray-700 dark:text-[#C7DCD2] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <Award className="w-4 h-4 text-ggc-gold-dark dark:text-ggc-gold" />
               Deskripsi Evaluasi:
             </h4>
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-[#D1E2DA] leading-relaxed bg-gray-50 dark:bg-[#041B12] p-3.5 rounded-xl border border-gray-100 dark:border-[#103D2B]">
               {dimension.description}
             </p>
           </div>
 
           {/* Tips for action */}
           <div>
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
+            <h4 className="text-xs font-bold text-gray-700 dark:text-[#C7DCD2] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Lightbulb className="w-4 h-4 text-amber-500 dark:text-amber-400" />
               3 Panduan Pengembangan Praktis:
             </h4>
             <ul className="space-y-2">
               {info.tips.map((tip, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs text-gray-700 bg-white p-2.5 rounded-xl border border-gray-100 shadow-2xs">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <li key={idx} className="flex items-start gap-2.5 text-xs text-gray-700 dark:text-[#D1E2DA] bg-white dark:bg-[#07261B] p-2.5 rounded-xl border border-gray-100 dark:border-[#103D2B] shadow-2xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <span>{tip}</span>
                 </li>
               ))}
@@ -213,26 +213,26 @@ export default function DimensionDetailModal({
           </div>
 
           {/* Impact on Career */}
-          <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/60 text-xs">
-            <span className="font-bold text-emerald-900 block mb-1 flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-700" /> Pengaruh di Dunia Profesional:
+          <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-[#041B12] border border-emerald-200/60 dark:border-emerald-900/60 text-xs">
+            <span className="font-bold text-emerald-900 dark:text-emerald-300 block mb-1 flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> Pengaruh di Dunia Profesional:
             </span>
-            <p className="text-emerald-950/80 leading-relaxed text-[11px] sm:text-xs">
+            <p className="text-emerald-950/80 dark:text-emerald-200/90 leading-relaxed text-[11px] sm:text-xs">
               {info.careerImpact}
             </p>
           </div>
 
           {/* Relevant Majors */}
           <div>
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Compass className="w-4 h-4 text-ggc" />
+            <h4 className="text-xs font-bold text-gray-700 dark:text-[#C7DCD2] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Compass className="w-4 h-4 text-ggc dark:text-ggc-gold" />
               Jurusan yang Paling Mengandalkan Dimensi Ini:
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {info.relevantMajors.map((major) => (
                 <span
                   key={major}
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-ggc-subtle text-ggc border border-ggc/20"
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-ggc-subtle dark:bg-[#082E20] text-ggc dark:text-emerald-300 border border-ggc/20 dark:border-[#103D2B]"
                 >
                   {major}
                 </span>
@@ -242,7 +242,7 @@ export default function DimensionDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="pt-3 border-t border-gray-100 flex justify-end shrink-0">
+        <div className="pt-3 border-t border-gray-100 dark:border-[#0E4230] flex justify-end shrink-0">
           <button
             type="button"
             onClick={onClose}

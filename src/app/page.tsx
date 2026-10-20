@@ -364,11 +364,11 @@ export default function HomePage() {
   }, [faqCategory, faqSearch]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFBF9] text-gray-900 overflow-x-hidden selection:bg-ggc selection:text-white pb-20 sm:pb-0">
+    <div className="min-h-screen flex flex-col bg-[#FAFBF9] dark:bg-[#031810] text-gray-900 dark:text-[#E8F1EC] overflow-x-hidden selection:bg-ggc selection:text-white pb-20 sm:pb-0 transition-colors duration-200">
       <Navbar />
 
       {/* ================= HERO SECTION WITH INTERACTIVE RADAR & MINI SIMULATOR ================= */}
-      <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 bg-gradient-to-b from-white via-ggc-tint/60 to-[#FAFBF9] parallax-hero-wrapper">
+      <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 bg-gradient-to-b from-white via-ggc-tint/60 to-[#FAFBF9] dark:from-[#031810] dark:via-[#052317] dark:to-[#031810] parallax-hero-wrapper">
         {/* Layer 0: Background Ambient Glow & Geometric Dot Pattern */}
         <div
           className="absolute inset-0 bg-[radial-gradient(#0B4632_1.2px,transparent_1.2px)] [background-size:28px_28px] opacity-[0.035] pointer-events-none"
@@ -392,14 +392,14 @@ export default function HomePage() {
             {/* Left Column: Headline, Description & CTAs */}
             <div className="lg:col-span-7 text-center lg:text-left">
               {/* Trust Badge */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-ggc/20 text-ggc text-xs sm:text-sm font-semibold shadow-sm mb-6 animate-float-slow">
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/95 dark:bg-[#07261B]/95 backdrop-blur-md border border-ggc/20 dark:border-ggc-gold/30 text-ggc dark:text-ggc-gold text-xs sm:text-sm font-semibold shadow-sm mb-6 animate-float-slow">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-gray-700">Sahabat Pemetaan Masa Depan Siswa</span>
-                <span className="text-ggc-gold-dark font-bold">• 84 Butir Santai & Teruji</span>
+                <span className="text-gray-700 dark:text-[#C7DCD2]">Sahabat Pemetaan Masa Depan Siswa</span>
+                <span className="text-ggc-gold-dark dark:text-ggc-gold font-bold">• 84 Butir Santai & Teruji</span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="fluid-hero-title font-black text-ggc-dark tracking-tight leading-[1.14]">
+              <h1 className="fluid-hero-title font-black text-ggc-dark dark:text-white tracking-tight leading-[1.14]">
                 Pahami Potensimu.{" "}
                 <span className="gold-gradient-text block mt-1.5">
                   Pilih Jurusan Bebas Galau!
@@ -407,7 +407,7 @@ export default function HomePage() {
               </h1>
 
               {/* Tagline / Subtitle */}
-              <p className="mt-6 text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              <p className="mt-6 text-base sm:text-lg lg:text-xl text-gray-700 dark:text-[#B2CCC1] leading-relaxed max-w-2xl mx-auto lg:mx-0">
                 <strong>Go Great Career (GGC) Study Fit Assessment™</strong> hadir mendampingi langkahmu. Petakan bakat kognitif, minat, kepribadian, hingga kesiapan kuliah lewat 84 pertanyaan reflektif santai tanpa tekanan. Temukan program studi kampus impian yang paling pas dengan dirimu!
               </p>
 
@@ -425,9 +425,9 @@ export default function HomePage() {
                     </Link>
                     <Link
                       href="/student/assessment"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark bg-white hover:bg-ggc-subtle/70 border border-ggc/25 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark dark:text-white bg-white dark:bg-[#07261B] hover:bg-ggc-subtle/70 dark:hover:bg-[#0B3525] border border-ggc/25 dark:border-ggc-gold/40 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc dark:hover:border-ggc-gold"
                     >
-                      <Sparkles className="w-4 h-4 text-ggc-gold-dark" />
+                      <Sparkles className="w-4 h-4 text-ggc-gold-dark dark:text-ggc-gold" />
                       <span>Lanjutkan Asesmen 84 Butir</span>
                     </Link>
                   </>
@@ -443,7 +443,7 @@ export default function HomePage() {
                     </Link>
                     <Link
                       href="/admin/questions"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark bg-white hover:bg-ggc-subtle/70 border border-ggc/25 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark dark:text-white bg-white dark:bg-[#07261B] hover:bg-ggc-subtle/70 dark:hover:bg-[#0B3525] border border-ggc/25 dark:border-ggc-gold/40 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc dark:hover:border-ggc-gold"
                     >
                       <span>Manajemen Bank Soal</span>
                     </Link>
@@ -459,7 +459,7 @@ export default function HomePage() {
                     </Link>
                     <a
                       href="#fitur"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark bg-white hover:bg-ggc-subtle/70 border border-ggc/25 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark dark:text-white bg-white dark:bg-[#07261B] hover:bg-ggc-subtle/70 dark:hover:bg-[#0B3525] border border-ggc/25 dark:border-ggc-gold/40 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc dark:hover:border-ggc-gold"
                     >
                       <span>Pelajari Fitur & Metodologi</span>
                     </a>
@@ -468,45 +468,45 @@ export default function HomePage() {
               </div>
 
               {/* Interactive Quick Trust Highlights (Clean In-Flow Grid, Zero Overlapping) */}
-              <div className="mt-10 pt-7 border-t border-gray-200/80">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-700">
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-gray-200/80 shadow-2xs hover:border-ggc/30 transition-colors">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60">
+              <div className="mt-10 pt-7 border-t border-gray-200/80 dark:border-[#0E4230]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-700 dark:text-[#C7DCD2]">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 dark:bg-[#07261B]/90 border border-gray-200/80 dark:border-[#103D2B] shadow-2xs hover:border-ggc/30 dark:hover:border-ggc-gold/40 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60 dark:border-emerald-800/40">
                       ✓
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">84 Butir Santai & Teruji</p>
-                      <p className="text-[11px] text-gray-500">15–20 menit selesai tanpa stres</p>
+                      <p className="font-bold text-gray-900 dark:text-white">84 Butir Santai & Teruji</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">15–20 menit selesai tanpa stres</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-gray-200/80 shadow-2xs hover:border-ggc/30 transition-colors">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 dark:bg-[#07261B]/90 border border-gray-200/80 dark:border-[#103D2B] shadow-2xs hover:border-ggc/30 dark:hover:border-ggc-gold/40 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60 dark:border-emerald-800/40">
                       ✓
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">Multi-Matrix Matching</p>
-                      <p className="text-[11px] text-gray-500">98.4% siswa lebih percaya diri</p>
+                      <p className="font-bold text-gray-900 dark:text-white">Multi-Matrix Matching</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">98.4% siswa lebih percaya diri</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-gray-200/80 shadow-2xs hover:border-ggc/30 transition-colors">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 dark:bg-[#07261B]/90 border border-gray-200/80 dark:border-[#103D2B] shadow-2xs hover:border-ggc/30 dark:hover:border-ggc-gold/40 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60 dark:border-emerald-800/40">
                       ✓
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">Laporan PDF Resmi Instan</p>
-                      <p className="text-[11px] text-gray-500">Siap cetak & diskusi keluarga</p>
+                      <p className="font-bold text-gray-900 dark:text-white">Laporan PDF Resmi Instan</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">Siap cetak & diskusi keluarga</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-amber-200/70 shadow-2xs hover:border-amber-300 transition-colors">
-                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm shrink-0 border border-amber-200">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 dark:bg-[#07261B]/90 border border-amber-200/70 dark:border-amber-800/40 shadow-2xs hover:border-amber-300 dark:hover:border-amber-700 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-sm shrink-0 border border-amber-200 dark:border-amber-800/60">
                       ⭐
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">Rating 4.9/5 Kepuasan</p>
-                      <p className="text-[11px] text-gray-500">10.000+ siswa terbantu di Indonesia</p>
+                      <p className="font-bold text-gray-900 dark:text-white">Rating 4.9/5 Kepuasan</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">10.000+ siswa terbantu di Indonesia</p>
                     </div>
                   </div>
                 </div>
@@ -878,17 +878,17 @@ export default function HomePage() {
       </section>
 
       {/* ================= INTERACTIVE DEMO: POTENTIAL SIGNATURES SHOWCASE WITH RADAR ================= */}
-      <section id="signatures" className="py-20 bg-gradient-to-b from-white via-ggc-tint/40 to-[#FAFBF9] border-b border-ggc-subtle">
+      <section id="signatures" className="py-20 bg-gradient-to-b from-white via-ggc-tint/40 to-[#FAFBF9] dark:from-[#031810] dark:via-[#052016] dark:to-[#031810] border-b border-ggc-subtle dark:border-[#0E4230] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/20 text-ggc-gold-dark text-xs font-bold tracking-wide uppercase border border-ggc-gold/30">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/20 dark:bg-ggc-gold/25 text-ggc-gold-dark dark:text-ggc-gold text-xs font-bold tracking-wide uppercase border border-ggc-gold/30">
               <Sparkles className="w-3.5 h-3.5" />
               Interactive Prototype Demo
             </span>
-            <h2 className="fluid-section-title font-black text-ggc-dark mt-3">
+            <h2 className="fluid-section-title font-black text-ggc-dark dark:text-white mt-3">
               Jelajahi Sampel &ldquo;Potential Signature&rdquo; &amp; Bentuk Radar
             </h2>
-            <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-[#A0B9AE] mt-3 leading-relaxed">
               Pilih salah satu arketipe di bawah ini untuk melihat bagaimana bentuk poligon Radar Bakat dan rekomendasi program studi berubah secara dinamis.
             </p>
           </div>
@@ -904,12 +904,12 @@ export default function HomePage() {
                   className={`px-4 sm:px-6 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
                     isActive
                       ? "bg-ggc text-white shadow-lg shadow-ggc/20 ring-2 ring-ggc-gold/40 scale-105"
-                      : "bg-white text-gray-600 hover:text-ggc hover:bg-ggc-subtle/60 border border-gray-200 shadow-sm"
+                      : "bg-white dark:bg-[#07261B] text-gray-600 dark:text-[#A0B9AE] hover:text-ggc dark:hover:text-ggc-gold hover:bg-ggc-subtle/60 dark:hover:bg-[#093525] border border-gray-200 dark:border-[#103D2B] shadow-sm"
                   }`}
                 >
                   <Sparkles
                     className={`w-4 h-4 ${
-                      isActive ? "text-ggc-gold" : "text-gray-400"
+                      isActive ? "text-ggc-gold" : "text-gray-400 dark:text-gray-500"
                     }`}
                   />
                   <span>{sig.title}</span>
@@ -922,7 +922,7 @@ export default function HomePage() {
           {(() => {
             const activeProfile = signatureProfiles[activeSignatureIndex];
             return (
-              <div className="rounded-3xl bg-gradient-to-br from-ggc-dark via-[#093D2C] to-ggc text-white p-6 sm:p-10 shadow-2xl border border-ggc-gold/40 relative overflow-hidden transition-all duration-300">
+              <div className="rounded-3xl bg-gradient-to-br from-ggc-dark via-[#093D2C] to-ggc dark:from-[#041D14] dark:via-[#072B1E] dark:to-[#031810] text-white p-6 sm:p-10 shadow-2xl border border-ggc-gold/40 relative overflow-hidden transition-all duration-300">
                 {/* Background Watermark Logo */}
                 <div className="absolute top-6 right-6 hidden md:block opacity-15 pointer-events-none">
                   <img
@@ -991,12 +991,12 @@ export default function HomePage() {
                   </div>
 
                   {/* Right Column: Live SVG Radar Chart */}
-                  <div className="lg:col-span-6 bg-white text-gray-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-ggc-gold/30 flex flex-col items-center justify-center">
-                    <div className="w-full flex items-center justify-between pb-3 border-b border-gray-100 mb-2">
-                      <span className="text-xs font-bold uppercase tracking-wide text-ggc-dark">
+                  <div className="lg:col-span-6 bg-white dark:bg-[#07261B] text-gray-900 dark:text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-ggc-gold/30 dark:border-ggc-gold/40 flex flex-col items-center justify-center transition-colors">
+                    <div className="w-full flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#103D2B] mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wide text-ggc-dark dark:text-ggc-gold">
                         Bentuk Poligon Radar Talenta
                       </span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-ggc-gold/20 text-ggc-gold-dark border border-ggc-gold/30">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-ggc-gold/20 dark:bg-ggc-gold/25 text-ggc-gold-dark dark:text-ggc-gold border border-ggc-gold/30">
                         6 Sumbu Kognitif
                       </span>
                     </div>
@@ -1008,7 +1008,7 @@ export default function HomePage() {
                       strokeColor="#0B4632"
                     />
 
-                    <div className="mt-3 text-center text-xs text-gray-500">
+                    <div className="mt-3 text-center text-xs text-gray-500 dark:text-gray-400">
                       Arahkan kursor pada titik sudut untuk melihat skor kecocokan sumbu kognitif.
                     </div>
                   </div>
@@ -1020,22 +1020,22 @@ export default function HomePage() {
       </section>
 
       {/* ================= THE 7 EVALUATION DIMENSIONS SECTION (MODERN BENTO GRID) ================= */}
-      <section id="metodologi" className="py-20 md:py-28 bg-[#FAFBF9] border-b border-gray-200/80 relative overflow-hidden">
+      <section id="metodologi" className="py-20 md:py-28 bg-[#FAFBF9] dark:bg-[#031810] border-b border-gray-200/80 dark:border-[#0E4230] relative overflow-hidden transition-colors">
         {/* Subtle background glow */}
-        <div className="absolute top-1/2 left-0 w-96 h-96 bg-ggc/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 right-0 w-96 h-96 bg-ggc-gold/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-0 w-96 h-96 bg-ggc/5 dark:bg-ggc/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 right-0 w-96 h-96 bg-ggc-gold/10 dark:bg-ggc-gold/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-14 md:mb-16">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-ggc-gold/40 text-ggc-dark text-xs font-bold uppercase tracking-wider shadow-2xs mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#07261B] border border-ggc-gold/40 text-ggc-dark dark:text-white text-xs font-bold uppercase tracking-wider shadow-2xs mb-3">
               <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
               <span>Holistic Psychometric Framework</span>
             </div>
-            <h2 className="fluid-section-title font-black text-ggc-dark tracking-tight leading-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark dark:text-white tracking-tight leading-tight">
               7 Dimensi Penilaian Multi-Matriks
             </h2>
-            <p className="text-sm sm:text-base text-gray-600 mt-3.5 leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-[#A0B9AE] mt-3.5 leading-relaxed">
               Arsitektur psikometri komprehensif 84 butir instrumen terukur yang menyilangkan bakat alami, preferensi minat, karakter kerja, nilai hidup, dan kesiapan akademik menuju kampus impian.
             </p>
           </div>
@@ -1047,39 +1047,39 @@ export default function HomePage() {
               onClick={() => setActiveDimCode("T")}
               className={`lg:col-span-7 p-6 sm:p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
                 activeDimCode === "T"
-                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
-                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+                  ? "bg-white dark:bg-[#072B1E] border-ggc dark:border-ggc-gold shadow-xl ring-2 ring-ggc/20 dark:ring-ggc-gold/30"
+                  : "bg-white/95 dark:bg-[#062419] border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/50 hover:shadow-lg"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200 group-hover:scale-105 transition-transform">
-                      <Brain className="w-6 h-6 text-ggc" />
+                    <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 group-hover:scale-105 transition-transform">
+                      <Brain className="w-6 h-6 text-ggc dark:text-emerald-400" />
                     </div>
                     <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-ggc-gold-dark block">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-ggc-gold-dark dark:text-ggc-gold block">
                         Dimensi 01 • Fondasi Utama
                       </span>
-                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark">
+                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark dark:text-white">
                         Talent (Bakat Kognitif)
                       </h3>
                     </div>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 shrink-0">
                     12 Butir
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] leading-relaxed">
                   Mengukur potensi kecerdasan alami: logika analitikal, penalaran spasial 3D, kecerdasan verbal, hingga pemodelan sistem terstruktur.
                 </p>
 
                 {/* Subdimension Visual Bars */}
-                <div className="mt-6 p-4 rounded-2xl bg-gray-50/80 border border-gray-100 space-y-2.5">
-                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+                <div className="mt-6 p-4 rounded-2xl bg-gray-50/80 dark:bg-[#041B12] border border-gray-100 dark:border-[#0E3827] space-y-2.5">
+                  <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center justify-between">
                     <span>6 Sumbu Subdimensi Bakat</span>
-                    <span className="text-ggc font-bold">Bobot Teruji</span>
+                    <span className="text-ggc dark:text-ggc-gold font-bold">Bobot Teruji</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
                     {[
@@ -1090,9 +1090,9 @@ export default function HomePage() {
                       { name: "Kreativitas Estetika", val: "78%" },
                       { name: "Kecerdasan Sosial", val: "86%" },
                     ].map((sub) => (
-                      <div key={sub.name} className="p-2 rounded-xl bg-white border border-gray-200/80 text-center">
-                        <div className="text-[10px] font-semibold text-gray-600 truncate">{sub.name}</div>
-                        <div className="text-xs font-black text-ggc mt-0.5">{sub.val}</div>
+                      <div key={sub.name} className="p-2 rounded-xl bg-white dark:bg-[#07261B] border border-gray-200/80 dark:border-[#103D2B] text-center">
+                        <div className="text-[10px] font-semibold text-gray-600 dark:text-[#A0B9AE] truncate">{sub.name}</div>
+                        <div className="text-xs font-black text-ggc dark:text-ggc-gold mt-0.5">{sub.val}</div>
                       </div>
                     ))}
                   </div>
@@ -1100,7 +1100,7 @@ export default function HomePage() {
               </div>
 
               {/* Sample Question Strip */}
-              <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2.5 text-xs text-gray-700 bg-emerald-50/50 p-3 rounded-2xl border border-emerald-100">
+              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#0E3827] flex items-start gap-2.5 text-xs text-gray-700 dark:text-[#C7DCD2] bg-emerald-50/50 dark:bg-[#041B12] p-3 rounded-2xl border border-emerald-100 dark:border-[#0E3827]">
                 <span className="text-base shrink-0">💡</span>
                 <p className="italic">
                   &ldquo;Saya dengan cepat mampu menangkap pola sebab-akibat dalam data angka atau grafik rumit.&rdquo;
@@ -1113,62 +1113,62 @@ export default function HomePage() {
               onClick={() => setActiveDimCode("I")}
               className={`lg:col-span-5 p-6 sm:p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
                 activeDimCode === "I"
-                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
-                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+                  ? "bg-white dark:bg-[#072B1E] border-ggc dark:border-ggc-gold shadow-xl ring-2 ring-ggc/20 dark:ring-ggc-gold/30"
+                  : "bg-white/95 dark:bg-[#062419] border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/50 hover:shadow-lg"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-3 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 group-hover:scale-105 transition-transform">
-                      <Target className="w-6 h-6 text-amber-600" />
+                    <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40 group-hover:scale-105 transition-transform">
+                      <Target className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 block">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">
                         Dimensi 02 • Orientasi Karier
                       </span>
-                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark">
+                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark dark:text-white">
                         Interest (Minat Karier)
                       </h3>
                     </div>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40 shrink-0">
                     12 Butir
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] leading-relaxed">
                   Menjelajahi ketertarikan autentik siswa terhadap ragam ranah industri modern: Sains, Komputasi AI, Desain, Bisnis, Medis, hingga Regulasi.
                 </p>
 
                 {/* 4 Klaster Industri */}
                 <div className="mt-6 space-y-2">
-                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">
                     Klaster Minat Unggulan:
                   </span>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                    <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] border border-gray-200/80 dark:border-[#103D2B] flex items-center gap-2">
                       <span className="text-sm">💻</span>
-                      <span className="text-xs font-bold text-gray-800 truncate">Teknologi & AI</span>
+                      <span className="text-xs font-bold text-gray-800 dark:text-[#D1E2DA] truncate">Teknologi & AI</span>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                    <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] border border-gray-200/80 dark:border-[#103D2B] flex items-center gap-2">
                       <span className="text-sm">🔬</span>
-                      <span className="text-xs font-bold text-gray-800 truncate">Sains & Medis</span>
+                      <span className="text-xs font-bold text-gray-800 dark:text-[#D1E2DA] truncate">Sains & Medis</span>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                    <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] border border-gray-200/80 dark:border-[#103D2B] flex items-center gap-2">
                       <span className="text-sm">📈</span>
-                      <span className="text-xs font-bold text-gray-800 truncate">Bisnis & Startup</span>
+                      <span className="text-xs font-bold text-gray-800 dark:text-[#D1E2DA] truncate">Bisnis & Startup</span>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                    <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#07261B] border border-gray-200/80 dark:border-[#103D2B] flex items-center gap-2">
                       <span className="text-sm">🎨</span>
-                      <span className="text-xs font-bold text-gray-800 truncate">Seni & Kreatif</span>
+                      <span className="text-xs font-bold text-gray-800 dark:text-[#D1E2DA] truncate">Seni & Kreatif</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Sample Question */}
-              <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2.5 text-xs text-gray-700 bg-amber-50/50 p-3 rounded-2xl border border-amber-100">
+              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#0E3827] flex items-start gap-2.5 text-xs text-gray-700 dark:text-[#C7DCD2] bg-amber-50/50 dark:bg-[#041B12] p-3 rounded-2xl border border-amber-100 dark:border-amber-900/40">
                 <span className="text-base shrink-0">🎯</span>
                 <p className="italic">
                   &ldquo;Saya antusias belajar bahasa pemrograman, kecerdasan buatan, atau pengembangan aplikasi perangkat lunak.&rdquo;
@@ -1181,39 +1181,39 @@ export default function HomePage() {
               onClick={() => setActiveDimCode("P")}
               className={`lg:col-span-4 p-6 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
                 activeDimCode === "P"
-                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
-                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+                  ? "bg-white dark:bg-[#072B1E] border-ggc dark:border-ggc-gold shadow-xl ring-2 ring-ggc/20 dark:ring-ggc-gold/30"
+                  : "bg-white/95 dark:bg-[#062419] border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/50 hover:shadow-lg"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-800 border border-blue-200 group-hover:scale-105 transition-transform">
-                    <UserCheck className="w-5 h-5 text-blue-700" />
+                  <div className="p-2.5 rounded-2xl bg-blue-50 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 group-hover:scale-105 transition-transform">
+                    <UserCheck className="w-5 h-5 text-blue-700 dark:text-blue-400" />
                   </div>
-                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
                     12 Butir
                   </span>
                 </div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 block">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-400 block">
                   Dimensi 03
                 </span>
-                <h3 className="text-base font-black text-ggc-dark mt-0.5">
+                <h3 className="text-base font-black text-ggc-dark dark:text-white mt-0.5">
                   Personality (Gaya Kerja & Grit)
                 </h3>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                <p className="text-xs text-gray-600 dark:text-[#A0B9AE] mt-2 leading-relaxed">
                   Memotret keteraturan jadwal (Conscientiousness), stabilitas emosional, kemandirian, dan daya tahan grit pantang menyerah.
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {["Conscientiousness", "Ketahanan (Grit)", "Keterbukaan Ide", "Stabilitas Emosional"].map((t) => (
-                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 text-gray-700 border border-gray-200">
+                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] border border-gray-200 dark:border-[#103D2B]">
                       ✓ {t}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-600 italic bg-blue-50/50 p-2.5 rounded-xl border border-blue-100">
+              <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#0E3827] text-[11px] text-gray-600 dark:text-[#C7DCD2] italic bg-blue-50/50 dark:bg-[#041B12] p-2.5 rounded-xl border border-blue-100 dark:border-blue-900/40">
                 &ldquo;Saya tidak mudah menyerah meskipun menghadapi kegagalan berulang kali dalam proyek sulit.&rdquo;
               </div>
             </SpotlightCard>
@@ -1223,39 +1223,39 @@ export default function HomePage() {
               onClick={() => setActiveDimCode("V")}
               className={`lg:col-span-4 p-6 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
                 activeDimCode === "V"
-                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
-                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+                  ? "bg-white dark:bg-[#072B1E] border-ggc dark:border-ggc-gold shadow-xl ring-2 ring-ggc/20 dark:ring-ggc-gold/30"
+                  : "bg-white/95 dark:bg-[#062419] border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/50 hover:shadow-lg"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="p-2.5 rounded-2xl bg-rose-50 text-rose-800 border border-rose-200 group-hover:scale-105 transition-transform">
-                    <Heart className="w-5 h-5 text-rose-700" />
+                  <div className="p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40 group-hover:scale-105 transition-transform">
+                    <Heart className="w-5 h-5 text-rose-700 dark:text-rose-400" />
                   </div>
-                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40">
                     12 Butir
                   </span>
                 </div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-700 block">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-400 block">
                   Dimensi 04
                 </span>
-                <h3 className="text-base font-black text-ggc-dark mt-0.5">
+                <h3 className="text-base font-black text-ggc-dark dark:text-white mt-0.5">
                   Values (Nilai Pribadi)
                 </h3>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                <p className="text-xs text-gray-600 dark:text-[#A0B9AE] mt-2 leading-relaxed">
                   Prinsip etika mendasar yang menggerakkan motivasi: integritas moral, altruisme sosial, otonomi bebas, dan prestasi unggul.
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {["Integritas Moral", "Altruisme & Dampak", "Otonomi Kerja", "Prestasi Unggul"].map((t) => (
-                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 text-gray-700 border border-gray-200">
+                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] border border-gray-200 dark:border-[#103D2B]">
                       ⚖️ {t}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-600 italic bg-rose-50/50 p-2.5 rounded-xl border border-rose-100">
+              <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#0E3827] text-[11px] text-gray-600 dark:text-[#C7DCD2] italic bg-rose-50/50 dark:bg-[#041B12] p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/40">
                 &ldquo;Saya menolak berkompromi terhadap kejujuran dan etika moral, apapun imbalan materinya.&rdquo;
               </div>
             </SpotlightCard>
@@ -1265,39 +1265,39 @@ export default function HomePage() {
               onClick={() => setActiveDimCode("R")}
               className={`lg:col-span-4 p-6 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
                 activeDimCode === "R"
-                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
-                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+                  ? "bg-white dark:bg-[#072B1E] border-ggc dark:border-ggc-gold shadow-xl ring-2 ring-ggc/20 dark:ring-ggc-gold/30"
+                  : "bg-white/95 dark:bg-[#062419] border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/50 hover:shadow-lg"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="p-2.5 rounded-2xl bg-red-50 text-red-800 border border-red-200 group-hover:scale-105 transition-transform">
-                    <Flame className="w-5 h-5 text-red-700" />
+                  <div className="p-2.5 rounded-2xl bg-red-50 dark:bg-red-950/80 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/40 group-hover:scale-105 transition-transform">
+                    <Flame className="w-5 h-5 text-red-700 dark:text-red-400" />
                   </div>
-                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-red-50 text-red-800 border border-red-200">
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/80 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/40">
                     12 Butir
                   </span>
                 </div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700 block">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700 dark:text-red-400 block">
                   Dimensi 05
                 </span>
-                <h3 className="text-base font-black text-ggc-dark mt-0.5">
+                <h3 className="text-base font-black text-ggc-dark dark:text-white mt-0.5">
                   Readiness (Kesiapan Kuliah)
                 </h3>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                <p className="text-xs text-gray-600 dark:text-[#A0B9AE] mt-2 leading-relaxed">
                   Tingkat kemandirian belajar, resiliensi terhadap beban tugas universitas, dan kesiapan hidup mandiri saat kuliah.
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {["Manajemen Stres", "Kemandirian Belajar", "Daya Adaptasi", "Regulasi Finansial"].map((t) => (
-                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 text-gray-700 border border-gray-200">
+                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] border border-gray-200 dark:border-[#103D2B]">
                       🔥 {t}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-600 italic bg-red-50/50 p-2.5 rounded-xl border border-red-100">
+              <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#0E3827] text-[11px] text-gray-600 dark:text-[#C7DCD2] italic bg-red-50/50 dark:bg-[#041B12] p-2.5 rounded-xl border border-red-100 dark:border-red-900/40">
                 &ldquo;Saya siap mengelola waktu dan keuangan pribadi secara mandiri tanpa harus selalu diarahkan orang tua.&rdquo;
               </div>
             </SpotlightCard>
@@ -1307,52 +1307,52 @@ export default function HomePage() {
               onClick={() => setActiveDimCode("A")}
               className={`lg:col-span-7 p-6 sm:p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
                 activeDimCode === "A" || activeDimCode === "C"
-                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
-                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+                  ? "bg-white dark:bg-[#072B1E] border-ggc dark:border-ggc-gold shadow-xl ring-2 ring-ggc/20 dark:ring-ggc-gold/30"
+                  : "bg-white/95 dark:bg-[#062419] border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/50 hover:shadow-lg"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-800 border border-indigo-200 group-hover:scale-105 transition-transform">
-                      <BookOpen className="w-6 h-6 text-indigo-700" />
+                    <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40 group-hover:scale-105 transition-transform">
+                      <BookOpen className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
                     </div>
                     <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700 block">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 block">
                         Dimensi 06 & 07 • Sinergi Jalur Prestasi
                       </span>
-                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark">
+                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark dark:text-white">
                         Academic & Career Pathway (24 Butir)
                       </h3>
                     </div>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-800 border border-indigo-200 shrink-0">
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-indigo-50 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40 shrink-0">
                     12 + 12 Butir
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] leading-relaxed">
                   Menghubungkan rumpun mata pelajaran sekolah (Saintek, Soshum, Bisnis, Seni) langsung ke proyeksi peran karier masa depan (Peneliti Ahli, Eksekutif Korporat, Advokat, Founder).
                 </p>
 
                 {/* Flow Diagram Mini in Card */}
-                <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-gray-50 via-indigo-50/30 to-gray-50 border border-gray-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center items-center">
-                  <div className="p-2.5 rounded-xl bg-white border border-gray-200">
-                    <span className="text-[10px] font-extrabold text-indigo-700 uppercase block">Input Akademik</span>
-                    <p className="text-xs font-bold text-gray-800 mt-0.5">Kalkulus, Sosial, Desain</p>
+                <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-gray-50 via-indigo-50/30 to-gray-50 dark:from-[#041B12] dark:via-[#07261B] dark:to-[#041B12] border border-gray-200/80 dark:border-[#103D2B] grid grid-cols-1 sm:grid-cols-3 gap-3 text-center items-center">
+                  <div className="p-2.5 rounded-xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#103D2B]">
+                    <span className="text-[10px] font-extrabold text-indigo-700 dark:text-indigo-400 uppercase block">Input Akademik</span>
+                    <p className="text-xs font-bold text-gray-800 dark:text-[#D1E2DA] mt-0.5">Kalkulus, Sosial, Desain</p>
                   </div>
                   <div className="text-xs font-black text-ggc-gold flex items-center justify-center gap-1">
                     <span>Multi-Matrix</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-gray-200">
-                    <span className="text-[10px] font-extrabold text-emerald-700 uppercase block">Target Karier</span>
-                    <p className="text-xs font-bold text-gray-800 mt-0.5">Software Lead, Founder, Dokter</p>
+                  <div className="p-2.5 rounded-xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#103D2B]">
+                    <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase block">Target Karier</span>
+                    <p className="text-xs font-bold text-gray-800 dark:text-[#D1E2DA] mt-0.5">Software Lead, Founder, Dokter</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2.5 text-xs text-gray-700 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100">
+              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#0E3827] flex items-start gap-2.5 text-xs text-gray-700 dark:text-[#C7DCD2] bg-indigo-50/50 dark:bg-[#041B12] p-3 rounded-2xl border border-indigo-100 dark:border-indigo-900/40">
                 <span className="text-base shrink-0">📚</span>
                 <p className="italic">
                   &ldquo;Saya memproyeksikan diri saya memimpin proyek transformasi digital atau korporasi skala nasional.&rdquo;
@@ -1361,7 +1361,7 @@ export default function HomePage() {
             </SpotlightCard>
 
             {/* TILE 7: GRAND MULTI-MATRIX ENGINE (84 BUTIR) - Span 5 */}
-            <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-luxury via-ggc to-[#02170F] text-white shadow-2xl flex flex-col justify-between relative overflow-hidden border border-ggc-gold/40">
+            <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-[#063424] bg-emerald-luxury text-white shadow-2xl flex flex-col justify-between relative overflow-hidden border-2 border-ggc-gold/50">
               {/* Luxury Ornaments */}
               <div className="absolute top-0 right-0 w-48 h-48 bg-ggc-gold/20 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-emerald-400/15 rounded-full blur-2xl pointer-events-none" />
@@ -1419,67 +1419,67 @@ export default function HomePage() {
       </section>
 
       {/* ================= 3-STEP JOURNEY / HOW IT WORKS ================= */}
-      <section id="alur" className="py-20 bg-[#FAFBF9] border-b border-ggc-subtle">
+      <section id="alur" className="py-20 bg-[#FAFBF9] dark:bg-[#031810] border-b border-ggc-subtle dark:border-[#0E4230] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-ggc-gold-dark">
+            <span className="text-xs font-bold uppercase tracking-widest text-ggc-gold-dark dark:text-ggc-gold">
               Simple & Seamless Flow
             </span>
-            <h2 className="fluid-section-title font-black text-ggc-dark mt-2">
+            <h2 className="fluid-section-title font-black text-ggc-dark dark:text-white mt-2">
               3 Langkah Menuju Kepastian Jurusan
             </h2>
-            <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-[#A0B9AE] mt-3 leading-relaxed">
               Hanya butuh waktu sekitar 15–20 menit untuk memetakan arah masa depan Anda secara komprehensif.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Step 1 */}
-            <SpotlightCard className="p-8 rounded-3xl bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all relative">
+            <SpotlightCard className="p-8 rounded-3xl bg-white dark:bg-[#07261B] border border-gray-200/90 dark:border-[#11402E] shadow-sm hover:shadow-lg transition-all relative">
               <div className="w-12 h-12 rounded-2xl bg-ggc text-ggc-gold font-black text-lg flex items-center justify-center mb-6 shadow-md">
                 1
               </div>
-              <h3 className="text-lg font-bold text-ggc-dark">
+              <h3 className="text-lg font-bold text-ggc-dark dark:text-white">
                 Registrasi & Isi 84 Soal
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 mt-3 leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-3 leading-relaxed">
                 Buat akun siswa dan jawab 84 butir instrumen skala Likert (1-5) dengan antarmuka responsif dan penyimpanan otomatis per butir soal.
               </p>
-              <div className="mt-5 text-xs font-semibold text-ggc flex items-center gap-1.5">
+              <div className="mt-5 text-xs font-semibold text-ggc dark:text-ggc-gold flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-ggc-gold" />
                 <span>Estimasi waktu 15–20 menit</span>
               </div>
             </SpotlightCard>
 
             {/* Step 2 */}
-            <SpotlightCard className="p-8 rounded-3xl bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all relative">
+            <SpotlightCard className="p-8 rounded-3xl bg-white dark:bg-[#07261B] border border-gray-200/90 dark:border-[#11402E] shadow-sm hover:shadow-lg transition-all relative">
               <div className="w-12 h-12 rounded-2xl bg-ggc-gold text-ggc-dark font-black text-lg flex items-center justify-center mb-6 shadow-md">
                 2
               </div>
-              <h3 className="text-lg font-bold text-ggc-dark">
+              <h3 className="text-lg font-bold text-ggc-dark dark:text-white">
                 Kalkulasi Multi-Matrix
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 mt-3 leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-3 leading-relaxed">
                 Algoritma secara instan mengolah Person Profile Anda dan membandingkannya dengan bobot ratusan program studi untuk menentukan fit score tertinggi.
               </p>
-              <div className="mt-5 text-xs font-semibold text-ggc flex items-center gap-1.5">
+              <div className="mt-5 text-xs font-semibold text-ggc dark:text-ggc-gold flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-ggc-gold" />
                 <span>Kalkulasi realtime instan</span>
               </div>
             </SpotlightCard>
 
             {/* Step 3 */}
-            <SpotlightCard className="p-8 rounded-3xl bg-white border border-gray-200/90 shadow-sm hover:shadow-lg transition-all relative">
+            <SpotlightCard className="p-8 rounded-3xl bg-white dark:bg-[#07261B] border border-gray-200/90 dark:border-[#11402E] shadow-sm hover:shadow-lg transition-all relative">
               <div className="w-12 h-12 rounded-2xl bg-ggc-light text-white font-black text-lg flex items-center justify-center mb-6 shadow-md">
                 3
               </div>
-              <h3 className="text-lg font-bold text-ggc-dark">
+              <h3 className="text-lg font-bold text-ggc-dark dark:text-white">
                 Dashboard & Laporan PDF
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 mt-3 leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-3 leading-relaxed">
                 Tinjau Potential Signature Anda, pelajari wawasan naratif, dan unduh dokumen PDF resmi 2 halaman untuk konseling bersama keluarga & guru BK.
               </p>
-              <div className="mt-5 text-xs font-semibold text-ggc flex items-center gap-1.5">
+              <div className="mt-5 text-xs font-semibold text-ggc dark:text-ggc-gold flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-ggc-gold" />
                 <span>Dokumen PDF resmi instan</span>
               </div>
@@ -1527,22 +1527,22 @@ export default function HomePage() {
       </section>
 
       {/* ================= FREQUENTLY ASKED QUESTIONS (FAQ) ================= */}
-      <section id="faq" className="py-24 bg-white border-b border-ggc-subtle relative overflow-hidden">
+      <section id="faq" className="py-24 bg-white dark:bg-[#031810] border-b border-ggc-subtle dark:border-[#0E4230] relative overflow-hidden transition-colors">
         {/* Ambient background decoration */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-ggc-gold/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-ggc/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-ggc-gold/10 dark:bg-ggc-gold/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-ggc/5 dark:bg-ggc/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-ggc-gold/15 text-ggc-gold-dark text-xs font-bold uppercase tracking-wider border border-ggc-gold/30 mb-3 shadow-2xs">
-              <HelpCircle className="w-4 h-4 text-ggc-gold-dark" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-ggc-gold/15 dark:bg-ggc-gold/20 text-ggc-gold-dark dark:text-ggc-gold text-xs font-bold uppercase tracking-wider border border-ggc-gold/30 mb-3 shadow-2xs">
+              <HelpCircle className="w-4 h-4 text-ggc-gold-dark dark:text-ggc-gold" />
               <span>Pusat Bantuan & Metodologi Asesmen</span>
             </div>
-            <h2 className="fluid-section-title font-black text-ggc-dark tracking-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark dark:text-white tracking-tight">
               Pertanyaan yang Sering Diajukan
             </h2>
-            <p className="text-sm sm:text-base text-gray-600 mt-4 leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-[#A0B9AE] mt-4 leading-relaxed">
               Dapatkan pemahaman menyeluruh seputar validitas instrumen 84 butir, kerahasiaan data, algoritma multi-matriks, serta cara memanfaatkan laporan hasil asesmen secara maksimal.
             </p>
           </div>
@@ -1551,10 +1551,10 @@ export default function HomePage() {
             {/* Left Column: Search, Category Pills & Counselor Assistance Card (4 cols) */}
             <div className="lg:col-span-4 space-y-6">
               {/* Live Search Box */}
-              <div className="p-5 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 shadow-sm">
+              <div className="p-5 rounded-3xl bg-[#FAFBF9] dark:bg-[#07261B] border border-gray-200/90 dark:border-[#11402E] shadow-sm">
                 <label
                   htmlFor="faq-search-input"
-                  className="block text-xs font-bold uppercase tracking-wider text-ggc-dark mb-2.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-ggc-dark dark:text-white mb-2.5"
                 >
                   Cari Topik Pertanyaan
                 </label>
@@ -1566,13 +1566,13 @@ export default function HomePage() {
                     value={faqSearch}
                     onChange={(e) => setFaqSearch(e.target.value)}
                     placeholder="Ketik kata kunci: misal 'durasi', 'pdf', 'jurusan'..."
-                    className="w-full pl-9.5 pr-8 py-2.5 rounded-xl text-xs bg-white border border-gray-200 focus:border-ggc focus:ring-2 focus:ring-ggc/20 focus:outline-none transition-all placeholder:text-gray-400"
+                    className="w-full pl-9.5 pr-8 py-2.5 rounded-xl text-xs bg-white dark:bg-[#041B12] text-gray-800 dark:text-white border border-gray-200 dark:border-[#103D2B] focus:border-ggc focus:ring-2 focus:ring-ggc/20 focus:outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                   {faqSearch && (
                     <button
                       type="button"
                       onClick={() => setFaqSearch("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-0.5"
                       title="Hapus pencarian"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -1582,8 +1582,8 @@ export default function HomePage() {
               </div>
 
               {/* Category Filter Tabs */}
-              <div className="p-5 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 shadow-sm">
-                <div className="text-xs font-bold uppercase tracking-wider text-ggc-dark mb-3">
+              <div className="p-5 rounded-3xl bg-[#FAFBF9] dark:bg-[#07261B] border border-gray-200/90 dark:border-[#11402E] shadow-sm">
+                <div className="text-xs font-bold uppercase tracking-wider text-ggc-dark dark:text-white mb-3">
                   Kategori Pembahasan
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -1601,7 +1601,7 @@ export default function HomePage() {
                         className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between ${
                           isSelected
                             ? "bg-ggc text-white shadow-md shadow-ggc/15 ring-2 ring-ggc-gold/30"
-                            : "bg-white text-gray-600 hover:text-ggc hover:bg-ggc-subtle/50 border border-gray-200/80"
+                            : "bg-white dark:bg-[#041B12] text-gray-600 dark:text-[#A0B9AE] hover:text-ggc dark:hover:text-ggc-gold hover:bg-ggc-subtle/50 dark:hover:bg-[#093525] border border-gray-200/80 dark:border-[#103D2B]"
                         }`}
                       >
                         <span>{cat.label}</span>
@@ -1609,7 +1609,7 @@ export default function HomePage() {
                           className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
                             isSelected
                               ? "bg-white/20 text-white"
-                              : "bg-gray-100 text-gray-500"
+                              : "bg-gray-100 dark:bg-[#082E20] text-gray-500 dark:text-gray-400"
                           }`}
                         >
                           {count}
@@ -1679,8 +1679,8 @@ export default function HomePage() {
                       key={faq.id}
                       className={`rounded-3xl border transition-all duration-300 overflow-hidden ${
                         isOpen
-                          ? "bg-white border-ggc/60 shadow-xl ring-2 ring-ggc-gold/20"
-                          : "bg-[#FAFBF9] border-gray-200/90 hover:border-ggc/40 hover:bg-white shadow-xs"
+                          ? "bg-white dark:bg-[#082E20] border-ggc/60 dark:border-ggc-gold/40 shadow-xl ring-2 ring-ggc-gold/20"
+                          : "bg-[#FAFBF9] dark:bg-[#07261B] border-gray-200/90 dark:border-[#11402E] hover:border-ggc/40 dark:hover:border-ggc-gold/40 hover:bg-white dark:hover:bg-[#082E20] shadow-xs"
                       }`}
                     >
                       <button
@@ -1693,10 +1693,10 @@ export default function HomePage() {
                         <div className="flex-1">
                           {/* Category and Index Pill */}
                           <div className="flex flex-wrap items-center gap-2 mb-2.5">
-                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-ggc-subtle text-ggc border border-ggc/20">
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-ggc-subtle dark:bg-emerald-950/80 text-ggc dark:text-emerald-300 border border-ggc/20 dark:border-emerald-800/40">
                               {faq.categoryLabel}
                             </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40">
                               {faq.tag}
                             </span>
                           </div>
@@ -1704,7 +1704,7 @@ export default function HomePage() {
                           {/* Question Text */}
                           <h3
                             className={`text-base sm:text-lg font-bold leading-snug transition-colors ${
-                              isOpen ? "text-ggc-dark" : "text-gray-800"
+                              isOpen ? "text-ggc-dark dark:text-white" : "text-gray-800 dark:text-[#D1E2DA]"
                             }`}
                           >
                             {faq.q}
@@ -1716,7 +1716,7 @@ export default function HomePage() {
                           className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 ${
                             isOpen
                               ? "bg-ggc text-white rotate-180 shadow-md"
-                              : "bg-white text-gray-400 border border-gray-200 group-hover:border-ggc/40 group-hover:text-ggc"
+                              : "bg-white dark:bg-[#041B12] text-gray-400 border border-gray-200 dark:border-[#103D2B] group-hover:border-ggc/40 group-hover:text-ggc dark:group-hover:text-ggc-gold"
                           }`}
                         >
                           <ChevronDown className="w-4 h-4" />
@@ -1727,15 +1727,15 @@ export default function HomePage() {
                       {isOpen && (
                         <div
                           id={`faq-answer-${faq.id}`}
-                          className="px-6 sm:px-7 pb-6 pt-2 border-t border-gray-100 text-xs sm:text-sm text-gray-600 leading-relaxed space-y-3"
+                          className="px-6 sm:px-7 pb-6 pt-2 border-t border-gray-100 dark:border-[#0E4230] text-xs sm:text-sm text-gray-600 dark:text-[#C7DCD2] leading-relaxed space-y-3"
                         >
                           <p>{faq.a}</p>
 
                           {/* Key Takeaway Callout */}
-                          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-ggc-subtle/80 via-emerald-50/50 to-amber-50/50 border border-ggc/20 flex items-start gap-2.5">
-                            <Lightbulb className="w-4 h-4 text-ggc-gold-dark shrink-0 mt-0.5" />
-                            <div className="text-xs text-ggc-dark font-medium leading-relaxed">
-                              <strong className="text-ggc font-bold">Key Takeaway: </strong>
+                          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-ggc-subtle/80 via-emerald-50/50 to-amber-50/50 dark:from-[#052016] dark:via-[#072B1E] dark:to-[#052016] border border-ggc/20 dark:border-ggc-gold/30 flex items-start gap-2.5">
+                            <Lightbulb className="w-4 h-4 text-ggc-gold-dark dark:text-ggc-gold shrink-0 mt-0.5" />
+                            <div className="text-xs text-ggc-dark dark:text-[#E8F1EC] font-medium leading-relaxed">
+                              <strong className="text-ggc dark:text-ggc-gold font-bold">Key Takeaway: </strong>
                               {faq.takeaway}
                             </div>
                           </div>
@@ -1751,9 +1751,9 @@ export default function HomePage() {
       </section>
 
       {/* ================= FINAL CALL-TO-ACTION BANNER ================= */}
-      <section className="py-20 bg-gradient-to-b from-[#FAFBF9] to-white relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-b from-[#FAFBF9] to-white dark:from-[#031810] dark:to-[#07261B] relative overflow-hidden transition-colors">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl bg-gradient-to-br from-ggc-dark via-ggc to-ggc-light p-8 sm:p-14 text-white text-center shadow-2xl border border-ggc-gold/40 relative overflow-hidden">
+          <div className="rounded-3xl bg-gradient-to-br from-ggc-dark via-ggc to-ggc-light dark:from-[#052016] dark:via-[#072B1E] dark:to-[#031810] p-8 sm:p-14 text-white text-center shadow-2xl border border-ggc-gold/40 relative overflow-hidden">
             <div className="absolute -top-20 -right-20 w-80 h-80 bg-ggc-gold/20 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
@@ -1830,9 +1830,9 @@ export default function HomePage() {
       </section>
 
       {/* ================= REFINED FOOTER ================= */}
-      <footer className="mt-auto py-12 bg-ggc-dark text-white border-t border-ggc-light/30">
+      <footer className="mt-auto py-12 bg-ggc-dark dark:bg-[#02140D] text-white border-t border-ggc-light/30 dark:border-[#0E4230] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-8 border-b border-white/10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-8 border-b border-white/10 dark:border-white/5">
             {/* Logo and Tagline */}
             <div className="text-center md:text-left">
               <BrandLogo variant="light" size="md" href="/" />
@@ -1843,22 +1843,22 @@ export default function HomePage() {
 
             {/* Quick Links */}
             <div className="flex flex-wrap justify-center gap-6 text-xs text-ggc-subtle/80 font-medium">
-              <a href="#fitur" className="hover:text-white transition-colors">
+              <a href="#fitur" className="hover:text-white dark:hover:text-ggc-gold transition-colors">
                 Keunggulan
               </a>
-              <a href="#metodologi" className="hover:text-white transition-colors">
+              <a href="#metodologi" className="hover:text-white dark:hover:text-ggc-gold transition-colors">
                 7 Dimensi
               </a>
-              <a href="#signatures" className="hover:text-white transition-colors">
+              <a href="#signatures" className="hover:text-white dark:hover:text-ggc-gold transition-colors">
                 Potential Signature
               </a>
-              <a href="#alur" className="hover:text-white transition-colors">
+              <a href="#alur" className="hover:text-white dark:hover:text-ggc-gold transition-colors">
                 Cara Kerja
               </a>
-              <a href="#faq" className="hover:text-white transition-colors">
+              <a href="#faq" className="hover:text-white dark:hover:text-ggc-gold transition-colors">
                 FAQ
               </a>
-              <Link href="/auth/login" className="hover:text-white transition-colors">
+              <Link href="/auth/login" className="hover:text-white dark:hover:text-ggc-gold transition-colors">
                 Portal Admin
               </Link>
             </div>
@@ -1878,7 +1878,7 @@ export default function HomePage() {
       {/* Mobile Sticky Thumb-Bar (Always within reach of one-hand thumb zone) */}
       <aside
         aria-label="Aksi Cepat Mobile"
-        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 p-3 pb-safe bg-white/95 backdrop-blur-md border-t border-gray-200/90 shadow-2xl transition-transform no-print"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 p-3 pb-safe bg-white/95 dark:bg-[#041D14]/95 backdrop-blur-md border-t border-gray-200/90 dark:border-[#0E4230] shadow-2xl transition-transform no-print"
       >
         <div className="flex items-center gap-2 max-w-md mx-auto">
           {isStudent ? (
@@ -1901,7 +1901,7 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/auth/login"
-                className="px-4 py-3 rounded-xl font-bold text-ggc-dark bg-gray-100 hover:bg-gray-200 text-xs text-center shrink-0 border border-gray-200 active:scale-95 transition-all"
+                className="px-4 py-3 rounded-xl font-bold text-ggc-dark dark:text-ggc-gold bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-xs text-center shrink-0 border border-gray-200 dark:border-[#103D2B] active:scale-95 transition-all"
               >
                 Masuk
               </Link>

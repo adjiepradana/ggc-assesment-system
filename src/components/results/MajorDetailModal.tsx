@@ -80,7 +80,7 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
       }}
     >
       <div
-        className="bg-white rounded-t-[2.5rem] sm:rounded-3xl max-w-4xl w-full p-4 pb-safe sm:p-7 shadow-2xl border-t-2 sm:border border-ggc-gold/30 flex flex-col max-h-[88vh] sm:max-h-[92vh] overflow-hidden animate-slide-up-sheet sm:animate-scale-in"
+        className="bg-white dark:bg-[#062419] text-gray-900 dark:text-[#E8F1EC] rounded-t-[2.5rem] sm:rounded-3xl max-w-4xl w-full p-4 pb-safe sm:p-7 shadow-2xl border-t-2 sm:border border-ggc-gold/30 flex flex-col max-h-[88vh] sm:max-h-[92vh] overflow-hidden animate-slide-up-sheet sm:animate-scale-in transition-colors"
         style={{ overscrollBehavior: "contain" }}
       >
         {/* Mobile Drag Indicator Handle */}
@@ -90,15 +90,15 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
           onTouchEnd={handleTouchEnd}
           onClick={onClose}
         >
-          <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
-          <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+          <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 active:bg-gray-400" />
+          <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
             Geser ke bawah untuk menutup
           </span>
         </div>
 
         {/* Modal Header */}
         <div
-          className="flex items-start justify-between pb-3 sm:pb-4 border-b border-gray-100 gap-3 sm:gap-4 shrink-0"
+          className="flex items-start justify-between pb-3 sm:pb-4 border-b border-gray-100 dark:border-[#0E4230] gap-3 sm:gap-4 shrink-0"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -111,21 +111,21 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
                 <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${major.badgeColor}`}>
                   {major.fitLevel}
                 </span>
-                <span className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-ggc dark:text-emerald-300 bg-ggc-subtle dark:bg-[#082E20] px-2.5 py-0.5 rounded-full border border-transparent dark:border-[#103D2B]">
                   Klaster {major.cluster}
                 </span>
               </div>
-              <h2 id="major-detail-title" className="text-lg sm:text-2xl font-black text-ggc-dark leading-tight">
+              <h2 id="major-detail-title" className="text-lg sm:text-2xl font-black text-ggc-dark dark:text-white leading-tight">
                 {major.majorName}
               </h2>
-              <p className="text-xs text-gray-500 mt-0.5">{major.faculty}</p>
+              <p className="text-xs text-gray-500 dark:text-[#A0B9AE] mt-0.5">{major.faculty}</p>
             </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-gray-600 dark:text-gray-300 flex items-center justify-center transition-colors shrink-0"
             aria-label="Tutup dialog detail jurusan"
           >
             <X className="w-5 h-5" />
@@ -133,14 +133,14 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 pt-3 pb-2 border-b border-gray-100 shrink-0 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-2 pt-3 pb-2 border-b border-gray-100 dark:border-[#0E4230] shrink-0 overflow-x-auto scrollbar-none">
           <button
             type="button"
             onClick={() => setActiveTab("campuses")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "campuses"
-                ? "bg-ggc text-white shadow-2xs"
-                : "text-gray-600 hover:bg-gray-100"
+                ? "bg-ggc text-white shadow-2xs ring-1 ring-ggc-gold/30"
+                : "text-gray-600 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#082E20]"
             }`}
           >
             <School className="w-4 h-4 text-ggc-gold" />
@@ -152,8 +152,8 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
             onClick={() => setActiveTab("careers")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "careers"
-                ? "bg-ggc text-white shadow-2xs"
-                : "text-gray-600 hover:bg-gray-100"
+                ? "bg-ggc text-white shadow-2xs ring-1 ring-ggc-gold/30"
+                : "text-gray-600 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#082E20]"
             }`}
           >
             <Briefcase className="w-4 h-4 text-ggc-gold" />
@@ -165,8 +165,8 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
             onClick={() => setActiveTab("courses")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeTab === "courses"
-                ? "bg-ggc text-white shadow-2xs"
-                : "text-gray-600 hover:bg-gray-100"
+                ? "bg-ggc text-white shadow-2xs ring-1 ring-ggc-gold/30"
+                : "text-gray-600 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#082E20]"
             }`}
           >
             <BookOpen className="w-4 h-4 text-ggc-gold" />
@@ -181,17 +181,17 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h3 className="text-sm font-black text-gray-900 flex items-center gap-1.5">
-                    <School className="w-4 h-4 text-ggc" />
+                  <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <School className="w-4 h-4 text-ggc dark:text-ggc-gold" />
                     Perguruan Tinggi Unggulan di Indonesia
                   </h3>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-[#A0B9AE]">
                     Daftar PTN dan PTS dengan akreditasi tertinggi dan rekam jejak terbaik untuk program studi ini.
                   </p>
                 </div>
 
                 {/* Filter PTN / PTS */}
-                <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-[#041B12] p-1 rounded-xl border border-transparent dark:border-[#103D2B]">
                   {(["ALL", "PTN", "PTS"] as const).map((t) => (
                     <button
                       key={t}
@@ -199,8 +199,8 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
                       onClick={() => setCampusTypeFilter(t)}
                       className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
                         campusTypeFilter === t
-                          ? "bg-white text-ggc shadow-2xs"
-                          : "text-gray-500 hover:text-gray-900"
+                          ? "bg-white dark:bg-[#07261B] text-ggc dark:text-ggc-gold shadow-2xs"
+                          : "text-gray-500 dark:text-[#A0B9AE] hover:text-gray-900 dark:hover:text-white"
                       }`}
                     >
                       {t === "ALL" ? "Semua Kampus" : t === "PTN" ? "PTN Saja" : "PTS Saja"}
@@ -213,7 +213,7 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
                 {filteredCampuses.map((campus, idx) => (
                   <div
                     key={campus.name}
-                    className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-gray-200 hover:border-ggc/40 hover:shadow-md transition-all group"
+                    className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-[#07261B] dark:to-[#041B12] border border-gray-200 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/40 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
@@ -221,30 +221,30 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
                           <span
                             className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wider uppercase ${
                               campus.type === "PTN"
-                                ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                : "bg-purple-100 text-purple-800 border border-purple-300"
+                                ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/40"
+                                : "bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800/40"
                             }`}
                           >
                             {campus.type}
                           </span>
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40">
                             Akreditasi {campus.accreditation}
                           </span>
                         </div>
-                        <h4 className="text-sm font-black text-gray-900 group-hover:text-ggc transition-colors">
+                        <h4 className="text-sm font-black text-gray-900 dark:text-white group-hover:text-ggc dark:group-hover:text-ggc-gold transition-colors">
                           {campus.name}
                         </h4>
-                        <div className="flex items-center gap-1 text-[11px] text-gray-500 mt-1">
-                          <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
+                        <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-[#A0B9AE] mt-1">
+                          <MapPin className="w-3 h-3 text-gray-400 dark:text-gray-500 shrink-0" />
                           <span>{campus.city}</span>
                         </div>
                       </div>
-                      <div className="w-7 h-7 rounded-lg bg-ggc-subtle flex items-center justify-center text-ggc text-xs font-black shrink-0">
+                      <div className="w-7 h-7 rounded-lg bg-ggc-subtle dark:bg-[#082E20] flex items-center justify-center text-ggc dark:text-ggc-gold text-xs font-black shrink-0 border border-transparent dark:border-[#103D2B]">
                         #{idx + 1}
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center gap-1.5 text-xs text-ggc-dark font-medium">
+                    <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-[#0E3827] flex items-center gap-1.5 text-xs text-ggc-dark dark:text-[#D1E2DA] font-medium">
                       <Sparkles className="w-3.5 h-3.5 text-ggc-gold shrink-0" />
                       <span className="line-clamp-1">{campus.highlight}</span>
                     </div>
@@ -252,8 +252,8 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
                 ))}
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950 flex items-start gap-2.5">
-                <Lightbulb className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-[#041B12] border border-emerald-200 dark:border-emerald-900/60 text-xs text-emerald-950 dark:text-emerald-200 flex items-start gap-2.5">
+                <Lightbulb className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <p>
                   <strong>Tips Pemilihan Kampus:</strong> Pertimbangkan jalur masuk (SNBP, SNBT, Mandiri PTN, atau Beasiswa PTS) serta ketersediaan fasilitas laboratorium dan relasi magang industri yang dimiliki kampus tersebut.
                 </p>
@@ -289,7 +289,7 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
 
               {/* Roles Breakdown */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-[#A0B9AE]">
                   Bedah Peran Karier & Rentang Gaji Jenjang Pengalaman
                 </h4>
 
@@ -297,32 +297,32 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
                   {extendedDetail.careerBreakdown.roles.map((item) => (
                     <div
                       key={item.role}
-                      className="p-4 rounded-2xl bg-white border border-gray-200 hover:border-ggc/30 shadow-xs hover:shadow-md transition-all"
+                      className="p-4 rounded-2xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#103D2B] hover:border-ggc/30 dark:hover:border-ggc-gold/40 shadow-xs hover:shadow-md transition-all"
                     >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-2.5 border-b border-gray-100">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-2.5 border-b border-gray-100 dark:border-[#0E3827]">
                         <div>
-                          <h5 className="text-sm font-black text-ggc-dark flex items-center gap-1.5">
-                            <Briefcase className="w-4 h-4 text-ggc" />
+                          <h5 className="text-sm font-black text-ggc-dark dark:text-white flex items-center gap-1.5">
+                            <Briefcase className="w-4 h-4 text-ggc dark:text-ggc-gold" />
                             {item.role}
                           </h5>
-                          <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+                          <p className="text-xs text-gray-500 dark:text-[#A0B9AE] mt-0.5">{item.description}</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                        <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                        <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#041B12] border border-gray-200 dark:border-[#103D2B]">
+                          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">
                             Entry-Level / Fresh Graduate
                           </span>
-                          <span className="text-sm font-black text-emerald-800 mt-0.5 block">
+                          <span className="text-sm font-black text-emerald-800 dark:text-emerald-300 mt-0.5 block">
                             {item.entryLevelSalary}
                           </span>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200">
-                          <span className="text-[10px] font-bold text-amber-700/80 uppercase tracking-wider block">
+                        <div className="p-2.5 rounded-xl bg-amber-50/60 dark:bg-[#082618] border border-amber-200 dark:border-amber-900/50">
+                          <span className="text-[10px] font-bold text-amber-700/80 dark:text-amber-400 uppercase tracking-wider block">
                             Mid-Level / Senior (3-5+ Tahun)
                           </span>
-                          <span className="text-sm font-black text-ggc-dark mt-0.5 block">
+                          <span className="text-sm font-black text-ggc-dark dark:text-ggc-gold mt-0.5 block">
                             {item.midLevelSalary}
                           </span>
                         </div>
@@ -338,11 +338,11 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
           {activeTab === "courses" && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-black text-gray-900 flex items-center gap-1.5">
-                  <BookOpen className="w-4 h-4 text-ggc" />
+                <h3 className="text-sm font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                  <BookOpen className="w-4 h-4 text-ggc dark:text-ggc-gold" />
                   Mata Kuliah Kunci Semester Awal (Tahun Pertama)
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-[#A0B9AE]">
                   Fondasi akademik krusial yang akan Anda tempuh di semester 1 dan 2 untuk membentuk kompetensi inti.
                 </p>
               </div>
@@ -351,30 +351,30 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
                 {extendedDetail.keyCourses.map((course) => (
                   <div
                     key={course.name}
-                    className="p-4 rounded-2xl bg-white border border-gray-200 hover:border-ggc/30 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                    className="p-4 rounded-2xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#103D2B] hover:border-ggc/30 dark:hover:border-ggc-gold/40 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-ggc-subtle text-ggc">
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-ggc-subtle dark:bg-[#082E20] text-ggc dark:text-ggc-gold border border-transparent dark:border-[#103D2B]">
                           {course.semester}
                         </span>
-                        <span className="text-[11px] font-bold text-gray-400">
+                        <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500">
                           Bobot: {course.credits} SKS
                         </span>
                       </div>
-                      <h4 className="text-sm font-black text-ggc-dark">{course.name}</h4>
-                      <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">{course.description}</p>
+                      <h4 className="text-sm font-black text-ggc-dark dark:text-white">{course.name}</h4>
+                      <p className="text-xs text-gray-600 dark:text-[#C7DCD2] mt-1.5 leading-relaxed">{course.description}</p>
                     </div>
 
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1.5">
+                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-[#0E3827]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 block mb-1.5">
                         Keahlian Praktis yang Didapat:
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {course.skillsGained.map((skill) => (
                           <span
                             key={skill}
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-100 text-gray-700"
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-[#041B12] text-gray-700 dark:text-[#D1E2DA] border border-transparent dark:border-[#103D2B]"
                           >
                             ✓ {skill}
                           </span>
@@ -386,15 +386,15 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
               </div>
 
               {/* Practical Tips */}
-              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80">
-                <h5 className="text-xs font-bold text-amber-950 flex items-center gap-1.5 mb-2">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
+              <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-[#082618] border border-amber-200/80 dark:border-amber-900/60">
+                <h5 className="text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-1.5 mb-2">
+                  <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                   Strategi Sukses Menempuh Jurusan Ini:
                 </h5>
-                <ul className="space-y-1.5 text-xs text-amber-900">
+                <ul className="space-y-1.5 text-xs text-amber-900 dark:text-amber-300">
                   {extendedDetail.practicalTips.map((tip, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-amber-600 font-bold">•</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
                       <span>{tip}</span>
                     </li>
                   ))}
@@ -404,28 +404,28 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
           )}
 
           {/* Quick Fit Summary Footer inside Modal */}
-          <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="flex items-start gap-2 text-emerald-950">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#041B12] border border-gray-200 dark:border-[#103D2B] grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div className="flex items-start gap-2 text-emerald-950 dark:text-emerald-200">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <strong>Mengapa Sangat Cocok:</strong>
-                <p className="text-gray-600 mt-0.5">{major.whyThisFit}</p>
+                <p className="text-gray-600 dark:text-[#C7DCD2] mt-0.5">{major.whyThisFit}</p>
               </div>
             </div>
-            <div className="flex items-start gap-2 text-amber-950">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 text-amber-950 dark:text-amber-200">
+              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <strong>Hal yang Perlu Diantisipasi:</strong>
-                <p className="text-gray-600 mt-0.5">{major.whatToWatchOutFor}</p>
+                <p className="text-gray-600 dark:text-[#C7DCD2] mt-0.5">{major.whatToWatchOutFor}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-3 shrink-0">
-          <span className="text-[11px] text-gray-400 hidden sm:inline">
-            Tekan <kbd className="px-1.5 py-0.5 rounded bg-gray-100 border text-[10px] font-mono">ESC</kbd> untuk menutup
+        <div className="pt-3 border-t border-gray-100 dark:border-[#0E4230] flex items-center justify-between gap-3 shrink-0">
+          <span className="text-[11px] text-gray-400 dark:text-gray-500 hidden sm:inline">
+            Tekan <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-[#07261B] border dark:border-[#103D2B] text-[10px] font-mono text-gray-700 dark:text-gray-300">ESC</kbd> untuk menutup
           </span>
           <button
             type="button"

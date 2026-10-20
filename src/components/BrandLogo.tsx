@@ -76,7 +76,7 @@ export default function BrandLogo({
         <div className="flex items-center gap-1.5 leading-none">
           <span
             className={`font-black tracking-tight ${currentSize.titleClass} ${
-              isLight ? "text-white" : "text-ggc-dark"
+              isLight ? "text-white" : "text-ggc-dark dark:text-white"
             }`}
           >
             Go Great Career
@@ -85,7 +85,7 @@ export default function BrandLogo({
             className={`font-bold uppercase tracking-wider rounded-md border ${currentSize.badgeClass} ${
               isLight
                 ? "bg-ggc-gold text-ggc-dark border-ggc-gold"
-                : "text-ggc-gold-dark bg-ggc-gold/15 border-ggc-gold/30"
+                : "text-ggc-gold-dark dark:text-ggc-gold bg-ggc-gold/15 border-ggc-gold/30"
             }`}
           >
             GGC
@@ -94,7 +94,7 @@ export default function BrandLogo({
         {showSubtitle && (
           <span
             className={`font-semibold tracking-wider uppercase mt-1 hidden sm:block ${currentSize.subtitleClass} ${
-              isLight ? "text-ggc-gold" : "text-ggc"
+              isLight ? "text-ggc-gold" : "text-ggc dark:text-ggc-gold/90"
             }`}
           >
             Study Fit Assessment™

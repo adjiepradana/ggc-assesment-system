@@ -6,12 +6,27 @@
   :root {
     --background: #F3F8F5;
     --foreground: #063424;
+    --card-bg: #FFFFFF;
+    --card-border: rgba(11, 70, 50, 0.12);
+    --muted-text: #4B6358;
+    color-scheme: light;
+  }
+
+  :root:has(> head > meta[name="color-scheme"][content="dark"]),
+  .dark {
+    --background: #031810;
+    --foreground: #F1F7F4;
+    --card-bg: #07261B;
+    --card-border: rgba(197, 168, 105, 0.28);
+    --muted-text: #A0B9AE;
+    color-scheme: dark;
   }
 
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-feature-settings: normal;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
@@ -25,13 +40,26 @@
   background: #EBF4F0;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #031810;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #126348;
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #0B4632;
+  border-radius: 4px;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #0B4632;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #126348;
 }
 
 /* Subtle luxury gradients */
@@ -47,6 +75,12 @@
 
 .emerald-gradient-text {
   background: linear-gradient(135deg, #0B4632 0%, #126348 60%, #C5A869 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .emerald-gradient-text {
+  background: linear-gradient(135deg, #7DE0B9 0%, #34D399 50%, #E6D5A8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
