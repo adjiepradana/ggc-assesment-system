@@ -29,6 +29,21 @@ interface MajorDetailModalProps {
 export default function MajorDetailModal({ major, onClose }: MajorDetailModalProps) {
   const [activeTab, setActiveTab] = useState<"campuses" | "careers" | "courses">("campuses");
   const [campusTypeFilter, setCampusTypeFilter] = useState<"ALL" | "PTN" | "PTS">("ALL");
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY !== null) {
+      const deltaY = e.changedTouches[0].clientY - touchStartY;
+      if (deltaY > 65) {
+        onClose();
+      }
+      setTouchStartY(null);
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,9 +51,11 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
     };
     if (major) {
       window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
     }
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
     };
   }, [major, onClose]);
 
@@ -53,7 +70,7 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
 
   return (
     <div
-      className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-5 animate-fadeIn"
+      className="no-print fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm p-0 sm:p-5 transition-opacity"
       role="dialog"
       aria-modal="true"
       aria-labelledby="major-detail-title"
@@ -63,11 +80,28 @@ export default function MajorDetailModal({ major, onClose }: MajorDetailModalPro
       }}
     >
       <div
-        className="bg-white rounded-3xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-ggc-gold/30 flex flex-col max-h-[92vh] overflow-hidden"
+        className="bg-white rounded-t-[2.5rem] sm:rounded-3xl max-w-4xl w-full p-4 pb-safe sm:p-7 shadow-2xl border-t-2 sm:border border-ggc-gold/30 flex flex-col max-h-[88vh] sm:max-h-[92vh] overflow-hidden animate-slide-up-sheet sm:animate-scale-in"
         style={{ overscrollBehavior: "contain" }}
       >
+        {/* Mobile Drag Indicator Handle */}
+        <div
+          className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onClick={onClose}
+        >
+          <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
+          <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+            Geser ke bawah untuk menutup
+          </span>
+        </div>
+
         {/* Modal Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-gray-100 gap-4 shrink-0">
+        <div
+          className="flex items-start justify-between pb-3 sm:pb-4 border-b border-gray-100 gap-3 sm:gap-4 shrink-0"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="flex items-center gap-4">
             <div className="shrink-0">
               <ScoreRing value={major.fitScore} size={76} stroke={7} label="Fit" />

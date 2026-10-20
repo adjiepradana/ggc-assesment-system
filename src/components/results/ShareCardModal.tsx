@@ -48,7 +48,22 @@ export default function ShareCardModal({
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [isGeneratingPng, setIsGeneratingPng] = useState(false);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY !== null) {
+      const deltaY = e.changedTouches[0].clientY - touchStartY;
+      if (deltaY > 65) {
+        onClose();
+      }
+      setTouchStartY(null);
+    }
+  };
 
   // Generate QR Code data URL
   useEffect(() => {
@@ -83,9 +98,11 @@ export default function ShareCardModal({
     };
     if (isOpen) {
       window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
     }
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
 
@@ -378,7 +395,7 @@ ${top3.map((m, i) => `${i + 1}. ${m.majorName} (${m.fitScore}% Fit)`).join("\n")
 
   return (
     <div
-      className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-fadeIn"
+      className="no-print fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-4 transition-opacity"
       role="dialog"
       aria-modal="true"
       aria-labelledby="share-modal-title"
@@ -388,11 +405,28 @@ ${top3.map((m, i) => `${i + 1}. ${m.majorName} (${m.fitScore}% Fit)`).join("\n")
       }}
     >
       <div
-        className="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-ggc-gold/40 flex flex-col max-h-[95vh] overflow-hidden"
+        className="bg-white rounded-t-[2.5rem] sm:rounded-3xl max-w-xl w-full p-4 pb-safe sm:p-6 shadow-2xl border-t-2 sm:border border-ggc-gold/40 flex flex-col max-h-[90vh] sm:max-h-[95vh] overflow-hidden animate-slide-up-sheet sm:animate-scale-in"
         style={{ overscrollBehavior: "contain" }}
       >
+        {/* Mobile Drag Indicator Handle */}
+        <div
+          className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onClick={onClose}
+        >
+          <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
+          <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+            Geser ke bawah untuk menutup
+          </span>
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-gray-100 shrink-0">
+        <div
+          className="flex items-center justify-between pb-3 border-b border-gray-100 shrink-0"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="flex items-center gap-2">
             <Smartphone className="w-5 h-5 text-ggc" />
             <div>

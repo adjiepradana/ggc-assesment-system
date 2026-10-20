@@ -73,7 +73,7 @@ function SectionHeader({
           <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ggc-gold-dark">
             {eyebrow}
           </span>
-          <h2 id={id} className="text-xl sm:text-2xl font-black text-ggc-dark tracking-tight leading-tight">
+          <h2 id={id} className="fluid-section-title font-black text-ggc-dark tracking-tight leading-tight">
             {title}
           </h2>
           {description && <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-2xl">{description}</p>}
@@ -319,7 +319,7 @@ export default function StudentResultsPage() {
   ];
 
   return (
-    <div className="space-y-12 pb-16">
+    <div className="space-y-12 pb-28 sm:pb-16">
       {/* ------------------------------------------------------------------ */}
       {/* Top Action & Navigation Bar                                        */}
       {/* ------------------------------------------------------------------ */}
@@ -523,7 +523,7 @@ export default function StudentResultsPage() {
 
             <h1
               id="signature-title"
-              className="hero-rise hero-rise-delay-1 mt-1 font-display text-3xl sm:text-5xl lg:text-[3.4rem] font-black tracking-tight leading-[1.05] gold-gradient-text"
+              className="hero-rise hero-rise-delay-1 mt-1 font-display fluid-hero-title font-black tracking-tight leading-[1.05] gold-gradient-text"
             >
               {primarySignature?.title}
             </h1>
@@ -1292,6 +1292,45 @@ export default function StudentResultsPage() {
           </div>
         </div>
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* MOBILE STICKY THUMB-BAR (ERGONOMI JANGKAUAN JEMPOL)                */}
+      {/* ------------------------------------------------------------------ */}
+      <aside
+        aria-label="Aksi Cepat Hasil Asesmen"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 p-3 pb-safe bg-white/95 backdrop-blur-md border-t border-gray-200/90 shadow-2xl transition-transform no-print"
+      >
+        <div className="flex items-center gap-2 max-w-md mx-auto">
+          {selectedMajorsForCompare.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setIsCompareModalOpen(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl font-black text-white bg-ggc hover:bg-ggc-light active:scale-98 shadow-md text-xs transition-all"
+            >
+              <Scale className="w-4 h-4 text-ggc-gold" />
+              <span>Bandingkan ({selectedMajorsForCompare.length}) Jurusan</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl font-black text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-md active:scale-98 shadow-xs text-xs transition-all"
+            >
+              <Share2 className="w-4 h-4 text-ggc-dark" />
+              <span>Bagikan Persona (Story)</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handlePrintPage}
+            className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200 active:scale-98 text-xs transition-all"
+          >
+            <Printer className="w-4 h-4 text-gray-700" />
+            <span>Cetak / PDF</span>
+          </button>
+        </div>
+      </aside>
 
       {/* ------------------------------------------------------------------ */}
       {/* INTERACTIVE MODALS                                                 */}

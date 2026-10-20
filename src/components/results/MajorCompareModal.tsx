@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Scale, Target, Sparkles, Check, AlertTriangle, Briefcase, GraduationCap, ArrowRight } from "lucide-react";
 import { StudyRecommendation } from "@/lib/scoring";
 import ScoreRing from "./ScoreRing";
@@ -18,6 +18,22 @@ export default function MajorCompareModal({
   majors,
   onRemoveMajor,
 }: MajorCompareModalProps) {
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY !== null) {
+      const deltaY = e.changedTouches[0].clientY - touchStartY;
+      if (deltaY > 65) {
+        onClose();
+      }
+      setTouchStartY(null);
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -36,14 +52,34 @@ export default function MajorCompareModal({
 
   return (
     <div
-      className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-6 animate-fadeIn"
+      className="no-print fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-6 transition-opacity"
       role="dialog"
       aria-modal="true"
       aria-labelledby="compare-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="bg-white rounded-[2rem] max-w-5xl w-full p-5 sm:p-8 shadow-2xl border border-ggc-gold/40 max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2rem] max-w-5xl w-full p-4 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/40 max-h-[88vh] sm:max-h-[92vh] flex flex-col overflow-hidden animate-slide-up-sheet sm:animate-scale-in">
+        {/* Mobile Drag Indicator Handle */}
+        <div
+          className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onClick={onClose}
+        >
+          <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
+          <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+            Geser ke bawah untuk menutup
+          </span>
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100 shrink-0">
+        <div
+          className="flex items-center justify-between pb-4 border-b border-gray-100 shrink-0"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0 shadow-sm">
               <Scale className="w-5 h-5" />

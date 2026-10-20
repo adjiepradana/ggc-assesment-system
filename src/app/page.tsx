@@ -364,7 +364,7 @@ export default function HomePage() {
   }, [faqCategory, faqSearch]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFBF9] text-gray-900 overflow-x-hidden selection:bg-ggc selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#FAFBF9] text-gray-900 overflow-x-hidden selection:bg-ggc selection:text-white pb-20 sm:pb-0">
       <Navbar />
 
       {/* ================= HERO SECTION WITH INTERACTIVE RADAR & MINI SIMULATOR ================= */}
@@ -399,7 +399,7 @@ export default function HomePage() {
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-ggc-dark tracking-tight leading-[1.14]">
+              <h1 className="fluid-hero-title font-black text-ggc-dark tracking-tight leading-[1.14]">
                 Pahami Potensimu.{" "}
                 <span className="gold-gradient-text block mt-1.5">
                   Pilih Jurusan Bebas Galau!
@@ -693,7 +693,7 @@ export default function HomePage() {
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               Transformasi Siswa Indonesia
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-ggc-dark mt-3 tracking-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark mt-3 tracking-tight">
               Say Goodbye to Galau Jurusan! 👋
             </h2>
             <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
@@ -788,7 +788,7 @@ export default function HomePage() {
               <Sparkles className="w-3.5 h-3.5" />
               Keunggulan Sistem Asesmen GGC
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-ggc-dark mt-3 tracking-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark mt-3 tracking-tight">
               Mengapa GGC Study Fit Assessment™ Berbeda?
             </h2>
             <p className="text-base sm:text-lg text-gray-600 mt-4 leading-relaxed">
@@ -885,8 +885,8 @@ export default function HomePage() {
               <Sparkles className="w-3.5 h-3.5" />
               Interactive Prototype Demo
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-ggc-dark mt-3">
-              Jelajahi Sampel "Potential Signature" & Bentuk Radar
+            <h2 className="fluid-section-title font-black text-ggc-dark mt-3">
+              Jelajahi Sampel &ldquo;Potential Signature&rdquo; &amp; Bentuk Radar
             </h2>
             <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
               Pilih salah satu arketipe di bawah ini untuk melihat bagaimana bentuk poligon Radar Bakat dan rekomendasi program studi berubah secara dinamis.
@@ -1032,7 +1032,7 @@ export default function HomePage() {
               <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
               <span>Holistic Psychometric Framework</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-ggc-dark tracking-tight leading-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark tracking-tight leading-tight">
               7 Dimensi Penilaian Multi-Matriks
             </h2>
             <p className="text-sm sm:text-base text-gray-600 mt-3.5 leading-relaxed">
@@ -1425,7 +1425,7 @@ export default function HomePage() {
             <span className="text-xs font-bold uppercase tracking-widest text-ggc-gold-dark">
               Simple & Seamless Flow
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-ggc-dark mt-2">
+            <h2 className="fluid-section-title font-black text-ggc-dark mt-2">
               3 Langkah Menuju Kepastian Jurusan
             </h2>
             <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
@@ -1499,7 +1499,7 @@ export default function HomePage() {
                 <Users className="w-3.5 h-3.5" />
                 Solusi Kolaboratif
               </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+              <h2 className="fluid-section-title font-black text-white tracking-tight">
                 Jembatan Dialog Nyaman antara Siswa, Orang Tua & Konselor
               </h2>
               <p className="text-xs sm:text-sm lg:text-base text-ggc-subtle/90 mt-3 leading-relaxed max-w-2xl mx-auto lg:mx-0">
@@ -1539,7 +1539,7 @@ export default function HomePage() {
               <HelpCircle className="w-4 h-4 text-ggc-gold-dark" />
               <span>Pusat Bantuan & Metodologi Asesmen</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-ggc-dark tracking-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark tracking-tight">
               Pertanyaan yang Sering Diajukan
             </h2>
             <p className="text-sm sm:text-base text-gray-600 mt-4 leading-relaxed">
@@ -1765,7 +1765,7 @@ export default function HomePage() {
                 />
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+              <h2 className="fluid-section-title font-black text-white tracking-tight leading-tight">
                 Siap Menemukan Arah Studi & Karier Terbaikmu?
               </h2>
 
@@ -1874,6 +1874,41 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile Sticky Thumb-Bar (Always within reach of one-hand thumb zone) */}
+      <aside
+        aria-label="Aksi Cepat Mobile"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 p-3 pb-safe bg-white/95 backdrop-blur-md border-t border-gray-200/90 shadow-2xl transition-transform no-print"
+      >
+        <div className="flex items-center gap-2 max-w-md mx-auto">
+          {isStudent ? (
+            <Link
+              href="/student/assessment"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-black text-white bg-ggc hover:bg-ggc-light active:scale-[0.98] shadow-md shadow-ggc/30 text-xs sm:text-sm transition-all"
+            >
+              <Sparkles className="w-4 h-4 text-ggc-gold" />
+              <span>Lanjut Asesmen 84 Butir</span>
+              <ArrowRight className="w-4 h-4 text-ggc-gold" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth/register"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-black text-white bg-ggc hover:bg-ggc-light active:scale-[0.98] shadow-md shadow-ggc/30 text-xs sm:text-sm transition-all"
+              >
+                <span>Mulai Asesmen (15 Menit)</span>
+                <ArrowRight className="w-4 h-4 text-ggc-gold" />
+              </Link>
+              <Link
+                href="/auth/login"
+                className="px-4 py-3 rounded-xl font-bold text-ggc-dark bg-gray-100 hover:bg-gray-200 text-xs text-center shrink-0 border border-gray-200 active:scale-95 transition-all"
+              >
+                Masuk
+              </Link>
+            </>
+          )}
+        </div>
+      </aside>
     </div>
   );
 }

@@ -1436,12 +1436,26 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {isPaletteOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 transition-opacity"
           role="dialog"
           aria-modal="true"
           aria-labelledby="palette-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsPaletteOpen(false);
+          }}
         >
-          <div className="bg-white rounded-[2rem] max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30 max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2rem] max-w-2xl w-full p-4 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/30 max-h-[85vh] sm:max-h-[90vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in">
+            {/* Mobile Drag Indicator Handle */}
+            <div
+              className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
+              onClick={() => setIsPaletteOpen(false)}
+            >
+              <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
+              <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+                Ketuk untuk menutup
+              </span>
+            </div>
+
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div>
                 <h2
@@ -1639,13 +1653,29 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {isSubmitModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 transition-opacity"
           role="dialog"
           aria-modal="true"
           aria-labelledby="submit-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmitting) setIsSubmitModalOpen(false);
+          }}
         >
-          <div className="bg-white rounded-[2rem] max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30">
-            <div className="text-center mb-6">
+          <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2rem] max-w-lg w-full p-5 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/30 animate-slide-up-sheet sm:animate-scale-in">
+            {/* Mobile Drag Indicator Handle */}
+            <div
+              className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
+              onClick={() => {
+                if (!isSubmitting) setIsSubmitModalOpen(false);
+              }}
+            >
+              <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
+              <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
+                Ketuk untuk menutup
+              </span>
+            </div>
+
+            <div className="text-center mb-5 sm:mb-6">
               <div className="w-16 h-16 rounded-3xl bg-ggc-gold/20 text-ggc-gold-dark flex items-center justify-center mx-auto mb-3 border border-ggc-gold/30 shadow-xs">
                 <Send className="w-8 h-8" />
               </div>

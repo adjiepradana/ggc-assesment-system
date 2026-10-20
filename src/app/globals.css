@@ -423,6 +423,73 @@ html {
   .animate-confetti {
     animation: confettiFloat 2.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
   }
+
+  /* Native Mobile Bottom Sheet Drawer Animations & Keyframes */
+  @keyframes slideUpSheet {
+    0% {
+      transform: translateY(100%);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up-sheet {
+    animation: slideUpSheet 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes scaleInModal {
+    0% {
+      opacity: 0;
+      transform: scale(0.96) translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-scale-in {
+    animation: scaleInModal 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Safe Area Utilities for Mobile Notches & Gesture Thumb Bars */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+  }
+
+  .pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top, 1rem));
+  }
+
+  .mb-safe {
+    margin-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+  }
+
+  /* Fluid Typography using clamp() for ergonomic responsive scaling */
+  .fluid-hero-title {
+    font-size: clamp(2rem, 5.6vw, 3.85rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+
+  .fluid-section-title {
+    font-size: clamp(1.45rem, 3.8vw, 2.75rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+  }
+
+  .fluid-card-title {
+    font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+    line-height: 1.25;
+  }
+
+  .fluid-stat-num {
+    font-size: clamp(1.6rem, 3.6vw, 2.5rem);
+    line-height: 1.1;
+  }
 }
 
 /* ==========================================================================
