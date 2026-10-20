@@ -1019,119 +1019,401 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ================= THE 7 EVALUATION DIMENSIONS SECTION ================= */}
-      <section id="metodologi" className="py-20 bg-white border-b border-ggc-subtle">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-ggc-gold-dark">
-              Holistic Psychometric Framework
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-ggc-dark mt-2">
+      {/* ================= THE 7 EVALUATION DIMENSIONS SECTION (MODERN BENTO GRID) ================= */}
+      <section id="metodologi" className="py-20 md:py-28 bg-[#FAFBF9] border-b border-gray-200/80 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-0 w-96 h-96 bg-ggc/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 right-0 w-96 h-96 bg-ggc-gold/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-14 md:mb-16">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-ggc-gold/40 text-ggc-dark text-xs font-bold uppercase tracking-wider shadow-2xs mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
+              <span>Holistic Psychometric Framework</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-ggc-dark tracking-tight leading-tight">
               7 Dimensi Penilaian Multi-Matriks
             </h2>
-            <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
-              Setiap dimensi memuat 12 instrumen terukur (total 84 butir) yang saling menyilang untuk membentuk profil kecocokan studi yang utuh dan komprehensif.
+            <p className="text-sm sm:text-base text-gray-600 mt-3.5 leading-relaxed">
+              Arsitektur psikometri komprehensif 84 butir instrumen terukur yang menyilangkan bakat alami, preferensi minat, karakter kerja, nilai hidup, dan kesiapan akademik menuju kampus impian.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dimensions.map((dim) => {
-              const IconComp = dim.icon;
-              const isSelected = activeDimCode === dim.code;
-              return (
-                <SpotlightCard
-                  key={dim.code}
-                  onClick={() => setActiveDimCode(dim.code)}
-                  className={`p-6 rounded-3xl cursor-pointer border transition-all duration-200 flex flex-col justify-between ${
-                    isSelected
-                      ? "bg-ggc-tint/80 border-ggc shadow-md ring-2 ring-ggc/30"
-                      : "bg-[#FAFBF9] border-gray-200/90 hover:border-ggc/40 shadow-sm"
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-2xl border ${dim.color}`}>
-                        <IconComp className="w-5 h-5" />
-                      </div>
-                      <span className="text-xs font-black px-2.5 py-1 rounded-full bg-ggc-subtle text-ggc border border-ggc/20">
-                        {dim.count}
-                      </span>
+          {/* BENTO GRID CONTAINER */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 sm:gap-6">
+            {/* TILE 1: TALENT (Bakat Kognitif) - Span 7 */}
+            <SpotlightCard
+              onClick={() => setActiveDimCode("T")}
+              className={`lg:col-span-7 p-6 sm:p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
+                activeDimCode === "T"
+                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
+                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200 group-hover:scale-105 transition-transform">
+                      <Brain className="w-6 h-6 text-ggc" />
                     </div>
-
-                    <h3 className="text-base font-bold text-ggc-dark">
-                      {dim.name}
-                    </h3>
-                    <p className="text-xs text-gray-600 mt-2 leading-relaxed">
-                      {dim.desc}
-                    </p>
-                  </div>
-
-                  {/* Subdimension Pills */}
-                  <div className="mt-5 pt-4 border-t border-gray-200/60 flex flex-wrap gap-1.5">
-                    {dim.samples.map((sample) => (
-                      <span
-                        key={sample}
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-white text-gray-700 border border-gray-200"
-                      >
-                        {sample}
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-ggc-gold-dark block">
+                        Dimensi 01 • Fondasi Utama
                       </span>
+                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark">
+                        Talent (Bakat Kognitif)
+                      </h3>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+                    12 Butir
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  Mengukur potensi kecerdasan alami: logika analitikal, penalaran spasial 3D, kecerdasan verbal, hingga pemodelan sistem terstruktur.
+                </p>
+
+                {/* Subdimension Visual Bars */}
+                <div className="mt-6 p-4 rounded-2xl bg-gray-50/80 border border-gray-100 space-y-2.5">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+                    <span>6 Sumbu Subdimensi Bakat</span>
+                    <span className="text-ggc font-bold">Bobot Teruji</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                    {[
+                      { name: "Logika Analitikal", val: "96%" },
+                      { name: "Penalaran Spasial", val: "88%" },
+                      { name: "Kecerdasan Verbal", val: "84%" },
+                      { name: "Analisis Sistem", val: "92%" },
+                      { name: "Kreativitas Estetika", val: "78%" },
+                      { name: "Kecerdasan Sosial", val: "86%" },
+                    ].map((sub) => (
+                      <div key={sub.name} className="p-2 rounded-xl bg-white border border-gray-200/80 text-center">
+                        <div className="text-[10px] font-semibold text-gray-600 truncate">{sub.name}</div>
+                        <div className="text-xs font-black text-ggc mt-0.5">{sub.val}</div>
+                      </div>
                     ))}
                   </div>
-                </SpotlightCard>
-              );
-            })}
-
-            {/* Total 84 Items Summary Banner Card */}
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-ggc-dark via-ggc to-ggc-light text-white shadow-xl flex flex-col justify-between relative overflow-hidden">
-              <div className="relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-ggc-gold mb-4">
-                  <Award className="w-6 h-6" />
                 </div>
-                <div className="text-xs uppercase tracking-widest text-ggc-gold font-bold">
-                  Total Instrumen
-                </div>
-                <h3 className="text-3xl font-black mt-1">
-                  84 Butir Terpadu
-                </h3>
-                <p className="text-xs text-ggc-subtle/80 mt-2 leading-relaxed">
-                  7 Dimensi × 12 Butir Terukur. Menghasilkan akurasi evaluasi tinggi tanpa membebani konsentrasi siswa.
-                </p>
               </div>
 
-              <div className="mt-6 relative z-10">
+              {/* Sample Question Strip */}
+              <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2.5 text-xs text-gray-700 bg-emerald-50/50 p-3 rounded-2xl border border-emerald-100">
+                <span className="text-base shrink-0">💡</span>
+                <p className="italic">
+                  &ldquo;Saya dengan cepat mampu menangkap pola sebab-akibat dalam data angka atau grafik rumit.&rdquo;
+                </p>
+              </div>
+            </SpotlightCard>
+
+            {/* TILE 2: INTEREST (Minat Karier) - Span 5 */}
+            <SpotlightCard
+              onClick={() => setActiveDimCode("I")}
+              className={`lg:col-span-5 p-6 sm:p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
+                activeDimCode === "I"
+                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
+                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-3 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 group-hover:scale-105 transition-transform">
+                      <Target className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 block">
+                        Dimensi 02 • Orientasi Karier
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark">
+                        Interest (Minat Karier)
+                      </h3>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                    12 Butir
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  Menjelajahi ketertarikan autentik siswa terhadap ragam ranah industri modern: Sains, Komputasi AI, Desain, Bisnis, Medis, hingga Regulasi.
+                </p>
+
+                {/* 4 Klaster Industri */}
+                <div className="mt-6 space-y-2">
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                    Klaster Minat Unggulan:
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                      <span className="text-sm">💻</span>
+                      <span className="text-xs font-bold text-gray-800 truncate">Teknologi & AI</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                      <span className="text-sm">🔬</span>
+                      <span className="text-xs font-bold text-gray-800 truncate">Sains & Medis</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                      <span className="text-sm">📈</span>
+                      <span className="text-xs font-bold text-gray-800 truncate">Bisnis & Startup</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center gap-2">
+                      <span className="text-sm">🎨</span>
+                      <span className="text-xs font-bold text-gray-800 truncate">Seni & Kreatif</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sample Question */}
+              <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2.5 text-xs text-gray-700 bg-amber-50/50 p-3 rounded-2xl border border-amber-100">
+                <span className="text-base shrink-0">🎯</span>
+                <p className="italic">
+                  &ldquo;Saya antusias belajar bahasa pemrograman, kecerdasan buatan, atau pengembangan aplikasi perangkat lunak.&rdquo;
+                </p>
+              </div>
+            </SpotlightCard>
+
+            {/* TILE 3: PERSONALITY (Gaya Kerja & Grit) - Span 4 */}
+            <SpotlightCard
+              onClick={() => setActiveDimCode("P")}
+              className={`lg:col-span-4 p-6 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
+                activeDimCode === "P"
+                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
+                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-800 border border-blue-200 group-hover:scale-105 transition-transform">
+                    <UserCheck className="w-5 h-5 text-blue-700" />
+                  </div>
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                    12 Butir
+                  </span>
+                </div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 block">
+                  Dimensi 03
+                </span>
+                <h3 className="text-base font-black text-ggc-dark mt-0.5">
+                  Personality (Gaya Kerja & Grit)
+                </h3>
+                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                  Memotret keteraturan jadwal (Conscientiousness), stabilitas emosional, kemandirian, dan daya tahan grit pantang menyerah.
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {["Conscientiousness", "Ketahanan (Grit)", "Keterbukaan Ide", "Stabilitas Emosional"].map((t) => (
+                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 text-gray-700 border border-gray-200">
+                      ✓ {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-600 italic bg-blue-50/50 p-2.5 rounded-xl border border-blue-100">
+                &ldquo;Saya tidak mudah menyerah meskipun menghadapi kegagalan berulang kali dalam proyek sulit.&rdquo;
+              </div>
+            </SpotlightCard>
+
+            {/* TILE 4: VALUES (Nilai Pribadi & Integritas) - Span 4 */}
+            <SpotlightCard
+              onClick={() => setActiveDimCode("V")}
+              className={`lg:col-span-4 p-6 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
+                activeDimCode === "V"
+                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
+                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="p-2.5 rounded-2xl bg-rose-50 text-rose-800 border border-rose-200 group-hover:scale-105 transition-transform">
+                    <Heart className="w-5 h-5 text-rose-700" />
+                  </div>
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
+                    12 Butir
+                  </span>
+                </div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-700 block">
+                  Dimensi 04
+                </span>
+                <h3 className="text-base font-black text-ggc-dark mt-0.5">
+                  Values (Nilai Pribadi)
+                </h3>
+                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                  Prinsip etika mendasar yang menggerakkan motivasi: integritas moral, altruisme sosial, otonomi bebas, dan prestasi unggul.
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {["Integritas Moral", "Altruisme & Dampak", "Otonomi Kerja", "Prestasi Unggul"].map((t) => (
+                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 text-gray-700 border border-gray-200">
+                      ⚖️ {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-600 italic bg-rose-50/50 p-2.5 rounded-xl border border-rose-100">
+                &ldquo;Saya menolak berkompromi terhadap kejujuran dan etika moral, apapun imbalan materinya.&rdquo;
+              </div>
+            </SpotlightCard>
+
+            {/* TILE 5: READINESS (Kesiapan Mental Transisi Kuliah) - Span 4 */}
+            <SpotlightCard
+              onClick={() => setActiveDimCode("R")}
+              className={`lg:col-span-4 p-6 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
+                activeDimCode === "R"
+                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
+                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="p-2.5 rounded-2xl bg-red-50 text-red-800 border border-red-200 group-hover:scale-105 transition-transform">
+                    <Flame className="w-5 h-5 text-red-700" />
+                  </div>
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-red-50 text-red-800 border border-red-200">
+                    12 Butir
+                  </span>
+                </div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700 block">
+                  Dimensi 05
+                </span>
+                <h3 className="text-base font-black text-ggc-dark mt-0.5">
+                  Readiness (Kesiapan Kuliah)
+                </h3>
+                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                  Tingkat kemandirian belajar, resiliensi terhadap beban tugas universitas, dan kesiapan hidup mandiri saat kuliah.
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {["Manajemen Stres", "Kemandirian Belajar", "Daya Adaptasi", "Regulasi Finansial"].map((t) => (
+                    <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-lg bg-gray-50 text-gray-700 border border-gray-200">
+                      🔥 {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-600 italic bg-red-50/50 p-2.5 rounded-xl border border-red-100">
+                &ldquo;Saya siap mengelola waktu dan keuangan pribadi secara mandiri tanpa harus selalu diarahkan orang tua.&rdquo;
+              </div>
+            </SpotlightCard>
+
+            {/* TILE 6: ACADEMIC & CAREER SYNERGY - Span 7 */}
+            <SpotlightCard
+              onClick={() => setActiveDimCode("A")}
+              className={`lg:col-span-7 p-6 sm:p-8 rounded-3xl cursor-pointer border transition-all duration-300 flex flex-col justify-between group ${
+                activeDimCode === "A" || activeDimCode === "C"
+                  ? "bg-white border-ggc shadow-xl ring-2 ring-ggc/20"
+                  : "bg-white/95 border-gray-200/90 hover:border-ggc/40 hover:shadow-lg"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-800 border border-indigo-200 group-hover:scale-105 transition-transform">
+                      <BookOpen className="w-6 h-6 text-indigo-700" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700 block">
+                        Dimensi 06 & 07 • Sinergi Jalur Prestasi
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-black text-ggc-dark">
+                        Academic & Career Pathway (24 Butir)
+                      </h3>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-800 border border-indigo-200 shrink-0">
+                    12 + 12 Butir
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  Menghubungkan rumpun mata pelajaran sekolah (Saintek, Soshum, Bisnis, Seni) langsung ke proyeksi peran karier masa depan (Peneliti Ahli, Eksekutif Korporat, Advokat, Founder).
+                </p>
+
+                {/* Flow Diagram Mini in Card */}
+                <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-gray-50 via-indigo-50/30 to-gray-50 border border-gray-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center items-center">
+                  <div className="p-2.5 rounded-xl bg-white border border-gray-200">
+                    <span className="text-[10px] font-extrabold text-indigo-700 uppercase block">Input Akademik</span>
+                    <p className="text-xs font-bold text-gray-800 mt-0.5">Kalkulus, Sosial, Desain</p>
+                  </div>
+                  <div className="text-xs font-black text-ggc-gold flex items-center justify-center gap-1">
+                    <span>Multi-Matrix</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white border border-gray-200">
+                    <span className="text-[10px] font-extrabold text-emerald-700 uppercase block">Target Karier</span>
+                    <p className="text-xs font-bold text-gray-800 mt-0.5">Software Lead, Founder, Dokter</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2.5 text-xs text-gray-700 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100">
+                <span className="text-base shrink-0">📚</span>
+                <p className="italic">
+                  &ldquo;Saya memproyeksikan diri saya memimpin proyek transformasi digital atau korporasi skala nasional.&rdquo;
+                </p>
+              </div>
+            </SpotlightCard>
+
+            {/* TILE 7: GRAND MULTI-MATRIX ENGINE (84 BUTIR) - Span 5 */}
+            <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-luxury via-ggc to-[#02170F] text-white shadow-2xl flex flex-col justify-between relative overflow-hidden border border-ggc-gold/40">
+              {/* Luxury Ornaments */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-ggc-gold/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-emerald-400/15 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-ggc-gold/60 rounded-tl-sm pointer-events-none" />
+              <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-ggc-gold/60 rounded-tr-sm pointer-events-none" />
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <img src="/logo.png" alt="" className="w-7 h-7 object-contain bg-white rounded-lg p-0.5" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-ggc-gold">
+                    Multi-Matrix Engine
+                  </span>
+                </div>
+
+                <div className="text-2xl sm:text-3xl font-black text-white mt-1 leading-tight">
+                  84 Butir Terpadu
+                </div>
+                <p className="text-xs text-ggc-gold font-bold mt-0.5">
+                  7 Dimensi × 12 Butir Terstandar Nasional
+                </p>
+
+                <p className="text-xs text-ggc-subtle/85 mt-3 leading-relaxed">
+                  Menghasilkan akurasi evaluasi tinggi tanpa membebani daya konsentrasi siswa. Dilengkapi penyimpanan otomatis realtime dan verifikasi resmi.
+                </p>
+
+                <div className="mt-5 space-y-2 text-xs">
+                  <div className="flex items-center gap-2 text-white/90">
+                    <CheckCircle2 className="w-4 h-4 text-ggc-gold shrink-0" />
+                    <span>Zero-Bias & Anti-Stress Flow (15–20 Menit)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/90">
+                    <CheckCircle2 className="w-4 h-4 text-ggc-gold shrink-0" />
+                    <span>Rekomendasi Kampus PTN & PTS Terbaik</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/90">
+                    <CheckCircle2 className="w-4 h-4 text-ggc-gold shrink-0" />
+                    <span>Laporan PDF Resmi Siap Diskusi Bareng Orang Tua</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-white/15 relative z-10">
                 <Link
                   href="/auth/register"
-                  className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white transition-all shadow-md"
+                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl text-xs font-black text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all"
                 >
-                  <span>Mulai Pengisian Instrumen</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Mulai Asesmen 84 Butir Sekarang</span>
+                  <ArrowRight className="w-4 h-4 text-ggc-dark" />
                 </Link>
               </div>
             </div>
-          </div>
 
-          {/* Interactive Selected Dimension Live Spotlight Box */}
-          <div className="mt-8 p-5 sm:p-6 rounded-3xl bg-ggc-subtle/50 border border-ggc/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-ggc text-ggc-gold font-bold shrink-0">
-                <Brain className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-ggc uppercase tracking-wider">
-                  Contoh Butir Instrumen • {activeDimension.name}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-gray-800 mt-0.5">
-                  "{activeDimension.sampleQuestion}"
-                </div>
-              </div>
-            </div>
-            <Link
-              href="/auth/register"
-              className="inline-flex items-center gap-1 text-xs font-bold text-ggc hover:text-ggc-dark transition-colors shrink-0"
-            >
-              <span>Uji Dimensi Ini</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
         </div>
       </section>
