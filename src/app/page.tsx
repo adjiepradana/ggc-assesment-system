@@ -387,29 +387,6 @@ export default function HomePage() {
           aria-hidden="true"
         />
 
-        {/* Floating Parallax Accents (Modern Web Guidance: parallax-scroll-effects) */}
-        <div
-          className="hidden xl:flex absolute top-24 left-10 z-20 items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-200/80 shadow-lg shadow-emerald-950/5 parallax-layer-medium animate-float-slow pointer-events-none"
-          style={{ transform: `translateY(${scrollY * 0.14}px)` }}
-        >
-          <span className="text-xl">🎓</span>
-          <div>
-            <p className="text-[11px] font-bold text-gray-800">Pilihan Jurusan Bebas Galau</p>
-            <p className="text-[10px] text-emerald-700 font-semibold">98.4% Siswa Lebih Percaya Diri</p>
-          </div>
-        </div>
-
-        <div
-          className="hidden xl:flex absolute bottom-28 left-16 z-20 items-center gap-2.5 px-4 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200/80 shadow-lg parallax-layer-slow animate-float-reverse pointer-events-none"
-          style={{ transform: `translateY(${scrollY * 0.08}px)` }}
-        >
-          <span className="text-lg">💡</span>
-          <div>
-            <p className="text-[11px] font-bold text-gray-800">84 Pertanyaan Santai & Seru</p>
-            <p className="text-[10px] text-gray-500">15-20 Menit Selesai Tanpa Stres</p>
-          </div>
-        </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Column: Headline, Description & CTAs */}
@@ -490,79 +467,90 @@ export default function HomePage() {
                 )}
               </div>
 
-              {/* Interactive Quick Trust Highlights */}
-              <div className="mt-10 pt-8 border-t border-gray-200/80 flex flex-wrap items-center justify-center lg:justify-start gap-y-3 gap-x-6 text-xs sm:text-sm text-gray-600 font-medium">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>84 Butir Terstandarisasi</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Multi-Matrix Matching</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Laporan PDF Resmi Instan</span>
+              {/* Interactive Quick Trust Highlights (Clean In-Flow Grid, Zero Overlapping) */}
+              <div className="mt-10 pt-7 border-t border-gray-200/80">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-700">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-gray-200/80 shadow-2xs hover:border-ggc/30 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60">
+                      ✓
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">84 Butir Santai & Teruji</p>
+                      <p className="text-[11px] text-gray-500">15–20 menit selesai tanpa stres</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-gray-200/80 shadow-2xs hover:border-ggc/30 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60">
+                      ✓
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">Multi-Matrix Matching</p>
+                      <p className="text-[11px] text-gray-500">98.4% siswa lebih percaya diri</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-gray-200/80 shadow-2xs hover:border-ggc/30 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200/60">
+                      ✓
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">Laporan PDF Resmi Instan</p>
+                      <p className="text-[11px] text-gray-500">Siap cetak & diskusi keluarga</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-amber-200/70 shadow-2xs hover:border-amber-300 transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm shrink-0 border border-amber-200">
+                      ⭐
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">Rating 4.9/5 Kepuasan</p>
+                      <p className="text-[11px] text-gray-500">10.000+ siswa terbantu di Indonesia</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Right Column: Hero Interactive Widget (Tab Switcher between Radar & Mini Simulator) */}
             <div className="lg:col-span-5 relative">
-              {/* Floating Parallax Badges around Widget (modern-web-guidance: parallax-scroll-effects) */}
-              <div
-                className="hidden sm:flex absolute -top-5 -right-3 z-30 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200 shadow-xl text-xs font-bold text-gray-800 parallax-layer-fast animate-float-reverse pointer-events-none"
-                style={{ transform: `translateY(${scrollY * -0.16}px)` }}
-              >
-                <span className="text-amber-500 text-sm">⭐ 4.9/5</span>
-                <span className="text-[11px] text-gray-600 font-medium">• 10.000+ Siswa Terbantu</span>
-              </div>
-
-              <div
-                className="hidden lg:flex absolute -bottom-5 -left-8 z-30 items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-emerald-200 shadow-xl text-xs font-bold text-gray-800 parallax-layer-reverse pointer-events-none"
-                style={{ transform: `translateY(${scrollY * 0.12}px)` }}
-              >
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-emerald-800 font-bold">15-20 Menit Selesai</span>
-                <span className="text-gray-500 font-medium">• Auto-Save</span>
-              </div>
-
-              <div
-                className="hidden md:flex absolute -bottom-5 -right-5 z-30 items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-ggc-gold-subtle to-white border border-ggc-gold/40 shadow-lg text-[11px] font-bold text-ggc-dark parallax-layer-slow pointer-events-none"
-                style={{ transform: `translateY(${scrollY * -0.1}px)` }}
-              >
-                <span>📑 Dokumen Siap Diskusi Bareng Ortu</span>
-              </div>
-
               {/* Decorative Glow */}
               <div className="absolute -inset-2 bg-gradient-to-tr from-ggc-gold/30 via-ggc/20 to-transparent rounded-3xl blur-xl opacity-70 animate-pulse pointer-events-none" />
 
-              {/* Top View Mode Selector Pills */}
-              <div className="flex items-center justify-center gap-2 mb-3 relative z-20">
-                <button
-                  type="button"
-                  onClick={() => setHeroTab("simulation")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    heroTab === "simulation"
-                      ? "bg-ggc text-white shadow-md ring-2 ring-ggc-gold/40"
-                      : "bg-white/80 text-gray-600 hover:text-ggc border border-gray-200"
-                  }`}
-                >
-                  <BarChart3 className="w-3.5 h-3.5 text-ggc-gold" />
-                  <span>Radar Profil Hasil</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHeroTab("try")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    heroTab === "try"
-                      ? "bg-ggc text-white shadow-md ring-2 ring-ggc-gold/40"
-                      : "bg-white/80 text-gray-600 hover:text-ggc border border-gray-200"
-                  }`}
-                >
-                  <Zap className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Coba 1 Soal Mini</span>
-                </button>
+              {/* Top View Mode Selector Pills & Status Indicator */}
+              <div className="flex items-center justify-between gap-2 mb-3 relative z-20">
+                <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl bg-white/90 border border-gray-200/90 shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => setHeroTab("simulation")}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      heroTab === "simulation"
+                        ? "bg-ggc text-white shadow-xs"
+                        : "text-gray-600 hover:text-ggc hover:bg-gray-100"
+                    }`}
+                  >
+                    <BarChart3 className="w-3.5 h-3.5 text-ggc-gold" />
+                    <span>Radar Profil Hasil</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroTab("try")}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      heroTab === "try"
+                        ? "bg-ggc text-white shadow-xs"
+                        : "text-gray-600 hover:text-ggc hover:bg-gray-100"
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Coba 1 Soal Mini</span>
+                  </button>
+                </div>
+
+                <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Auto-Save Aktif</span>
+                </div>
               </div>
 
               {/* Active Tab View */}
@@ -587,8 +575,9 @@ export default function HomePage() {
                         </div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      96% Very Strong Fit
+                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-ggc-gold" />
+                      <span>96% Very Strong Fit</span>
                     </span>
                   </div>
 
@@ -624,21 +613,29 @@ export default function HomePage() {
                   </div>
 
                   {/* Card Action */}
-                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                      <Download className="w-3.5 h-3.5 text-ggc-gold" />
-                      Laporan PDF 2 Halaman Resmi
+                  <div className="mt-4 pt-3.5 border-t border-gray-100 flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-gray-500 flex items-center gap-1.5 font-medium">
+                      <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>15–20 Menit Selesai</span>
                     </span>
                     <Link
                       href="/auth/register"
                       className="text-xs font-bold text-ggc hover:text-ggc-dark flex items-center gap-1 transition-colors"
                     >
                       <span>Mulai Asesmen</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3.5 h-3.5 text-ggc-gold" />
                     </Link>
                   </div>
                 </div>
               )}
+
+              {/* In-flow bottom reassurance badge (No Overlapping) */}
+              <div className="mt-3.5 text-center">
+                <p className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/85 border border-gray-200/80 text-[11px] font-semibold text-gray-600 shadow-2xs">
+                  <FileText className="w-3.5 h-3.5 text-ggc" />
+                  <span>Dokumen hasil resmi siap didiskusikan bareng orang tua & guru BK</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
