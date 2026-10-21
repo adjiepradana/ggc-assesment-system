@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password, full_name, phone_number, school_name, grade, access_code } = body;
+    const { email, password, full_name, phone_number, school_name, grade } = body;
 
-    // Validation
+    // 1. Basic validation
     if (!email || !password || !full_name) {
       return NextResponse.json(
         { error: "Email, kata sandi, dan nama lengkap wajib diisi." },
@@ -34,102 +34,51 @@ export async function POST(req: Request) {
       );
     }
 
-    // Access Code Validation
-    const normalizedCode = access_code ? String(access_code).trim().toUpperCase() : "";
-    if (!normalizedCode) {
-      return NextResponse.json(
-        { error: "Kode Akses (Access Code) wajib diisi. Silakan masukkan kode pembelian dari Lynk.id." },
-        { status: 400 }
-      );
-    }
-
-    // Verify Access Code availability
-    const existingCode = await prisma.accessCode.findUnique({
-      where: { code: normalizedCode },
-    });
-
-    if (!existingCode) {
-      return NextResponse.json(
-        { error: "Kode akses tidak ditemukan. Pastikan Anda memasukkan kode 8 karakter resmi dari Lynk.id." },
-        { status: 400 }
-      );
-    }
-
-    if (existingCode.status !== "AVAILABLE") {
-      return NextResponse.json(
-        { error: "Kode akses ini sudah digunakan sebelumnya. Setiap kode hanya berlaku untuk satu akun partisipan." },
-        { status: 400 }
-      );
-    }
-
-    // Check if user already exists
+    // 2. Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: trimmedEmail },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Email sudah terdaftar. Silakan masuk dengan akun yang sudah ada." },
+        { error: "Email sudah terdaftar. Silakan masuk menggunakan akun Anda." },
         { status: 409 }
       );
     }
 
-    // Hash password
+    // 3. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Atomic transaction: Create User, Profile, and mark AccessCode as USED
-    const result = await prisma.$transaction(async (tx) => {
-      // Re-check code status inside transaction to prevent race conditions
-      const codeInTx = await tx.accessCode.findUnique({
-        where: { code: normalizedCode },
-      });
-
-      if (!codeInTx || codeInTx.status !== "AVAILABLE") {
-        throw new Error("Kode akses tidak valid atau baru saja digunakan oleh pengguna lain.");
-      }
-
-      // Create new student user
-      const user = await tx.user.create({
-        data: {
-          email: trimmedEmail,
-          password_hash: hashedPassword,
-          role: "STUDENT",
-          is_active: true,
-          profile: {
-            create: {
-              full_name: full_name.trim(),
-              phone_number: phone_number?.trim() || null,
-              school_name: school_name?.trim() || null,
-              grade: grade?.trim() || null,
-            },
+    // 4. Create new student user & profile
+    const newUser = await prisma.user.create({
+      data: {
+        email: trimmedEmail,
+        password_hash: hashedPassword,
+        role: "STUDENT",
+        is_active: true,
+        email_verified: true,
+        profile: {
+          create: {
+            full_name: full_name.trim(),
+            phone_number: phone_number?.trim() || null,
+            school_name: school_name?.trim() || null,
+            grade: grade?.trim() || null,
           },
         },
-        include: {
-          profile: true,
-        },
-      });
-
-      // Update access code status to USED
-      await tx.accessCode.update({
-        where: { id: codeInTx.id },
-        data: {
-          status: "USED",
-          used_by: user.id,
-          used_at: new Date(),
-        },
-      });
-
-      return user;
+      },
+      include: {
+        profile: true,
+      },
     });
 
     return NextResponse.json(
       {
-        message: "Akun berhasil didaftarkan dengan kode akses resmi.",
+        message: "Akun berhasil didaftarkan. Selamat datang di Go Great Career!",
         user: {
-          id: result.id,
-          email: result.email,
-          role: result.role,
-          profile: result.profile,
+          id: newUser.id,
+          email: newUser.email,
+          role: newUser.role,
+          profile: newUser.profile,
         },
       },
       { status: 201 }

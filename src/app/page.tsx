@@ -8,6 +8,7 @@ import BrandLogo from "@/components/BrandLogo";
 import InteractiveRadarChart, { RadarDataPoint } from "@/components/InteractiveRadarChart";
 import InteractiveMiniAssessment from "@/components/InteractiveMiniAssessment";
 import SpotlightCard from "@/components/SpotlightCard";
+import MidtransCheckoutModal from "@/components/MidtransCheckoutModal";
 import {
   Sparkles,
   ArrowRight,
@@ -43,6 +44,7 @@ import {
   RotateCcw,
   FileQuestion,
   LayoutDashboard,
+  CreditCard,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -61,6 +63,9 @@ export default function HomePage() {
 
   // FAQ Accordion active index
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Midtrans Payment Modal state
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   // FAQ Category Filter State
   const [faqCategory, setFaqCategory] = useState<string>("ALL");
@@ -450,19 +455,21 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
+                    <button
+                      type="button"
+                      onClick={() => setIsCheckoutModalOpen(true)}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 group text-sm sm:text-base ring-offset-2 hover:ring-2 hover:ring-ggc shadow-md cursor-pointer"
+                    >
+                      <CreditCard className="w-5 h-5 text-ggc-dark" />
+                      <span>Beli Akses Asesmen (Rp 49.000)</span>
+                      <ArrowRight className="w-5 h-5 text-ggc-dark transition-transform duration-200 group-hover:translate-x-1" />
+                    </button>
                     <Link
                       href="/auth/register"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-lg shadow-ggc/25 hover:shadow-xl hover:shadow-ggc/30 transition-all duration-200 group text-sm sm:text-base ring-offset-2 hover:ring-2 hover:ring-ggc"
-                    >
-                      <span>Mulai Asesmen Sekarang</span>
-                      <ArrowRight className="w-5 h-5 text-ggc-gold transition-transform duration-200 group-hover:translate-x-1" />
-                    </Link>
-                    <a
-                      href="#fitur"
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-ggc-dark dark:text-white bg-white dark:bg-[#07261B] hover:bg-ggc-subtle/70 dark:hover:bg-[#0B3525] border border-ggc/25 dark:border-ggc-gold/40 shadow-sm transition-all duration-200 text-sm sm:text-base hover:border-ggc dark:hover:border-ggc-gold"
                     >
-                      <span>Pelajari Fitur & Metodologi</span>
-                    </a>
+                      <span>Daftar Langsung</span>
+                    </Link>
                   </>
                 )}
               </div>
@@ -1403,13 +1410,21 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="mt-6 pt-5 border-t border-white/15 relative z-10">
+              <div className="mt-6 pt-5 border-t border-white/15 relative z-10 flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsCheckoutModalOpen(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl text-xs font-black text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all cursor-pointer shadow-lg"
+                >
+                  <CreditCard className="w-4 h-4 text-ggc-dark" />
+                  <span>Beli Akses Asesmen 84 Butir (Rp 49.000)</span>
+                  <ArrowRight className="w-4 h-4 text-ggc-dark" />
+                </button>
                 <Link
                   href="/auth/register"
-                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl text-xs font-black text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-all"
+                  className="text-[11px] text-white/80 hover:text-white text-center font-semibold underline underline-offset-4"
                 >
-                  <span>Mulai Asesmen 84 Butir Sekarang</span>
-                  <ArrowRight className="w-4 h-4 text-ggc-dark" />
+                  Atau Daftar Akun Langsung →
                 </Link>
               </div>
             </div>
@@ -1808,18 +1823,19 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
+                    <button
+                      type="button"
+                      onClick={() => setIsCheckoutModalOpen(true)}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white shadow-xl transition-all duration-200 cursor-pointer"
+                    >
+                      <CreditCard className="w-5 h-5" />
+                      <span>Beli Akses Asesmen (Rp 49.000)</span>
+                    </button>
                     <Link
                       href="/auth/register"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-ggc-gold hover:bg-ggc-gold-dark hover:text-white shadow-xl transition-all duration-200"
-                    >
-                      <span>Mulai Asesmen Sekarang</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
-                    <Link
-                      href="/auth/login"
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-md transition-all duration-200"
                     >
-                      <span>Sudah Punya Akun? Masuk</span>
+                      <span>Daftar Akun Siswa</span>
                     </Link>
                   </>
                 )}
@@ -1892,13 +1908,14 @@ export default function HomePage() {
             </Link>
           ) : (
             <>
-              <Link
-                href="/auth/register"
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-black text-white bg-ggc hover:bg-ggc-light active:scale-[0.98] shadow-md shadow-ggc/30 text-xs sm:text-sm transition-all"
+              <button
+                type="button"
+                onClick={() => setIsCheckoutModalOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-black text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark active:scale-[0.98] shadow-md text-xs sm:text-sm transition-all cursor-pointer"
               >
-                <span>Mulai Asesmen (15 Menit)</span>
-                <ArrowRight className="w-4 h-4 text-ggc-gold" />
-              </Link>
+                <CreditCard className="w-4 h-4 text-ggc-dark" />
+                <span>Beli Akses (Rp 49rb)</span>
+              </button>
               <Link
                 href="/auth/login"
                 className="px-4 py-3 rounded-xl font-bold text-ggc-dark dark:text-ggc-gold bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-xs text-center shrink-0 border border-gray-200 dark:border-[#103D2B] active:scale-95 transition-all"
@@ -1909,6 +1926,13 @@ export default function HomePage() {
           )}
         </div>
       </aside>
+
+      {/* Midtrans Snap Payment Modal */}
+      <MidtransCheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        price={49000}
+      />
     </div>
   );
 }

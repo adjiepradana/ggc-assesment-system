@@ -36,18 +36,64 @@ enum DimensionCategory {
 }
 
 model User {
-  id            String              @id @default(uuid())
-  email         String              @unique
-  password_hash String
-  role          Role                @default(STUDENT)
-  is_active     Boolean             @default(true)
-  created_at    DateTime            @default(now())
-  updated_at    DateTime            @updatedAt
-  profile       StudentProfile?
-  sessions      AssessmentSession[]
-  access_codes  AccessCode[]
+  id                  String              @id @default(uuid())
+  email               String              @unique
+  password_hash       String
+  role                Role                @default(STUDENT)
+  is_active           Boolean             @default(true)
+  email_verified      Boolean             @default(false)
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  profile             StudentProfile?
+  sessions            AssessmentSession[]
+  access_codes        AccessCode[]
+  verification_tokens VerificationToken[]
+  orders              Order[]
 
   @@map("users")
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@index([token])
+  @@index([user_id])
+  @@map("verification_tokens")
+}
+
+enum OrderStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  order_id          String      @unique
+  user_id           String?
+  user              User?       @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  customer_name     String
+  customer_email    String
+  customer_phone    String?
+  amount            Int
+  status            OrderStatus @default(PENDING)
+  snap_token        String?
+  snap_redirect_url String?
+  payment_type      String?
+  payment_details   Json?
+  created_at        DateTime    @default(now())
+  updated_at        DateTime    @updatedAt
+
+  @@index([order_id])
+  @@index([customer_email])
+  @@index([status])
+  @@map("orders")
 }
 
 model StudentProfile {

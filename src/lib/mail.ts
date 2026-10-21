@@ -34,7 +34,7 @@ export async function sendVerificationEmail(
 ): Promise<SendEmailResult> {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const verificationUrl = `${baseUrl}/auth/verify?token=${encodeURIComponent(token)}`;
-  const senderEmail = process.env.EMAIL_USER || "no-reply@gogreatcareer.com";
+  const senderEmail = process.env.EMAIL_USER || "gogreatcareer@gmail.com";
 
   // Escape HTML characters to prevent XSS injection in email clients
   const sanitizedName = studentName
