@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { all84QuestionsData, defaultLikertOptions, shuffleArrayWithSeed } from "@/lib/questions-data";
+import { checkUserPaidAccess } from "@/lib/access-check";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,25 @@ export async function GET() {
     }
 
     const userId = session.user.id;
+
+    // PAYWALL ACCESS GATEKEEPER:
+    // Only users who have paid (or admin/demo) are permitted to take the assessment
+    const hasPaidAccess = await checkUserPaidAccess(
+      userId,
+      session.user.email,
+      session.user.role
+    );
+
+    if (!hasPaidAccess) {
+      return NextResponse.json(
+        {
+          error: "PAYMENT_REQUIRED",
+          payment_required: true,
+          message: "Akses asesmen terkunci. Silakan selesaikan pembayaran resmi via Midtrans untuk membuka 84 butir soal.",
+        },
+        { status: 402 }
+      );
+    }
 
     // 1. Find or create an active assessment session
     let assessmentSession = null;

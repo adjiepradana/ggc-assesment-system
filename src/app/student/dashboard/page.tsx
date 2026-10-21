@@ -34,7 +34,10 @@ import {
   Check,
   AlertCircle,
   Printer,
+  Lock,
+  CreditCard,
 } from "lucide-react";
+import { checkUserPaidAccess } from "@/lib/access-check";
 
 export default async function StudentDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -52,9 +55,16 @@ export default async function StudentDashboardPage() {
     C: 0,
     R: 0,
   };
+  let hasPaidAccess = false;
 
   if (session?.user?.id) {
     try {
+      hasPaidAccess = await checkUserPaidAccess(
+        session.user.id,
+        session.user.email,
+        session.user.role
+      );
+
       const user = await prisma.user.findUnique({
         where: { id: session.user.id },
         include: {
@@ -496,9 +506,51 @@ export default async function StudentDashboardPage() {
           </div>
         </div>
       ) : (
-        /* VARIANT B: SEDANG / BELUM MENGERJAKAN */
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-200/90 shadow-md relative overflow-hidden">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        /* VARIANT B: BELUM MEMBAYAR (PAYWALL) */
+        !hasPaidAccess ? (
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border-2 border-amber-300/80 shadow-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-amber-100/40 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-3 max-w-xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300">
+                  <Lock className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Akses Asesmen Terkunci</span>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                  Selesaikan Pembayaran untuk Memulai Asesmen
+                </h2>
+
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  Akun Anda belum memiliki tiket pengerjaan aktif. Dapatkan akses penuh ke 84 butir soal multi-matriks, kalkulasi keselarasan jurusan, dan laporan PDF resmi dengan menyelesaikan transaksi Midtrans.
+                </p>
+
+                <div className="pt-1 flex flex-wrap gap-2 text-xs font-semibold text-gray-600">
+                  <span className="px-3 py-1 rounded-lg bg-gray-100 border border-gray-200">
+                    Investasi Rp 49.000
+                  </span>
+                  <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    Aktivasi Otomatis
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+                <Link
+                  href="/student/assessment"
+                  className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all text-sm group shadow-md"
+                >
+                  <CreditCard className="w-4 h-4 text-ggc-dark" />
+                  <span>Beli Akses Sekarang (Rp 49.000)</span>
+                  <ArrowRight className="w-4 h-4 text-ggc-dark transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* VARIANT C: SUDAH MEMBAYAR - SEDANG / BELUM MENGERJAKAN */
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-200/90 shadow-md relative overflow-hidden">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-3 max-w-xl">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ggc">
                 <Clock className="w-4 h-4 text-ggc-gold" />
@@ -574,7 +626,7 @@ export default async function StudentDashboardPage() {
             </div>
           </div>
         </div>
-      )}
+      ) )}
 
       {/* ================= 5. 7 DIMENSI HOLISTIK GRID ================= */}
       <div className="space-y-4">

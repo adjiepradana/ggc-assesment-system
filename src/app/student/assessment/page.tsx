@@ -37,7 +37,10 @@ import {
   LayoutList,
   Maximize2,
   Trophy,
+  Lock,
+  CreditCard,
 } from "lucide-react";
+import MidtransCheckoutModal from "@/components/MidtransCheckoutModal";
 
 interface QuestionItem {
   id: string;
@@ -220,6 +223,8 @@ export default function StudentAssessmentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompletedSuccess, setIsCompletedSuccess] = useState(false);
   const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
+  const [isPaymentRequired, setIsPaymentRequired] = useState(false);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   // Celebrated section tracking to prevent repeat celebration popups
   const [celebratedSections, setCelebratedSections] = useState<number[]>([]);
@@ -255,7 +260,11 @@ export default function StudentAssessmentPage() {
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || "Gagal memuat instrumen asesmen.");
+          if (res.status === 402 || data.payment_required || data.error === "PAYMENT_REQUIRED") {
+            setIsPaymentRequired(true);
+            return;
+          }
+          throw new Error(data.message || data.error || "Gagal memuat instrumen asesmen.");
         }
 
         const qList: QuestionItem[] = data.questions || [];
@@ -651,6 +660,69 @@ export default function StudentAssessmentPage() {
             Mengalibrasi 84 instrumen multi-matriks Study Fit™ terstandarisasi untuk Anda.
           </p>
         </div>
+      </div>
+    );
+  }
+
+  // Paywall Required Screen (Only Paid Students Permitted)
+  if (isPaymentRequired) {
+    return (
+      <div className="max-w-xl mx-auto my-12 p-8 sm:p-12 rounded-[2.5rem] bg-white dark:bg-[#07261B] border border-ggc-gold/40 shadow-2xl text-center relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-ggc-gold/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="w-20 h-20 rounded-3xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-6 shadow-md border border-amber-300">
+          <Lock className="w-10 h-10 text-amber-800" />
+        </div>
+
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-ggc-gold/15 text-ggc-gold-dark text-xs font-bold uppercase tracking-wider mb-3 border border-ggc-gold/30">
+          <Sparkles className="w-3.5 h-3.5" /> Akses Asesmen Terkunci
+        </span>
+
+        <h2 className="text-2xl sm:text-3xl font-black text-ggc-dark dark:text-white tracking-tight">
+          Selesaikan Pembayaran untuk Memulai
+        </h2>
+
+        <p className="mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-300 max-w-md mx-auto leading-relaxed">
+          Instrumen Study Fit Assessment™ 84 butir hanya dapat diakses setelah pembayaran resmi terverifikasi oleh sistem Midtrans. Dapatkan rekomendasi rumpun jurusan dan pemetaan potensi diri Anda.
+        </p>
+
+        <div className="my-6 p-5 rounded-2xl bg-ggc-tint/60 dark:bg-[#031810] border border-ggc-subtle dark:border-[#11402E] text-left space-y-2 text-xs">
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <CheckCircle2 className="w-4 h-4 text-ggc-gold shrink-0" />
+            <span>84 Pertanyaan Multi-Matriks (Bakat, Minat, Kepribadian, Nilai)</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <CheckCircle2 className="w-4 h-4 text-ggc-gold shrink-0" />
+            <span>Rekomendasi Top 5 Jurusan PTN & PTS Terbaik di Indonesia</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+            <CheckCircle2 className="w-4 h-4 text-ggc-gold shrink-0" />
+            <span>Laporan Hasil Eksekutif & Sertifikat Digital Terverifikasi</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsCheckoutModalOpen(true)}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all text-xs shadow-md cursor-pointer"
+          >
+            <CreditCard className="w-4 h-4 text-ggc-dark" />
+            <span>Bayar via Midtrans (Rp 49.000)</span>
+            <ArrowRight className="w-4 h-4 text-ggc-dark" />
+          </button>
+          <Link
+            href="/student/dashboard"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#082E20] border border-gray-300 dark:border-[#11402E] hover:bg-gray-50 transition-all text-xs shadow-sm"
+          >
+            <span>Kembali ke Dashboard</span>
+          </Link>
+        </div>
+
+        <MidtransCheckoutModal
+          isOpen={isCheckoutModalOpen}
+          onClose={() => setIsCheckoutModalOpen(false)}
+          price={49000}
+        />
       </div>
     );
   }
