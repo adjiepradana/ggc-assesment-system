@@ -152,67 +152,69 @@ export default function MidtransCheckoutModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div
-        className="w-full max-w-lg bg-white dark:bg-[#07261B] rounded-[2.5rem] shadow-2xl border border-ggc-gold/40 relative overflow-hidden transition-all"
+        className="w-full max-w-xl md:max-w-2xl bg-white dark:bg-[#07261B] rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl border border-ggc-gold/40 relative overflow-hidden transition-all max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Decorative Header */}
-        <div className="bg-gradient-to-r from-emerald-luxury via-ggc to-emerald-luxury p-6 text-white relative">
+        <div className="bg-gradient-to-r from-emerald-luxury via-ggc to-emerald-luxury p-6 sm:p-8 text-white relative">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all"
+            className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
             aria-label="Tutup Modal"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-ggc-gold/20 text-ggc-gold text-[10px] font-bold uppercase tracking-wider border border-ggc-gold/30 mb-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/20 text-ggc-gold text-[10px] sm:text-xs font-bold uppercase tracking-wider border border-ggc-gold/30 mb-2.5">
             <Sparkles className="w-3.5 h-3.5" /> Instant Midtrans Checkout
           </span>
-          <h2 className="text-xl sm:text-2xl font-black text-white">
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             Beli Akses Asesmen Resmi
           </h2>
-          <p className="text-xs text-ggc-subtle/90 mt-1">
+          <p className="text-xs sm:text-sm text-ggc-subtle/90 mt-1 max-w-md leading-relaxed">
             Dapatkan tiket pengerjaan 84 Butir Soal & Laporan Rekomendasi Jurusan Lengkap.
           </p>
         </div>
 
-        {/* Form Body */}
-        <div className="p-6 sm:p-8">
-          {/* Product Summary Pill */}
-          <div className="mb-6 p-4 rounded-2xl bg-ggc-tint/60 dark:bg-[#031810]/60 border border-ggc-subtle dark:border-[#0E4230] flex items-center justify-between">
-            <div>
-              <div className="text-xs font-bold text-gray-700 dark:text-gray-200">
-                GGC Study Fit Assessment™
+        {/* Form Body - Responsive padding p-6 sm:p-8 md:p-10 */}
+        <div className="p-6 sm:p-8 md:p-10">
+          {/* Price Card Summary - Flexible responsive wrap */}
+          <div className="mb-6 sm:mb-8 p-5 sm:p-6 rounded-2xl bg-[#F4F8F5] dark:bg-[#031810] border border-ggc-subtle dark:border-[#0E4230] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-2xs">
+            <div className="space-y-1">
+              <div className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-ggc-gold" />
+                <span>GGC Study Fit Assessment™</span>
               </div>
-              <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-ggc-gold" />
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>84 Butir Multi-Matriks + Rekomendasi PTN/PTS</span>
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-xs text-gray-400 line-through">Rp 150.000</span>
-              <div className="text-base sm:text-lg font-black text-ggc dark:text-ggc-gold">
+            <div className="text-left sm:text-right shrink-0">
+              <span className="text-xs sm:text-sm text-gray-400 line-through block">Rp 150.000</span>
+              <div className="text-2xl sm:text-3xl font-black text-ggc dark:text-ggc-gold">
                 {formattedPrice}
               </div>
             </div>
           </div>
 
           {error && (
-            <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="mb-5 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
               <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleCheckout} className="space-y-4">
+          <form onSubmit={handleCheckout} className="space-y-5">
+            {/* Input: Nama Lengkap */}
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Nama Lengkap Siswa *
               </label>
               <div className="relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <User className="w-4 h-4" />
                 </div>
                 <input
@@ -221,17 +223,18 @@ export default function MidtransCheckoutModal({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: Muhammad Kevin"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-[#11402E] dark:bg-[#031810] text-xs focus:ring-2 focus:ring-ggc focus:outline-none dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm sm:text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
                 />
               </div>
             </div>
 
+            {/* Input: Alamat Email */}
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Alamat Email Aktif *
               </label>
               <div className="relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -240,20 +243,21 @@ export default function MidtransCheckoutModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email.aktif@gmail.com"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-[#11402E] dark:bg-[#031810] text-xs focus:ring-2 focus:ring-ggc focus:outline-none dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm sm:text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
                 />
               </div>
-              <p className="text-[10px] text-gray-500 mt-1">
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1.5">
                 * Tautan aktivasi akun dan tiket asesmen akan otomatis dikirimkan ke email ini.
               </p>
             </div>
 
+            {/* Input: Nomor WhatsApp / HP */}
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
                 Nomor WhatsApp / HP (Opsional)
               </label>
               <div className="relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Phone className="w-4 h-4" />
                 </div>
                 <input
@@ -261,51 +265,54 @@ export default function MidtransCheckoutModal({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="081234567890"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-[#11402E] dark:bg-[#031810] text-xs focus:ring-2 focus:ring-ggc focus:outline-none dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm sm:text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
                 />
               </div>
             </div>
 
-            {/* Payment Method Badges */}
+            {/* Payment Method Badges - Wrapping gracefully with flex flex-wrap gap-2.5 */}
             <div className="pt-2">
-              <span className="text-[11px] text-gray-500 block mb-1.5 font-medium">
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 block mb-2 font-semibold">
                 Metode Pembayaran Resmi via Midtrans:
               </span>
-              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-gray-600 dark:text-gray-400">
-                <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E]">
-                  QRIS (GoPay, OVO, Dana)
+              <div className="flex flex-wrap gap-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <span className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>QRIS (GoPay, OVO, Dana)</span>
                 </span>
-                <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E]">
-                  Virtual Account (BCA, Mandiri, BNI, BRI)
+                <span className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span>Virtual Account (BCA, Mandiri, BNI, BRI)</span>
                 </span>
-                <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E]">
-                  Kartu Kredit / Debit
+                <span className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  <span>Kartu Kredit / Debit</span>
                 </span>
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="pt-4">
+            {/* CTA Submit Button - Full-width, Champagne Gold gradient from [#DFCA95] to [#C5A869], py-4, hover:scale-[1.02] */}
+            <div className="pt-3">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl text-xs sm:text-sm font-black text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60 cursor-pointer shadow-md"
+                className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl text-sm sm:text-base font-black text-[#0B4632] bg-gradient-to-r from-[#DFCA95] to-[#C5A869] hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] transition-transform duration-200 disabled:opacity-60 cursor-pointer shadow-md"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-ggc-dark border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[#0B4632] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <CreditCard className="w-4 h-4 text-ggc-dark" />
+                    <CreditCard className="w-5 h-5 text-[#0B4632]" />
                     <span>Bayar {formattedPrice} Sekarang</span>
-                    <ArrowRight className="w-4 h-4 text-ggc-dark" />
+                    <ArrowRight className="w-5 h-5 text-[#0B4632]" />
                   </>
                 )}
               </button>
             </div>
 
             {/* Security badge */}
-            <p className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1 mt-3">
-              <Lock className="w-3.5 h-3.5" />
+            <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 text-center flex items-center justify-center gap-1.5 mt-4">
+              <Lock className="w-3.5 h-3.5 text-gray-400" />
               <span>Enkripsi 256-bit aman via Midtrans Payment Gateway</span>
             </p>
           </form>
