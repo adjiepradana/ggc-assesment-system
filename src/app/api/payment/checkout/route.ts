@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { snap } from "@/lib/midtrans";
 
@@ -10,12 +11,19 @@ const DEFAULT_ASSESSMENT_PRICE = 49000;
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, phone, amount } = body;
+    const { name, email, phone, password } = body;
 
     // 1. Validation
     if (!name || !email) {
       return NextResponse.json(
         { error: "Nama dan email wajib diisi untuk memesan asesmen." },
+        { status: 400 }
+      );
+    }
+
+    if (!password || password.length < 6) {
+      return NextResponse.json(
+        { error: "Kata sandi akun minimal 6 karakter." },
         { status: 400 }
       );
     }
@@ -29,10 +37,47 @@ export async function POST(req: Request) {
       );
     }
 
-    const price = typeof amount === "number" && amount > 0 ? amount : DEFAULT_ASSESSMENT_PRICE;
+    // Hash password to securely store and pass through Midtrans metadata
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // SECURITY ENFORCEMENT:
+    // Strictly enforce the price to server-side constant (Rp 49.000).
+    // Client-supplied amount values are completely ignored to prevent price tampering attacks.
+    const price = DEFAULT_ASSESSMENT_PRICE;
     const orderId = `GGC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // 2. Prepare Midtrans Snap parameters
+    // Ensure student user account exists in DB so client auto-login succeeds smoothly upon payment completion
+    let studentUser = await prisma.user.findUnique({
+      where: { email: trimmedEmail },
+    });
+
+    if (!studentUser) {
+      studentUser = await prisma.user.create({
+        data: {
+          email: trimmedEmail,
+          password_hash: hashedPassword,
+          role: "STUDENT",
+          is_active: true,
+          email_verified: false,
+          profile: {
+            create: {
+              full_name: name.trim(),
+              phone_number: phone ? phone.trim() : null,
+            },
+          },
+        },
+      });
+    } else {
+      studentUser = await prisma.user.update({
+        where: { id: studentUser.id },
+        data: {
+          password_hash: hashedPassword,
+          is_active: true,
+        },
+      });
+    }
+
+    // 2. Prepare Midtrans Snap parameters with hashed password in custom_field1
     const parameter: any = {
       transaction_details: {
         order_id: orderId,
@@ -43,6 +88,7 @@ export async function POST(req: Request) {
         email: trimmedEmail,
         phone: phone ? phone.trim() : undefined,
       },
+      custom_field1: hashedPassword,
       item_details: [
         {
           id: "GGC-STUDY-FIT-FULL",
@@ -54,7 +100,7 @@ export async function POST(req: Request) {
         },
       ],
       callbacks: {
-        finish: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/auth/verify?payment=success`,
+        finish: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/dashboard`,
       },
     };
 
@@ -92,6 +138,7 @@ export async function POST(req: Request) {
       await prisma.order.create({
         data: {
           order_id: orderId,
+          user_id: studentUser.id,
           customer_name: name.trim(),
           customer_email: trimmedEmail,
           customer_phone: phone ? phone.trim() : null,
@@ -99,6 +146,9 @@ export async function POST(req: Request) {
           status: "PENDING",
           snap_token: transactionToken,
           snap_redirect_url: redirectUrl,
+          payment_details: {
+            hashedPassword,
+          },
         },
       });
     } catch (dbErr) {

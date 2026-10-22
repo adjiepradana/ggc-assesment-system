@@ -39,6 +39,29 @@ export async function GET() {
       );
     }
 
+    // VERIFICATION GATEKEEPER:
+    // Only users with verified emails (or admin/demo accounts) are permitted to start/access the assessment
+    const isBypassAccount =
+      session.user.role === "ADMIN" ||
+      session.user.email === "student@ggc.id" ||
+      session.user.email === "admin@ggc.id";
+
+    const studentUserRecord = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email_verified: true },
+    });
+
+    if (!studentUserRecord?.email_verified && !isBypassAccount) {
+      return NextResponse.json(
+        {
+          error: "EMAIL_VERIFICATION_REQUIRED",
+          email_verification_required: true,
+          message: "Email Anda belum diverifikasi. Silakan periksa kotak masuk atau spam email Anda dan klik tautan verifikasi.",
+        },
+        { status: 403 }
+      );
+    }
+
     // 1. Find or create an active assessment session
     let assessmentSession = null;
     let dbConnected = true;

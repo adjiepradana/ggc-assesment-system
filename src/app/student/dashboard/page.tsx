@@ -41,7 +41,11 @@ import {
 import { checkUserPaidAccess } from "@/lib/access-check";
 import ResendVerificationButton from "@/components/ResendVerificationButton";
 
-export default async function StudentDashboardPage() {
+export default async function StudentDashboardPage({
+  searchParams,
+}: {
+  searchParams?: { verify?: string };
+}) {
   const session = await getServerSession(authOptions);
 
   let userProfile: any = null;
@@ -58,7 +62,7 @@ export default async function StudentDashboardPage() {
     R: 0,
   };
   let hasPaidAccess = false;
-  let isEmailVerified = true;
+  let isEmailVerified = false;
 
   if (session?.user?.id) {
     try {
@@ -88,7 +92,10 @@ export default async function StudentDashboardPage() {
 
       userProfile = user?.profile;
       activeSession = user?.sessions[0] || null;
-      isEmailVerified = user?.email_verified ?? true;
+      isEmailVerified =
+        user?.email_verified === true ||
+        session.user.role === "ADMIN" ||
+        session.user.email === "student@ggc.id";
 
       if (activeSession?.answers) {
         totalAnswers = activeSession.answers.length;
@@ -323,23 +330,44 @@ export default async function StudentDashboardPage() {
         </div>
       </div>
 
-      {/* Email Verification Alert Banner (if not yet verified) */}
+      {/* Email Verification Alert Banner / Verification Gate */}
       {!isEmailVerified && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
-              <Mail className="w-5 h-5" />
+        <div
+          id="verification-notice-banner"
+          className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-50 via-amber-100/40 to-amber-50 dark:from-amber-950/60 dark:via-[#1c1404] dark:to-amber-950/60 border-2 border-amber-400/90 dark:border-amber-700/80 shadow-md transition-all"
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-200/90 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 flex items-center justify-center shrink-0 shadow-inner">
+                <Lock className="w-6 h-6 stroke-[2.2]" />
+              </div>
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/80 text-amber-950 dark:text-amber-200 text-[11px] font-black uppercase tracking-wider">
+                  <Mail className="w-3 h-3" /> Langkah Terakhir: Verifikasi Email
+                </div>
+                <h4 className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-100">
+                  Terima kasih atas pembayaran Anda!
+                </h4>
+                <p className="text-xs sm:text-sm text-amber-900/90 dark:text-amber-300/90 leading-relaxed max-w-2xl">
+                  Untuk mulai mengerjakan asesmen 84 soal, silakan klik tautan verifikasi yang baru saja kami kirimkan ke email{" "}
+                  <strong className="underline underline-offset-2 text-amber-950 dark:text-amber-100 font-bold">
+                    {session?.user?.email}
+                  </strong>
+                  . Instrumen asesmen akan langsung terbuka setelah email Anda terverifikasi.
+                </p>
+                {searchParams?.verify === "required" && (
+                  <div className="pt-1 text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>Akses Asesmen Terkunci: Silakan buka email Anda terlebih dahulu.</span>
+                  </div>
+                )}
+              </div>
             </div>
-            <div>
-              <h4 className="text-sm font-bold text-amber-950 dark:text-amber-200">
-                Email Anda Belum Terverifikasi
-              </h4>
-              <p className="text-xs text-amber-800/90 dark:text-amber-300/80 mt-0.5">
-                Silakan periksa kotak masuk atau folder spam email Anda ({session?.user?.email}). Klik tautan di dalam email untuk mengaktifkan akun secara penuh.
-              </p>
+
+            <div className="shrink-0 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <ResendVerificationButton email={session?.user?.email || ""} />
             </div>
           </div>
-          <ResendVerificationButton email={session?.user?.email || ""} />
         </div>
       )}
 
@@ -621,18 +649,33 @@ export default async function StudentDashboardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-              <Link
-                href="/student/assessment"
-                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-md hover:shadow-lg transition-all text-sm group cursor-pointer"
-              >
-                <Compass className="w-4 h-4 text-ggc-gold transition-transform duration-200 group-hover:rotate-45" />
-                <span>
-                  {totalAnswers > 0
-                    ? `Lanjutkan (Soal ${totalAnswers + 1})`
-                    : "Mulai Asesmen 84 Butir"}
-                </span>
-                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
+              {!isEmailVerified ? (
+                <div className="flex flex-col gap-1.5">
+                  <div
+                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#07261B] border-2 border-dashed border-amber-300 dark:border-amber-700/80 text-sm shadow-xs select-none cursor-not-allowed group"
+                    title="Akses terkunci: Silakan verifikasi email Anda terlebih dahulu."
+                  >
+                    <Lock className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Mulai Asesmen (Terkunci)</span>
+                  </div>
+                  <span className="text-[11px] text-center text-amber-700 dark:text-amber-400 font-semibold">
+                    * Verifikasi email di atas untuk membuka kunci
+                  </span>
+                </div>
+              ) : (
+                <Link
+                  href="/student/assessment"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark shadow-md hover:shadow-lg transition-all text-sm group cursor-pointer"
+                >
+                  <Compass className="w-4 h-4 text-ggc-gold transition-transform duration-200 group-hover:rotate-45" />
+                  <span>
+                    {totalAnswers > 0
+                      ? `Lanjutkan (Soal ${totalAnswers + 1})`
+                      : "Mulai Asesmen 84 Butir"}
+                  </span>
+                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+              )}
 
               <div className="flex items-center justify-center gap-3 text-[11px] text-gray-500 dark:text-[#A0B9AE]">
                 <span className="flex items-center gap-1">

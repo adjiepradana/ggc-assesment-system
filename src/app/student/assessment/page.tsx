@@ -280,6 +280,14 @@ export default function StudentAssessmentPage() {
             setIsPaymentRequired(true);
             return;
           }
+          if (
+            res.status === 403 ||
+            data.email_verification_required ||
+            data.error === "EMAIL_VERIFICATION_REQUIRED"
+          ) {
+            router.replace("/student/dashboard?verify=required");
+            return;
+          }
           throw new Error(data.message || data.error || "Gagal memuat instrumen asesmen.");
         }
 

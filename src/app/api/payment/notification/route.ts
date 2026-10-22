@@ -34,9 +34,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Signature Verification (if live keys are present)
+    // 1. Strict Signature Key Requirement (Security Patch)
+    if (!signature_key) {
+      console.warn("🚨 [Midtrans Webhook Security] Missing signature_key in payload for order:", order_id);
+      return NextResponse.json(
+        { error: "Unauthorized: signature_key wajib disertakan." },
+        { status: 401 }
+      );
+    }
+
+    // SHA-512 Signature Verification using Midtrans Server Key
     const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
-    if (serverKey && !serverKey.includes("your_server_key_here") && signature_key) {
+    if (serverKey && !serverKey.includes("your_server_key_here")) {
       const isValid = verifyMidtransSignature(
         order_id,
         status_code,
@@ -44,12 +53,14 @@ export async function POST(req: Request) {
         signature_key
       );
       if (!isValid) {
-        console.warn("⚠️ Invalid Midtrans signature for order:", order_id);
+        console.warn("⚠️ [Midtrans Webhook Security] Invalid signature detected for order:", order_id);
         return NextResponse.json(
-          { error: "Invalid Midtrans notification signature." },
+          { error: "Forbidden: Signature tidak valid." },
           { status: 403 }
         );
       }
+    } else {
+      console.warn("⚠️ [Midtrans Webhook] Live server key is not configured; skipping SHA-512 signature hash check for dev/mock.");
     }
 
     // 2. Determine Payment Success State
@@ -68,6 +79,17 @@ export async function POST(req: Request) {
     const existingOrder = await prisma.order.findUnique({
       where: { order_id },
     });
+
+    // IDEMPOTENCY GUARD:
+    // If order was already processed as SUCCESS in a previous webhook trigger,
+    // immediately return 200 OK to prevent duplicate user provisioning and duplicate email dispatches.
+    if (existingOrder && existingOrder.status === "SUCCESS") {
+      console.log(`ℹ️ [Midtrans Webhook Idempotency] Order ${order_id} has already been processed as SUCCESS.`);
+      return NextResponse.json({
+        status: "OK",
+        message: `Order ${order_id} has already been processed successfully (idempotent response).`,
+      });
+    }
 
     if (existingOrder) {
       const newStatus = isSuccess ? "SUCCESS" : isFailed ? "FAILED" : "PENDING";
@@ -118,16 +140,20 @@ export async function POST(req: Request) {
       include: { profile: true },
     });
 
+    const incomingHashedPassword =
+      notificationJson.custom_field1 ||
+      (existingOrder?.payment_details as any)?.hashedPassword;
+
     // Create user if not registered yet
     if (!studentUser) {
-      // Generate a secure temporary password (e.g. 12 alphanumeric characters)
-      const rawTempPassword = `Ggc!${crypto.randomBytes(6).toString("hex")}`;
-      const hashedPassword = await bcrypt.hash(rawTempPassword, 10);
+      const finalHashedPassword =
+        incomingHashedPassword ||
+        (await bcrypt.hash(`Ggc!${crypto.randomBytes(6).toString("hex")}`, 10));
 
       studentUser = await prisma.user.create({
         data: {
           email: normalizedEmail,
-          password_hash: hashedPassword,
+          password_hash: finalHashedPassword,
           role: "STUDENT",
           is_active: true,
           email_verified: false,
@@ -143,14 +169,15 @@ export async function POST(req: Request) {
 
       console.log(`👤 [Midtrans] Created new student user: ${normalizedEmail}`);
     } else {
-      // Reactivate user if previously soft-deleted
-      if (!studentUser.is_active) {
-        studentUser = await prisma.user.update({
-          where: { id: studentUser.id },
-          data: { is_active: true },
-          include: { profile: true },
-        });
-      }
+      // If user already exists, reactivate and update password if newly supplied
+      studentUser = await prisma.user.update({
+        where: { id: studentUser.id },
+        data: {
+          is_active: true,
+          ...(incomingHashedPassword ? { password_hash: incomingHashedPassword } : {}),
+        },
+        include: { profile: true },
+      });
     }
 
     // Link user to order if order exists

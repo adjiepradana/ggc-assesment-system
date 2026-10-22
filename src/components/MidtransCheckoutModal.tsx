@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import {
   X,
   CreditCard,
@@ -15,6 +16,8 @@ import {
   Lock,
   Compass,
   AlertCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 declare global {
@@ -48,6 +51,8 @@ export default function MidtransCheckoutModal({
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,6 +128,11 @@ export default function MidtransCheckoutModal({
       return;
     }
 
+    if (!password || password.length < 6) {
+      setError("Kata sandi akun minimal 6 karakter.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -132,8 +142,8 @@ export default function MidtransCheckoutModal({
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
+          password,
           phone: phone.trim(),
-          amount: price,
         }),
       });
 
@@ -148,15 +158,35 @@ export default function MidtransCheckoutModal({
       // 1. If Midtrans Snap is loaded on window
       if (typeof window !== "undefined" && window.snap && snapToken) {
         window.snap.pay(snapToken, {
-          onSuccess: (result: any) => {
+          onSuccess: async (result: any) => {
             console.log("Midtrans payment success:", result);
-            onClose();
-            router.push("/auth/verify?payment=success");
+            setIsLoading(true);
+            try {
+              await signIn("credentials", {
+                redirect: false,
+                email: email.trim(),
+                password,
+              });
+              onClose();
+              router.push("/student/dashboard");
+              router.refresh();
+            } catch (authErr) {
+              console.warn("Auto-login error:", authErr);
+              onClose();
+              router.push("/student/dashboard");
+            }
           },
-          onPending: (result: any) => {
+          onPending: async (result: any) => {
             console.log("Midtrans payment pending:", result);
+            try {
+              await signIn("credentials", {
+                redirect: false,
+                email: email.trim(),
+                password,
+              });
+            } catch {}
             onClose();
-            router.push("/auth/verify?payment=success");
+            router.push("/student/dashboard");
           },
           onError: (result: any) => {
             console.error("Midtrans payment error:", result);
@@ -238,9 +268,9 @@ export default function MidtransCheckoutModal({
         </div>
 
         {/* Scrollable Form Body - Responsive padding */}
-        <div className="p-5 sm:p-7 md:p-10 overflow-y-auto flex-1">
+        <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
           {/* Price Card Summary - Flexible responsive wrap */}
-          <div className="mb-5 sm:mb-7 p-4 sm:p-6 rounded-2xl bg-[#F4F8F5] dark:bg-[#031810] border border-ggc-subtle dark:border-[#0E4230] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-2xs">
+          <div className="mb-4 sm:mb-6 p-3.5 sm:p-5 rounded-2xl bg-[#F4F8F5] dark:bg-[#031810] border border-ggc-subtle dark:border-[#0E4230] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shadow-2xs">
             <div className="space-y-1">
               <div className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-ggc-gold" />
@@ -260,20 +290,20 @@ export default function MidtransCheckoutModal({
           </div>
 
           {error && (
-            <div className="mb-5 p-3.5 sm:p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs sm:text-sm flex items-center gap-2.5">
+            <div className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs sm:text-sm flex items-center gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
               <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleCheckout} className="space-y-4 sm:space-y-5">
-            {/* Input: Nama Lengkap - text-base on mobile prevents iOS Safari auto-zoom */}
+          <form onSubmit={handleCheckout} className="space-y-3.5 sm:space-y-4">
+            {/* Input: Nama Lengkap - responsive padding prevents squishing on 360px */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1.5">
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">
                 Nama Lengkap Siswa *
               </label>
               <div className="relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <User className="w-4 h-4" />
                 </div>
                 <input
@@ -282,18 +312,18 @@ export default function MidtransCheckoutModal({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: Muhammad Kevin"
-                  className="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-base sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
+                  className="w-full pl-10 sm:pl-11 pr-3 sm:pr-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
                 />
               </div>
             </div>
 
             {/* Input: Alamat Email */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1.5">
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">
                 Alamat Email Aktif *
               </label>
               <div className="relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -302,21 +332,53 @@ export default function MidtransCheckoutModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email.aktif@gmail.com"
-                  className="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-base sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
+                  className="w-full pl-10 sm:pl-11 pr-3 sm:pr-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
                 />
               </div>
-              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
                 * Tautan aktivasi akun dan tiket asesmen akan otomatis dikirimkan ke email ini.
+              </p>
+            </div>
+
+            {/* Input: Kata Sandi Akun */}
+            <div>
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">
+                Kata Sandi Akun (Password) *
+              </label>
+              <div className="relative rounded-xl shadow-xs">
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-3.5 flex items-center pointer-events-none text-gray-400">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimal 6 karakter"
+                  className="w-full pl-10 sm:pl-11 pr-10 sm:pr-11 py-2.5 sm:py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 sm:pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer"
+                  aria-label="Lihat kata sandi"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
+                * Gunakan kata sandi ini untuk masuk ke akun dan dashboard asesmen Anda.
               </p>
             </div>
 
             {/* Input: Nomor WhatsApp / HP */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1.5">
+              <label className="block text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">
                 Nomor WhatsApp / HP (Opsional)
               </label>
               <div className="relative rounded-xl shadow-xs">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Phone className="w-4 h-4" />
                 </div>
                 <input
@@ -324,27 +386,27 @@ export default function MidtransCheckoutModal({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="081234567890"
-                  className="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-base sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
+                  className="w-full pl-10 sm:pl-11 pr-3 sm:pr-4 py-2.5 sm:py-3.5 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
                 />
               </div>
             </div>
 
-            {/* Payment Method Badges - Wrapping gracefully with flex flex-wrap gap-2 */}
-            <div className="pt-2">
-              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 block mb-2 font-semibold">
+            {/* Payment Method Badges - Wrapping gracefully with flex flex-wrap gap-1.5 sm:gap-2 */}
+            <div className="pt-1.5 sm:pt-2">
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 block mb-1.5 sm:mb-2 font-semibold">
                 Metode Pembayaran Resmi via Midtrans:
               </span>
-              <div className="flex flex-wrap gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
-                <span className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <span className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                   <span>QRIS (GoPay, OVO, Dana)</span>
                 </span>
-                <span className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                   <span>Virtual Account (BCA, Mandiri, BNI, BRI)</span>
                 </span>
-                <span className="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                <span className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-gray-100 dark:bg-[#031810] border border-gray-200 dark:border-[#11402E] flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
                   <span>Kartu Kredit / Debit</span>
                 </span>
               </div>
