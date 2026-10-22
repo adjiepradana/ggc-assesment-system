@@ -112,7 +112,7 @@ function LoginForm() {
         <div>
           <label
             htmlFor="email"
-            className="block text-xs font-bold text-gray-800 mb-1.5"
+            className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5"
           >
             Alamat Email Akun
           </label>
@@ -132,7 +132,7 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@email.com"
-              className="block w-full pl-10 pr-4 py-3 text-sm rounded-2xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
+              className="block w-full pl-10 pr-4 py-3 text-base sm:text-sm rounded-2xl border border-gray-200 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
             />
           </div>
         </div>
@@ -142,7 +142,7 @@ function LoginForm() {
           <div className="flex items-center justify-between mb-1.5">
             <label
               htmlFor="password"
-              className="block text-xs font-bold text-gray-800"
+              className="block text-xs font-bold text-gray-800 dark:text-gray-200"
             >
               Kata Sandi
             </label>
@@ -161,12 +161,12 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="block w-full pl-10 pr-11 py-3 text-sm rounded-2xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
+              className="block w-full pl-10 pr-11 py-3 text-base sm:text-sm rounded-2xl border border-gray-200 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none"
               aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
             >
               {showPassword ? (
@@ -198,8 +198,8 @@ function LoginForm() {
       </form>
 
       {/* Demo Credentials Quick-Fill helper */}
-      <div className="mt-7 pt-6 border-t border-gray-100">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
+      <div className="mt-7 pt-6 border-t border-gray-100 dark:border-[#103D2B]">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-[#A0B9AE] mb-3">
           <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
           <span>Akses Cepat Akun Percobaan (Seed Demo)</span>
         </div>
@@ -207,7 +207,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => handleDemoFill("STUDENT")}
-            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc/10 text-ggc hover:bg-ggc/20 border border-ggc/20 transition-all shadow-2xs hover:scale-101"
+            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc/10 dark:bg-emerald-950/60 text-ggc dark:text-emerald-300 hover:bg-ggc/20 dark:hover:bg-emerald-900/60 border border-ggc/20 dark:border-emerald-800/40 transition-all shadow-2xs hover:scale-101 cursor-pointer"
           >
             <GraduationCap className="w-3.5 h-3.5" />
             <span>Akun Siswa</span>
@@ -215,7 +215,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => handleDemoFill("ADMIN")}
-            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc-gold/20 text-ggc-gold-dark hover:bg-ggc-gold/30 border border-ggc-gold/30 transition-all shadow-2xs hover:scale-101"
+            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc-gold/20 dark:bg-ggc-gold/25 text-ggc-gold-dark dark:text-ggc-gold hover:bg-ggc-gold/30 border border-ggc-gold/30 transition-all shadow-2xs hover:scale-101 cursor-pointer"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Akun Admin</span>
@@ -225,11 +225,11 @@ function LoginForm() {
 
       {/* Register Link */}
       <div className="mt-6 text-center pt-2">
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-gray-600 dark:text-[#A0B9AE]">
           Belum memiliki akun terdaftar?{" "}
           <Link
             href="/auth/register"
-            className="font-bold text-ggc hover:text-ggc-light underline decoration-ggc/30 underline-offset-4"
+            className="font-bold text-ggc dark:text-ggc-gold hover:text-ggc-light underline decoration-ggc/30 underline-offset-4"
           >
             Daftar akun siswa sekarang
           </Link>
@@ -241,7 +241,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen grid lg:grid-cols-12 bg-[#F3F8F5] overflow-x-hidden selection:bg-ggc selection:text-white">
+    <div className="min-h-screen grid lg:grid-cols-12 bg-[#F3F8F5] dark:bg-[#031810] text-gray-900 dark:text-white overflow-x-hidden selection:bg-ggc selection:text-white transition-colors">
       {/* ------------------------------------------------------------------ */}
       {/* LEFT COLUMN: BRAND SHOWCASE & SOCIAL PROOF (DESKTOP ONLY)          */}
       {/* ------------------------------------------------------------------ */}
@@ -344,28 +344,28 @@ export default function LoginPage() {
       {/* ------------------------------------------------------------------ */}
       <div className="col-span-12 lg:col-span-7 xl:col-span-7 flex flex-col justify-center items-center p-6 sm:p-10 lg:p-12 relative min-h-screen">
         {/* Subtle decorative background blur for right side */}
-        <div className="absolute top-10 right-10 w-72 h-72 bg-ggc-gold/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 left-10 w-72 h-72 bg-emerald-100/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-10 right-10 w-72 h-72 bg-ggc-gold/10 dark:bg-ggc-gold/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 left-10 w-72 h-72 bg-emerald-100/60 dark:bg-emerald-950/20 rounded-full blur-3xl pointer-events-none" />
 
         {/* Mobile Header (Hidden on Desktop) */}
         <div className="lg:hidden mb-6 text-center w-full max-w-md">
           <BrandLogo variant="dark" size="md" href="/" />
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-2 text-xs text-gray-500 dark:text-[#A0B9AE]">
             Platform Evaluasi Study Fit Assessment™
           </p>
         </div>
 
         {/* Main Card */}
-        <div className="w-full max-w-md bg-white rounded-[2.5rem] p-7 sm:p-10 shadow-xl border border-gray-200/80 relative z-10">
+        <div className="w-full max-w-md bg-white dark:bg-[#062419] rounded-[2.5rem] p-7 sm:p-10 shadow-xl border border-gray-200/80 dark:border-[#103D2B] relative z-10 transition-colors">
           {/* Form Header */}
           <div className="mb-6">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ggc-gold-dark uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-ggc-gold-subtle border border-ggc-gold/30 mb-2">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ggc-gold-dark dark:text-ggc-gold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-ggc-gold-subtle dark:bg-ggc-gold/20 border border-ggc-gold/30 mb-2">
               <ShieldCheck className="w-3.5 h-3.5" /> Portal Akun Pengguna
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-ggc-dark tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-ggc-dark dark:text-white tracking-tight">
               Selamat Datang
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-[#A0B9AE] mt-1">
               Masuk untuk melanjutkan asesmen dan mengakses laporan hasil evaluasi Anda.
             </p>
           </div>
@@ -375,7 +375,7 @@ export default function LoginPage() {
             fallback={
               <div className="py-12 text-center">
                 <div className="w-8 h-8 border-3 border-ggc border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-xs text-gray-500 font-medium">Memuat form login...</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Memuat form login...</p>
               </div>
             }
           >
@@ -387,7 +387,7 @@ export default function LoginPage() {
         <div className="mt-6 text-center z-10">
           <Link
             href="/"
-            className="text-xs font-semibold text-gray-500 hover:text-ggc transition-colors inline-flex items-center gap-1.5"
+            className="text-xs font-semibold text-gray-500 dark:text-[#A0B9AE] hover:text-ggc dark:hover:text-ggc-gold transition-colors inline-flex items-center gap-1.5"
           >
             <span>← Kembali ke Halaman Utama</span>
           </Link>

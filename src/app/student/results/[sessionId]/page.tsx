@@ -1298,7 +1298,7 @@ export default function StudentResultsPage() {
       {/* ------------------------------------------------------------------ */}
       <aside
         aria-label="Aksi Cepat Hasil Asesmen"
-        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 p-3 pb-safe bg-white/95 backdrop-blur-md border-t border-gray-200/90 shadow-2xl transition-transform no-print"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 p-3 pb-safe bg-white/95 dark:bg-[#07261B]/95 backdrop-blur-md border-t border-gray-200/90 dark:border-[#0E4230] shadow-2xl transition-transform no-print"
       >
         <div className="flex items-center gap-2 max-w-md mx-auto">
           {selectedMajorsForCompare.length > 0 ? (
@@ -1324,9 +1324,9 @@ export default function StudentResultsPage() {
           <button
             type="button"
             onClick={handlePrintPage}
-            className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200 active:scale-98 text-xs transition-all"
+            className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl font-bold text-gray-800 dark:text-gray-100 bg-gray-100 dark:bg-[#0E3827] hover:bg-gray-200 dark:hover:bg-[#124832] border border-gray-200 dark:border-[#17523A] active:scale-98 text-xs transition-all"
           >
-            <Printer className="w-4 h-4 text-gray-700" />
+            <Printer className="w-4 h-4 text-gray-700 dark:text-gray-300" />
             <span>Cetak / PDF</span>
           </button>
         </div>

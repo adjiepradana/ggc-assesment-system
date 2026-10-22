@@ -96,6 +96,17 @@ export default function AdminStudentsPage() {
     loadStudents();
   }, [statusFilter]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (resetModalStudent && !isResetting) setResetModalStudent(null);
+        if (toggleActiveModalStudent && !isTogglingActive) setToggleActiveModalStudent(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [resetModalStudent, toggleActiveModalStudent, isResetting, isTogglingActive]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     loadStudents();
@@ -495,6 +506,10 @@ export default function AdminStudentsPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           role="dialog"
           aria-modal="true"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isResetting) setResetModalStudent(null);
+          }}
         >
           <div className="bg-white dark:bg-[#062419] rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-400 dark:border-amber-600 text-gray-900 dark:text-white animate-scale-in text-center">
             <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 flex items-center justify-center mx-auto mb-3">
@@ -553,6 +568,10 @@ export default function AdminStudentsPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           role="dialog"
           aria-modal="true"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isTogglingActive) setToggleActiveModalStudent(null);
+          }}
         >
           <div className="bg-white dark:bg-[#062419] rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-red-400 dark:border-red-800 text-gray-900 dark:text-white animate-scale-in text-center">
             <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-400 flex items-center justify-center mx-auto mb-3">

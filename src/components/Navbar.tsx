@@ -288,18 +288,18 @@ export default function Navbar() {
             <div className="px-5 py-6 space-y-6 max-w-lg mx-auto">
               {/* Authenticated User Profile Summary Card */}
               {status === "authenticated" && session?.user && (
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-ggc-subtle via-white to-ggc-gold-subtle border border-ggc/20 shadow-2xs flex items-center justify-between">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-ggc-subtle via-white to-ggc-gold-subtle dark:from-[#062419] dark:via-[#093525] dark:to-[#062419] border border-ggc/20 dark:border-[#103D2B] shadow-2xs flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-ggc text-ggc-gold font-bold flex items-center justify-center text-sm shadow-xs border border-white">
+                    <div className="w-11 h-11 rounded-xl bg-ggc text-ggc-gold font-bold flex items-center justify-center text-sm shadow-xs border border-white/20">
                       {session.user.name
                         ? session.user.name.charAt(0).toUpperCase()
                         : "U"}
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-ggc-dark truncate max-w-[190px]">
+                      <h4 className="text-sm font-black text-ggc-dark dark:text-white truncate max-w-[190px]">
                         {session.user.name || "Pengguna GGC"}
                       </h4>
-                      <p className="text-xs text-gray-500 truncate max-w-[190px]">
+                      <p className="text-xs text-gray-500 dark:text-[#A0B9AE] truncate max-w-[190px]">
                         {session.user.email}
                       </p>
                     </div>
@@ -307,8 +307,8 @@ export default function Navbar() {
                   <span
                     className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
                       isAdmin
-                        ? "bg-ggc-gold/20 text-ggc-gold-dark border border-ggc-gold/40"
-                        : "bg-ggc/10 text-ggc border border-ggc/20"
+                        ? "bg-ggc-gold/20 text-ggc-gold-dark dark:text-ggc-gold border border-ggc-gold/40"
+                        : "bg-ggc/10 dark:bg-emerald-950/60 text-ggc dark:text-emerald-300 border border-ggc/20 dark:border-emerald-800/40"
                     }`}
                   >
                     {isAdmin ? "Admin" : "Siswa"}
@@ -473,7 +473,7 @@ export default function Navbar() {
               </div>
 
               {/* Bottom Actions: Login / Register OR Logout */}
-              <div className="pt-3 border-t border-gray-100 space-y-3">
+              <div className="pt-3 border-t border-gray-100 dark:border-[#0E4230] space-y-3">
                 {status === "authenticated" ? (
                   <button
                     type="button"
@@ -481,7 +481,7 @@ export default function Navbar() {
                       setMobileMenuOpen(false);
                       signOut({ callbackUrl: "/auth/login" });
                     }}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/50 transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Keluar dari Akun</span>
@@ -499,7 +499,7 @@ export default function Navbar() {
                     <Link
                       href="/auth/login"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors"
+                      className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-[#C7DCD2] bg-gray-50 dark:bg-[#07261B] hover:bg-gray-100 dark:hover:bg-[#0A3324] border border-gray-200 dark:border-[#103D2B] transition-colors"
                     >
                       <span>Sudah Punya Akun? Masuk</span>
                     </Link>

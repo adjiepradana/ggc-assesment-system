@@ -237,6 +237,22 @@ export default function StudentAssessmentPage() {
     completedCount: number;
   } | null>(null);
 
+  const [modalTouchStartY, setModalTouchStartY] = useState<number | null>(null);
+
+  const handleModalTouchStart = (e: React.TouchEvent) => {
+    setModalTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleModalTouchEnd = (onClose: () => void) => (e: React.TouchEvent) => {
+    if (modalTouchStartY !== null) {
+      const deltaY = e.changedTouches[0].clientY - modalTouchStartY;
+      if (deltaY > 60) {
+        onClose();
+      }
+      setModalTouchStartY(null);
+    }
+  };
+
   const containerRef = useRef<HTMLDivElement>(null);
   const advanceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -1447,11 +1463,15 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {celebratingMilestone && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fadeIn"
           role="dialog"
           aria-modal="true"
           aria-labelledby="milestone-celebrate-title"
           aria-describedby="milestone-celebrate-desc"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleDismissMilestone();
+          }}
         >
           {/* Confetti Particles (CSS Animated) */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
@@ -1462,7 +1482,10 @@ export default function StudentAssessmentPage() {
             <div className="absolute top-10 left-2/3 w-3 h-3 bg-yellow-400 rotate-12 animate-confetti" style={{ animationDelay: "1.2s" }} />
           </div>
 
-          <div className="bg-white rounded-[2.5rem] max-w-lg w-full p-6 sm:p-10 shadow-2xl border-2 border-ggc-gold/50 text-center relative overflow-hidden animate-milestone-pop">
+          <div
+            className="bg-white dark:bg-[#062419] rounded-[2.5rem] max-w-lg w-full p-6 sm:p-10 shadow-2xl border-2 border-ggc-gold/50 text-center relative overflow-hidden animate-milestone-pop text-gray-900 dark:text-white"
+            style={{ overscrollBehavior: "contain" }}
+          >
             {/* Top Glow Orb */}
             <div className="absolute -top-16 -right-16 w-48 h-48 bg-ggc-gold/25 rounded-full blur-2xl pointer-events-none" />
 
@@ -1470,23 +1493,23 @@ export default function StudentAssessmentPage() {
               <Trophy className="w-10 h-10" />
             </div>
 
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-ggc-gold/15 text-ggc-gold-dark text-xs font-bold uppercase tracking-wider mb-2 border border-ggc-gold/30">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-ggc-gold/15 dark:bg-ggc-gold/25 text-ggc-gold-dark dark:text-ggc-gold text-xs font-bold uppercase tracking-wider mb-2 border border-ggc-gold/30">
               <Sparkles className="w-3.5 h-3.5" />
               Milestone Dimensi Tuntas!
             </span>
 
-            <h2 id="milestone-celebrate-title" className="text-2xl sm:text-3xl font-black text-ggc-dark tracking-tight">
+            <h2 id="milestone-celebrate-title" className="text-2xl sm:text-3xl font-black text-ggc-dark dark:text-white tracking-tight">
               {celebratingMilestone.dimensionBadge} Selesai!
             </h2>
 
-            <p id="milestone-celebrate-desc" className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
+            <p id="milestone-celebrate-desc" className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-2 leading-relaxed">
               &ldquo;{celebratingMilestone.quote}&rdquo;
             </p>
 
             {/* Achievement Card */}
-            <div className="my-6 p-4 rounded-2xl bg-ggc-tint border border-ggc-subtle flex items-center justify-between text-xs font-bold text-ggc-dark">
+            <div className="my-6 p-4 rounded-2xl bg-ggc-tint dark:bg-[#031810] border border-ggc-subtle dark:border-[#0E4230] flex items-center justify-between text-xs font-bold text-ggc-dark dark:text-white">
               <span>Progres Asesmen:</span>
-              <span className="text-emerald-700 font-extrabold text-sm">
+              <span className="text-emerald-700 dark:text-emerald-400 font-extrabold text-sm">
                 {celebratingMilestone.completedCount} / {totalQuestions} Soal ({Math.round((celebratingMilestone.completedCount / totalQuestions) * 100)}%)
               </span>
             </div>
@@ -1495,7 +1518,7 @@ export default function StudentAssessmentPage() {
               <button
                 type="button"
                 onClick={handleDismissMilestone}
-                className="w-full py-4 px-6 rounded-2xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.02] active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg"
+                className="w-full py-4 px-6 rounded-2xl text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-xl hover:scale-[1.02] active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
               >
                 <span>Lanjut ke Dimensi Berikutnya</span>
                 <ArrowRight className="w-4 h-4" />
@@ -1511,43 +1534,49 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {isPaletteOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 transition-opacity"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm p-0 sm:p-4 transition-opacity"
           role="dialog"
           aria-modal="true"
           aria-labelledby="palette-modal-title"
+          style={{ overscrollBehavior: "contain" }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsPaletteOpen(false);
           }}
         >
-          <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2rem] max-w-2xl w-full p-4 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/30 max-h-[85vh] sm:max-h-[90vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in">
+          <div
+            className="bg-white dark:bg-[#062419] rounded-t-[2.5rem] sm:rounded-[2rem] max-w-2xl w-full p-4 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/30 max-h-[85vh] sm:max-h-[90vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in text-gray-900 dark:text-white"
+            style={{ overscrollBehavior: "contain" }}
+          >
             {/* Mobile Drag Indicator Handle */}
             <div
               className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
+              onTouchStart={handleModalTouchStart}
+              onTouchEnd={handleModalTouchEnd(() => setIsPaletteOpen(false))}
               onClick={() => setIsPaletteOpen(false)}
             >
-              <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
-              <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
-                Ketuk untuk menutup
+              <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 active:bg-gray-400" />
+              <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
+                Geser ke bawah untuk menutup
               </span>
             </div>
 
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230]">
               <div>
                 <h2
                   id="palette-modal-title"
-                  className="text-lg sm:text-xl font-black text-ggc-dark flex items-center gap-2"
+                  className="text-lg sm:text-xl font-black text-ggc-dark dark:text-white flex items-center gap-2"
                 >
-                  <Grid className="w-5 h-5 text-ggc" />
+                  <Grid className="w-5 h-5 text-ggc dark:text-ggc-gold" />
                   Daftar Nomor Soal (84 Butir)
                 </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-[#A0B9AE] mt-0.5">
                   Klik nomor soal untuk melompat langsung ke soal yang diinginkan.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsPaletteOpen(false)}
-                className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm transition-colors"
+                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-gray-600 dark:text-gray-300 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
                 aria-label="Tutup daftar soal"
               >
                 <X className="w-4 h-4" />
@@ -1556,29 +1585,29 @@ export default function StudentAssessmentPage() {
 
             {/* Quick Action: Jump to Unanswered */}
             {unansweredQuestionNumbers.length > 0 && (
-              <div className="pt-3 pb-2 flex items-center justify-between gap-3 border-b border-gray-100">
-                <span className="text-xs text-gray-600">
+              <div className="pt-3 pb-2 flex items-center justify-between gap-3 border-b border-gray-100 dark:border-[#0E4230]">
+                <span className="text-xs text-gray-600 dark:text-[#A0B9AE]">
                   Tersisa <strong>{unansweredQuestionNumbers.length} butir</strong> belum terisi:
                 </span>
                 <button
                   type="button"
                   onClick={handleJumpToFirstUnanswered}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/40 transition-colors shadow-2xs cursor-pointer"
                 >
-                  <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                  <Zap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>Lompat ke Soal Belum Terisi (#{unansweredQuestionNumbers[0]})</span>
                 </button>
               </div>
             )}
 
             {/* Legend */}
-            <div className="flex flex-wrap items-center gap-4 py-3 text-xs text-gray-600 border-b border-gray-100">
+            <div className="flex flex-wrap items-center gap-4 py-3 text-xs text-gray-600 dark:text-[#A0B9AE] border-b border-gray-100 dark:border-[#0E4230]">
               <div className="flex items-center gap-1.5">
                 <span className="w-3.5 h-3.5 rounded-md bg-ggc" />
                 <span>Terjawab ({answeredCount})</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 rounded-md bg-gray-100 border border-gray-300" />
+                <span className="w-3.5 h-3.5 rounded-md bg-gray-100 dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B]" />
                 <span>Belum ({totalQuestions - answeredCount})</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -1597,12 +1626,12 @@ export default function StudentAssessmentPage() {
                 const secAnswered = secQuestions.filter((q) => answers[q.id] !== undefined).length;
 
                 return (
-                  <div key={secIdx} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
-                    <div className="text-xs font-bold text-ggc-dark mb-2.5 flex items-center justify-between">
+                  <div key={secIdx} className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                    <div className="text-xs font-bold text-ggc-dark dark:text-white mb-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span>Bagian {secIdx + 1}: {milestone.dimensionBadge}</span>
                       </div>
-                      <span className="text-[10px] text-gray-500 font-semibold tabular-nums">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold tabular-nums">
                         {secAnswered}/{QUESTIONS_PER_SECTION} Terisi
                       </span>
                     </div>
@@ -1616,12 +1645,12 @@ export default function StudentAssessmentPage() {
                             key={q.id}
                             type="button"
                             onClick={() => handleJumpToQuestion(q.number)}
-                            className={`h-9 rounded-xl text-xs font-black transition-all flex items-center justify-center border ${
+                            className={`h-9 rounded-xl text-xs font-black transition-all flex items-center justify-center border cursor-pointer ${
                               isCurrentActive
                                 ? "bg-ggc-gold text-ggc-dark border-ggc-gold ring-2 ring-ggc-gold-dark shadow-xs"
                                 : isAnswered
                                 ? "bg-ggc text-white border-ggc hover:bg-ggc-light"
-                                : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                                : "bg-white dark:bg-[#07261B] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-[#103D2B] hover:border-gray-400"
                             }`}
                           >
                             {q.number}
@@ -1634,11 +1663,11 @@ export default function StudentAssessmentPage() {
               })}
             </div>
 
-            <div className="pt-4 border-t border-gray-100 flex justify-end">
+            <div className="pt-4 border-t border-gray-100 dark:border-[#0E4230] flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsPaletteOpen(false)}
-                className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light transition-all"
+                className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light transition-all cursor-pointer"
               >
                 Tutup Palet Soal [Esc]
               </button>
@@ -1652,69 +1681,76 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {isKeyboardHelpOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           role="dialog"
           aria-modal="true"
           aria-labelledby="keyboard-help-title"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsKeyboardHelpOpen(false);
+          }}
         >
-          <div className="bg-white rounded-[2rem] max-w-md w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+          <div
+            className="bg-white dark:bg-[#062419] rounded-[2rem] max-w-md w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30 text-gray-900 dark:text-white"
+            style={{ overscrollBehavior: "contain" }}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230]">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center shrink-0">
                   <Keyboard className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 id="keyboard-help-title" className="text-lg font-black text-ggc-dark">
+                  <h2 id="keyboard-help-title" className="text-lg font-black text-ggc-dark dark:text-white">
                     Shortcut Keyboard
                   </h2>
-                  <p className="text-xs text-gray-500">Mengerjakan asesmen lebih cepat tanpa mouse</p>
+                  <p className="text-xs text-gray-500 dark:text-[#A0B9AE]">Mengerjakan asesmen lebih cepat tanpa mouse</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsKeyboardHelpOpen(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-gray-600 dark:text-gray-300 flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="py-4 space-y-2.5 text-xs">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="font-semibold text-gray-700">Pilih Skala Jawaban (1 s/d 5)</span>
-                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">1, 2, 3, 4, 5</span>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Pilih Skala Jawaban (1 s/d 5)</span>
+                <span className="px-2 py-1 rounded bg-white dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B] font-mono font-bold text-ggc-dark dark:text-ggc-gold">1, 2, 3, 4, 5</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="font-semibold text-gray-700">Soal Sebelumnya</span>
-                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">A / ←</span>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Soal Sebelumnya</span>
+                <span className="px-2 py-1 rounded bg-white dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B] font-mono font-bold text-ggc-dark dark:text-ggc-gold">A / ←</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="font-semibold text-gray-700">Soal Berikutnya</span>
-                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">D / →</span>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Soal Berikutnya</span>
+                <span className="px-2 py-1 rounded bg-white dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B] font-mono font-bold text-ggc-dark dark:text-ggc-gold">D / →</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="font-semibold text-gray-700">Ganti Mode (Fokus / Daftar)</span>
-                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">F</span>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Ganti Mode (Fokus / Daftar)</span>
+                <span className="px-2 py-1 rounded bg-white dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B] font-mono font-bold text-ggc-dark dark:text-ggc-gold">F</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="font-semibold text-gray-700">Buka Palet 84 Nomor Soal</span>
-                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">P</span>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Buka Palet 84 Nomor Soal</span>
+                <span className="px-2 py-1 rounded bg-white dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B] font-mono font-bold text-ggc-dark dark:text-ggc-gold">P</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="font-semibold text-gray-700">Toggle Efek Suara (Audio)</span>
-                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">S</span>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Toggle Efek Suara (Audio)</span>
+                <span className="px-2 py-1 rounded bg-white dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B] font-mono font-bold text-ggc-dark dark:text-ggc-gold">S</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="font-semibold text-gray-700">Tutup Dialog / Batal</span>
-                <span className="px-2 py-1 rounded bg-white border border-gray-300 font-mono font-bold text-ggc-dark">Esc</span>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-[#031810] border border-gray-100 dark:border-[#0E4230]">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Tutup Dialog / Batal</span>
+                <span className="px-2 py-1 rounded bg-white dark:bg-[#07261B] border border-gray-300 dark:border-[#103D2B] font-mono font-bold text-ggc-dark dark:text-ggc-gold">Esc</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-gray-100 flex justify-end">
+            <div className="pt-3 border-t border-gray-100 dark:border-[#0E4230] flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsKeyboardHelpOpen(false)}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light transition-all text-center"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light transition-all text-center cursor-pointer"
               >
                 Mengerti
               </button>
@@ -1728,49 +1764,57 @@ export default function StudentAssessmentPage() {
       {/* ------------------------------------------------------------------ */}
       {isSubmitModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 transition-opacity"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm p-0 sm:p-4 transition-opacity"
           role="dialog"
           aria-modal="true"
           aria-labelledby="submit-modal-title"
+          style={{ overscrollBehavior: "contain" }}
           onClick={(e) => {
             if (e.target === e.currentTarget && !isSubmitting) setIsSubmitModalOpen(false);
           }}
         >
-          <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2rem] max-w-lg w-full p-5 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/30 animate-slide-up-sheet sm:animate-scale-in">
+          <div
+            className="bg-white dark:bg-[#062419] rounded-t-[2.5rem] sm:rounded-[2rem] max-w-lg w-full p-5 pb-safe sm:p-8 shadow-2xl border-t-2 sm:border border-ggc-gold/30 animate-slide-up-sheet sm:animate-scale-in text-gray-900 dark:text-white"
+            style={{ overscrollBehavior: "contain" }}
+          >
             {/* Mobile Drag Indicator Handle */}
             <div
               className="sm:hidden flex flex-col items-center justify-center pt-1 pb-2 cursor-grab shrink-0 select-none touch-none"
+              onTouchStart={handleModalTouchStart}
+              onTouchEnd={handleModalTouchEnd(() => {
+                if (!isSubmitting) setIsSubmitModalOpen(false);
+              })}
               onClick={() => {
                 if (!isSubmitting) setIsSubmitModalOpen(false);
               }}
             >
-              <div className="w-12 h-1.5 rounded-full bg-gray-300 active:bg-gray-400" />
-              <span className="text-[10px] font-semibold text-gray-400 mt-1 uppercase tracking-wider">
-                Ketuk untuk menutup
+              <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 active:bg-gray-400" />
+              <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-1 uppercase tracking-wider">
+                Geser ke bawah untuk menutup
               </span>
             </div>
 
             <div className="text-center mb-5 sm:mb-6">
-              <div className="w-16 h-16 rounded-3xl bg-ggc-gold/20 text-ggc-gold-dark flex items-center justify-center mx-auto mb-3 border border-ggc-gold/30 shadow-xs">
+              <div className="w-16 h-16 rounded-3xl bg-ggc-gold/20 text-ggc-gold-dark dark:text-ggc-gold flex items-center justify-center mx-auto mb-3 border border-ggc-gold/30 shadow-xs">
                 <Send className="w-8 h-8" />
               </div>
-              <h2 id="submit-modal-title" className="text-xl sm:text-2xl font-black text-ggc-dark">
+              <h2 id="submit-modal-title" className="text-xl sm:text-2xl font-black text-ggc-dark dark:text-white">
                 Konfirmasi Penyelesaian Asesmen
               </h2>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-[#A0B9AE] mt-1">
                 Pastikan seluruh 84 butir instrumen telah terisi dengan cermat.
               </p>
             </div>
 
             {/* Status Summary Box */}
-            <div className="p-5 rounded-2xl bg-ggc-tint/70 border border-ggc-subtle mb-6">
-              <div className="flex items-center justify-between text-xs font-bold text-ggc-dark mb-2">
+            <div className="p-5 rounded-2xl bg-ggc-tint/70 dark:bg-[#031810] border border-ggc-subtle dark:border-[#0E4230] mb-6">
+              <div className="flex items-center justify-between text-xs font-bold text-ggc-dark dark:text-white mb-2">
                 <span>Status Kelengkapan:</span>
-                <span className={answeredCount === totalQuestions ? "text-emerald-700" : "text-amber-700"}>
+                <span className={answeredCount === totalQuestions ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}>
                   {answeredCount} / {totalQuestions} Soal ({progressPercent}%)
                 </span>
               </div>
-              <div className="w-full h-2.5 rounded-full bg-gray-200 overflow-hidden">
+              <div className="w-full h-2.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-ggc to-ggc-gold rounded-full"
                   style={{ width: `${progressPercent}%` }}
@@ -1778,16 +1822,16 @@ export default function StudentAssessmentPage() {
               </div>
 
               {answeredCount < totalQuestions ? (
-                <div className="mt-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                <div className="mt-4 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-300 text-xs flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
                   <div>
                     <strong>Perhatian:</strong> Masih ada{" "}
                     <strong>{totalQuestions - answeredCount} butir soal</strong> yang belum Anda isi. Disarankan untuk melengkapi seluruh soal agar skor multi-matriks dan rekomendasi jurusan Anda 100% akurat.
                   </div>
                 </div>
               ) : (
-                <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Luar biasa! Seluruh 84 butir soal telah lengkap terjawab dan siap dikalkulasi.</span>
                 </div>
               )}
@@ -1795,8 +1839,8 @@ export default function StudentAssessmentPage() {
 
             {/* Error message if API error */}
             {error && (
-              <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="mb-4 p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
@@ -1807,7 +1851,7 @@ export default function StudentAssessmentPage() {
                 type="button"
                 onClick={() => setIsSubmitModalOpen(false)}
                 disabled={isSubmitting}
-                className="w-full sm:w-1/2 py-3.5 px-4 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all text-center"
+                className="w-full sm:w-1/2 py-3.5 px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] transition-all text-center cursor-pointer border border-transparent dark:border-[#103D2B]"
               >
                 Cek Kembali Soal
               </button>
@@ -1815,7 +1859,7 @@ export default function StudentAssessmentPage() {
                 type="button"
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
-                className="w-full sm:w-1/2 py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-60"
+                className="w-full sm:w-1/2 py-3.5 px-4 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light active:bg-ggc-dark transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-60 cursor-pointer"
               >
                 {isSubmitting ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

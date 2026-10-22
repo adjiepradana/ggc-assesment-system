@@ -61,7 +61,7 @@ export default function ThemeToggle() {
   return (
     <aside
       aria-label="Pengaturan Mode Tampilan"
-      className="no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50"
+      className="no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40"
     >
       <button
         type="button"

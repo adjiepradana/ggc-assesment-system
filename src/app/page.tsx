@@ -681,47 +681,47 @@ export default function HomePage() {
       </section>
 
       {/* ================= FRIENDLY BEFORE VS AFTER TRANSFORMATION ================= */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-[#FAFBF9] via-white to-ggc-subtle/30 border-b border-ggc-subtle relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-gradient-to-b from-[#FAFBF9] via-white to-ggc-subtle/30 dark:from-[#031810] dark:via-[#052016] dark:to-[#031810] border-b border-ggc-subtle dark:border-[#0E4230] relative overflow-hidden transition-colors">
         {/* Parallax Ambient Orbs */}
         <div
-          className="absolute top-1/3 -left-32 w-96 h-96 bg-emerald-200/25 rounded-full blur-3xl pointer-events-none parallax-layer-slow"
+          className="absolute top-1/3 -left-32 w-96 h-96 bg-emerald-200/25 dark:bg-emerald-900/20 rounded-full blur-3xl pointer-events-none parallax-layer-slow"
           style={{ transform: `translateY(${scrollY * 0.08}px)` }}
           aria-hidden="true"
         />
         <div
-          className="absolute bottom-10 -right-32 w-96 h-96 bg-ggc-gold/20 rounded-full blur-3xl pointer-events-none parallax-layer-medium"
+          className="absolute bottom-10 -right-32 w-96 h-96 bg-ggc-gold/20 dark:bg-ggc-gold/10 rounded-full blur-3xl pointer-events-none parallax-layer-medium"
           style={{ transform: `translateY(${scrollY * -0.1}px)` }}
           aria-hidden="true"
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider border border-emerald-200">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-800/40">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               Transformasi Siswa Indonesia
             </span>
-            <h2 className="fluid-section-title font-black text-ggc-dark mt-3 tracking-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark dark:text-white mt-3 tracking-tight">
               Say Goodbye to Galau Jurusan! 👋
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-600 dark:text-[#A0B9AE] mt-3 leading-relaxed">
               Lihat bagaimana ribuan siswa SMA & SMK beralih dari rasa cemas menjadi mantap 100% melangkah ke bangku kuliah impian.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {/* Before Card */}
-            <div className="p-7 sm:p-9 rounded-3xl bg-white border border-red-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
+            <div className="p-7 sm:p-9 rounded-3xl bg-white dark:bg-[#07261B] border border-red-100 dark:border-red-950/60 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-2xl font-bold mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl font-bold mb-5">
                   😰
                 </div>
-                <div className="inline-block px-3 py-1 rounded-md bg-red-100/80 text-red-800 text-xs font-bold uppercase tracking-wide mb-3">
+                <div className="inline-block px-3 py-1 rounded-md bg-red-100/80 dark:bg-red-950/80 text-red-800 dark:text-red-300 text-xs font-bold uppercase tracking-wide mb-3 border border-red-200/50 dark:border-red-900/40">
                   Sebelum Asesmen GGC
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-4">
+                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4">
                   Bingung, Ragu, & Ikut-ikutan Tren
                 </h3>
-                <ul className="space-y-3 text-sm text-gray-600">
+                <ul className="space-y-3 text-sm text-gray-600 dark:text-[#C7DCD2]">
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 font-black text-sm">✕</span>
                     <span>Pilih jurusan sekadar ikut-ikutan teman atau terbawa opini viral sesaat.</span>
@@ -741,45 +741,45 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-gray-100 text-xs text-red-700 font-semibold flex items-center gap-1.5">
+              <div className="mt-8 pt-4 border-t border-gray-100 dark:border-[#103D2B] text-xs text-red-700 dark:text-red-400 font-semibold flex items-center gap-1.5">
                 <span>Rentan demotivasi dan pindah jurusan di tengah jalan</span>
               </div>
             </div>
 
             {/* After Card (Gold & Emerald Luxury Glow) */}
-            <div className="p-7 sm:p-9 rounded-3xl bg-gradient-to-br from-white via-emerald-50/40 to-ggc-gold-subtle/40 border-2 border-emerald-300 shadow-lg hover:shadow-xl transition-all relative overflow-hidden flex flex-col justify-between">
+            <div className="p-7 sm:p-9 rounded-3xl bg-gradient-to-br from-white via-emerald-50/40 to-ggc-gold-subtle/40 dark:from-[#062419] dark:via-[#093525] dark:to-[#07261B] border-2 border-emerald-300 dark:border-emerald-700/60 shadow-lg hover:shadow-xl transition-all relative overflow-hidden flex flex-col justify-between">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-bold mb-5 shadow-xs">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-2xl font-bold mb-5 shadow-xs">
                   🤩
                 </div>
-                <div className="inline-block px-3 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wide mb-3">
+                <div className="inline-block px-3 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wide mb-3 border border-emerald-200 dark:border-emerald-800/40">
                   Setelah Study Fit Assessment™
                 </div>
-                <h3 className="text-xl font-black text-ggc-dark mb-4">
+                <h3 className="text-xl font-black text-ggc-dark dark:text-white mb-4">
                   Penuh Keyakinan, Terarah, & Percaya Diri
                 </h3>
-                <ul className="space-y-3 text-sm text-gray-700">
+                <ul className="space-y-3 text-sm text-gray-700 dark:text-[#E8F1EC]">
                   <li className="flex items-start gap-3">
-                    <span className="text-emerald-600 font-black text-sm">✓</span>
-                    <span>Tahu pasti potensi kognitif dan arketipe <strong>Potential Signature</strong> unikmu.</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">✓</span>
+                    <span>Tahu pasti potensi kognitif dan arketipe <strong className="text-ggc-dark dark:text-ggc-gold">Potential Signature</strong> unikmu.</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-emerald-600 font-black text-sm">✓</span>
-                    <span>Menerima rekomendasi <strong>Top 5 Jurusan</strong> berbobot kurikulum perguruan tinggi.</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">✓</span>
+                    <span>Menerima rekomendasi <strong className="text-ggc-dark dark:text-ggc-gold">Top 5 Jurusan</strong> berbobot kurikulum perguruan tinggi.</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-emerald-600 font-black text-sm">✓</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">✓</span>
                     <span>Laporan PDF Resmi siap didiskusikan bersama orang tua dan Guru BK sekolah.</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-emerald-600 font-black text-sm">✓</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">✓</span>
                     <span>Paham prospek karier relevan dan siap menghadapi seleksi masuk kampus impian!</span>
                   </li>
                 </ul>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-emerald-200 text-xs text-emerald-800 font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <div className="mt-8 pt-4 border-t border-emerald-200 dark:border-emerald-800/50 text-xs text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Siap melangkah mantap menuju kampus dan karier masa depan</span>
               </div>
             </div>
@@ -788,17 +788,17 @@ export default function HomePage() {
       </section>
 
       {/* ================= BENTO GRID: KEY FEATURES & ADVANTAGES ================= */}
-      <section id="fitur" className="py-20 bg-white border-b border-ggc-subtle">
+      <section id="fitur" className="py-20 bg-white dark:bg-[#031810] border-b border-ggc-subtle dark:border-[#0E4230] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/15 text-ggc-gold-dark text-xs font-bold uppercase tracking-wider border border-ggc-gold/30">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ggc-gold/15 dark:bg-ggc-gold/25 text-ggc-gold-dark dark:text-ggc-gold text-xs font-bold uppercase tracking-wider border border-ggc-gold/30">
               <Sparkles className="w-3.5 h-3.5" />
               Keunggulan Sistem Asesmen GGC
             </span>
-            <h2 className="fluid-section-title font-black text-ggc-dark mt-3 tracking-tight">
+            <h2 className="fluid-section-title font-black text-ggc-dark dark:text-white mt-3 tracking-tight">
               Mengapa GGC Study Fit Assessment™ Berbeda?
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 mt-4 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-600 dark:text-[#A0B9AE] mt-4 leading-relaxed">
               Bukan sekadar kuis kepribadian biasa. Sistem kami dibangun di atas riset psikometri mendalam yang menghubungkan potensi kognitif personal dengan kurikulum program studi perguruan tinggi.
             </p>
           </div>
@@ -806,77 +806,77 @@ export default function HomePage() {
           {/* Bento Grid with Spotlight Glow Effect */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {/* Feature 1 */}
-            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 hover:border-ggc/40 hover:shadow-xl transition-all flex flex-col justify-between">
+            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] dark:bg-[#07261B] border border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/40 hover:shadow-xl transition-all flex flex-col justify-between">
               <div>
                 <div className="w-14 h-14 rounded-2xl bg-ggc text-ggc-gold flex items-center justify-center mb-6 shadow-md group-hover:scale-110 transition-transform">
                   <BarChart3 className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-bold text-ggc-dark">
+                <h3 className="text-lg font-bold text-ggc-dark dark:text-white">
                   Multi-Matrix Scoring Engine
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2.5 leading-relaxed">
-                  Memadukan <strong>Person Profile</strong> (bakat alami & kepribadian) dengan <strong>Study Profile</strong> berbobot multidimensi untuk menghitung tingkat kecocokan ilmiah.
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-2.5 leading-relaxed">
+                  Memadukan <strong className="dark:text-white">Person Profile</strong> (bakat alami & kepribadian) dengan <strong className="dark:text-white">Study Profile</strong> berbobot multidimensi untuk menghitung tingkat kecocokan ilmiah.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-gray-200 text-xs font-semibold text-ggc flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600" />
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-[#103D2B] text-xs font-semibold text-ggc dark:text-ggc-gold flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Bebas tebak-tebakan jurusan</span>
               </div>
             </SpotlightCard>
 
             {/* Feature 2 */}
-            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 hover:border-ggc/40 hover:shadow-xl transition-all flex flex-col justify-between">
+            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] dark:bg-[#07261B] border border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/40 hover:shadow-xl transition-all flex flex-col justify-between">
               <div>
                 <div className="w-14 h-14 rounded-2xl bg-ggc-gold text-ggc-dark flex items-center justify-center mb-6 shadow-md group-hover:scale-110 transition-transform">
                   <Shuffle className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-bold text-ggc-dark">
+                <h3 className="text-lg font-bold text-ggc-dark dark:text-white">
                   84 Butir Soal Teracak (Zero-Bias)
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2.5 leading-relaxed">
-                  Seluruh butir soal disajikan secara teracak deterministik tanpa label kategori, mencegah bias manipulasi jawaban (*social desirability bias*) agar hasil 100% autentik.
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-2.5 leading-relaxed">
+                  Seluruh butir soal disajikan secara teracak deterministik tanpa label kategori, mencegah bias manipulasi jawaban (<em>social desirability bias</em>) agar hasil 100% autentik.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-gray-200 text-xs font-semibold text-ggc flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600" />
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-[#103D2B] text-xs font-semibold text-ggc dark:text-ggc-gold flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Konsistensi seed terjamin</span>
               </div>
             </SpotlightCard>
 
             {/* Feature 3 */}
-            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 hover:border-ggc/40 hover:shadow-xl transition-all flex flex-col justify-between">
+            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] dark:bg-[#07261B] border border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/40 hover:shadow-xl transition-all flex flex-col justify-between">
               <div>
                 <div className="w-14 h-14 rounded-2xl bg-ggc-light text-white flex items-center justify-center mb-6 shadow-md group-hover:scale-110 transition-transform">
                   <Compass className="w-7 h-7 text-ggc-gold" />
                 </div>
-                <h3 className="text-lg font-bold text-ggc-dark">
+                <h3 className="text-lg font-bold text-ggc-dark dark:text-white">
                   Wawasan Naratif Ganda
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2.5 leading-relaxed">
-                  Bukan hanya menyajikan skor, sistem merangkum analisis mendalam <em>"Mengapa Cocok?"</em> serta mitigasi dini <em>"Hal yang Perlu Diantisipasi"</em> di tiap jurusan.
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-2.5 leading-relaxed">
+                  Bukan hanya menyajikan skor, sistem merangkum analisis mendalam <em>&ldquo;Mengapa Cocok?&rdquo;</em> serta mitigasi dini <em>&ldquo;Hal yang Perlu Diantisipasi&rdquo;</em> di tiap jurusan.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-gray-200 text-xs font-semibold text-ggc flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600" />
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-[#103D2B] text-xs font-semibold text-ggc dark:text-ggc-gold flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Panduan antisipasi kuliah</span>
               </div>
             </SpotlightCard>
 
             {/* Feature 4 */}
-            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] border border-gray-200/90 hover:border-ggc/40 hover:shadow-xl transition-all flex flex-col justify-between">
+            <SpotlightCard className="p-7 rounded-3xl bg-[#FAFBF9] dark:bg-[#07261B] border border-gray-200/90 dark:border-[#103D2B] hover:border-ggc/40 dark:hover:border-ggc-gold/40 hover:shadow-xl transition-all flex flex-col justify-between">
               <div>
                 <div className="w-14 h-14 rounded-2xl bg-ggc-dark text-ggc-gold flex items-center justify-center mb-6 shadow-md group-hover:scale-110 transition-transform">
                   <FileText className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-bold text-ggc-dark">
+                <h3 className="text-lg font-bold text-ggc-dark dark:text-white">
                   Laporan PDF Resmi Eksekutif
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2.5 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#A0B9AE] mt-2.5 leading-relaxed">
                   Unduh seketika sertifikat dan laporan PDF 2 halaman resmi bertanda tangan GGC untuk bahan konsultasi strategis bersama orang tua dan guru Bimbingan Konseling (BK).
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-gray-200 text-xs font-semibold text-ggc flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600" />
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-[#103D2B] text-xs font-semibold text-ggc dark:text-ggc-gold flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Format siap cetak (A4)</span>
               </div>
             </SpotlightCard>

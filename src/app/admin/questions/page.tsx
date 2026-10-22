@@ -87,6 +87,17 @@ function QuestionCmsContent() {
     fetchQuestions();
   }, [selectedCategory]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isAddModalOpen && !isSubmitting) setIsAddModalOpen(false);
+        if (editingQuestion && !isSubmitting) setEditingQuestion(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isAddModalOpen, editingQuestion, isSubmitting]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchQuestions();
@@ -341,24 +352,35 @@ function QuestionCmsContent() {
 
       {/* ================= MODAL TAMBAH SOAL BARU ================= */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
-              <h3 className="text-lg font-black text-ggc-dark flex items-center gap-2">
-                <Plus className="w-5 h-5 text-ggc" />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmitting) setIsAddModalOpen(false);
+          }}
+        >
+          <div
+            className="bg-white dark:bg-[#062419] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30 text-gray-900 dark:text-white animate-scale-in"
+            style={{ overscrollBehavior: "contain" }}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230] mb-4">
+              <h3 className="text-lg font-black text-ggc-dark dark:text-white flex items-center gap-2">
+                <Plus className="w-5 h-5 text-ggc dark:text-ggc-gold" />
                 Tambah Butir Soal Baru
               </h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm"
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-gray-600 dark:text-gray-300 flex items-center justify-center font-bold text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             {feedbackMsg && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
                 <span>{feedbackMsg.text}</span>
               </div>
             )}
@@ -366,7 +388,7 @@ function QuestionCmsContent() {
             <form onSubmit={handleAddQuestion} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-ggc-dark mb-1">
+                  <label className="block text-xs font-bold text-ggc-dark dark:text-white mb-1">
                     Kode Unik Soal *
                   </label>
                   <input
@@ -377,12 +399,12 @@ function QuestionCmsContent() {
                     onChange={(e) =>
                       setNewQuestionForm({ ...newQuestionForm, code: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 uppercase font-mono"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-[#103D2B] bg-white dark:bg-[#031810] text-gray-900 dark:text-white uppercase font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-ggc-dark mb-1">
+                  <label className="block text-xs font-bold text-ggc-dark dark:text-white mb-1">
                     Dimensi Kategori *
                   </label>
                   <select
@@ -393,7 +415,7 @@ function QuestionCmsContent() {
                         dimension_category: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-[#103D2B] bg-white dark:bg-[#031810] text-gray-900 dark:text-white"
                   >
                     <option value="TALENT">Talent (Bakat)</option>
                     <option value="INTEREST">Interest (Minat)</option>
@@ -407,7 +429,7 @@ function QuestionCmsContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-ggc-dark mb-1">
+                <label className="block text-xs font-bold text-ggc-dark dark:text-white mb-1">
                   Subdimensi Penilaian *
                 </label>
                 <input
@@ -418,12 +440,12 @@ function QuestionCmsContent() {
                   onChange={(e) =>
                     setNewQuestionForm({ ...newQuestionForm, subdimensi: e.target.value })
                   }
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-[#103D2B] bg-white dark:bg-[#031810] text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-ggc-dark mb-1">
+                <label className="block text-xs font-bold text-ggc-dark dark:text-white mb-1">
                   Teks Pernyataan Soal *
                 </label>
                 <textarea
@@ -437,7 +459,7 @@ function QuestionCmsContent() {
                       question_text: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 leading-relaxed"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-[#103D2B] bg-white dark:bg-[#031810] text-gray-900 dark:text-white leading-relaxed"
                 />
               </div>
 
@@ -445,14 +467,14 @@ function QuestionCmsContent() {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
+                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md disabled:opacity-60"
+                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md disabled:opacity-60 cursor-pointer transition-all"
                 >
                   {isSubmitting ? "Menyimpan..." : "Simpan Soal"}
                 </button>
@@ -464,16 +486,27 @@ function QuestionCmsContent() {
 
       {/* ================= MODAL EDIT SOAL ================= */}
       {editingQuestion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
-              <h3 className="text-lg font-black text-ggc-dark flex items-center gap-2">
-                <Edit2 className="w-5 h-5 text-ggc" />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmitting) setEditingQuestion(null);
+          }}
+        >
+          <div
+            className="bg-white dark:bg-[#062419] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ggc-gold/30 text-gray-900 dark:text-white animate-scale-in"
+            style={{ overscrollBehavior: "contain" }}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230] mb-4">
+              <h3 className="text-lg font-black text-ggc-dark dark:text-white flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-ggc dark:text-ggc-gold" />
                 Edit Butir Soal ({editingQuestion.code})
               </h3>
               <button
                 onClick={() => setEditingQuestion(null)}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm"
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] text-gray-600 dark:text-gray-300 flex items-center justify-center font-bold text-sm cursor-pointer"
               >
                 ✕
               </button>
@@ -481,7 +514,7 @@ function QuestionCmsContent() {
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-ggc-dark mb-1">
+                <label className="block text-xs font-bold text-ggc-dark dark:text-white mb-1">
                   Subdimensi Penilaian
                 </label>
                 <input
@@ -491,12 +524,12 @@ function QuestionCmsContent() {
                   onChange={(e) =>
                     setEditingQuestion({ ...editingQuestion, subdimensi: e.target.value })
                   }
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-[#103D2B] bg-white dark:bg-[#031810] text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-ggc-dark mb-1">
+                <label className="block text-xs font-bold text-ggc-dark dark:text-white mb-1">
                   Teks Pernyataan Instrumen
                 </label>
                 <textarea
@@ -509,7 +542,7 @@ function QuestionCmsContent() {
                       question_text: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 leading-relaxed"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-[#103D2B] bg-white dark:bg-[#031810] text-gray-900 dark:text-white leading-relaxed"
                 />
               </div>
 
@@ -517,14 +550,14 @@ function QuestionCmsContent() {
                 <button
                   type="button"
                   onClick={() => setEditingQuestion(null)}
-                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
+                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#082E20] hover:bg-gray-200 dark:hover:bg-[#0C3E2B] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md disabled:opacity-60"
+                  className="w-1/2 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md disabled:opacity-60 cursor-pointer transition-all"
                 >
                   {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>

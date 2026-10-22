@@ -103,6 +103,18 @@ export default function AccessCodesPage() {
     loadCodes();
   }, [statusFilter]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isGenerateModalOpen && !isGenerating) setIsGenerateModalOpen(false);
+        if (generatedResultModal) setGeneratedResultModal(null);
+        if (deletingId && !isDeleting) setDeletingId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isGenerateModalOpen, generatedResultModal, deletingId, isGenerating, isDeleting]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     loadCodes();
@@ -528,6 +540,10 @@ export default function AccessCodesPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           role="dialog"
           aria-modal="true"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isGenerating) setIsGenerateModalOpen(false);
+          }}
         >
           <div className="bg-white dark:bg-[#062419] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-ggc-gold/40 text-gray-900 dark:text-white animate-scale-in">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#0E4230]">
@@ -642,6 +658,10 @@ export default function AccessCodesPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           role="dialog"
           aria-modal="true"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setGeneratedResultModal(null);
+          }}
         >
           <div className="bg-white dark:bg-[#062419] rounded-3xl max-w-lg w-full p-6 shadow-2xl border-2 border-ggc-gold/60 text-gray-900 dark:text-white animate-scale-in">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#0E4230]">
@@ -717,6 +737,10 @@ export default function AccessCodesPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           role="dialog"
           aria-modal="true"
+          style={{ overscrollBehavior: "contain" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) setDeletingId(null);
+          }}
         >
           <div className="bg-white dark:bg-[#062419] rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-red-200 dark:border-red-900/50 text-gray-900 dark:text-white animate-scale-in text-center">
             <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto mb-3">
