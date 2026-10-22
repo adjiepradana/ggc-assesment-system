@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { sendVerificationEmail } from "@/lib/mail";
 
 export const dynamic = "force-dynamic";
 
@@ -49,14 +51,14 @@ export async function POST(req: Request) {
     // 3. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Create new student user & profile
+    // 4. Create new student user & profile with email_verified: false
     const newUser = await prisma.user.create({
       data: {
         email: trimmedEmail,
         password_hash: hashedPassword,
         role: "STUDENT",
         is_active: true,
-        email_verified: true,
+        email_verified: false,
         profile: {
           create: {
             full_name: full_name.trim(),
@@ -71,9 +73,33 @@ export async function POST(req: Request) {
       },
     });
 
+    // 5. Generate secure 24-hour verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await prisma.verificationToken.create({
+      data: {
+        token: verificationToken,
+        user_id: newUser.id,
+        expires_at: expiresAt,
+      },
+    });
+
+    // 6. Send verification email via Gmail SMTP Nodemailer
+    try {
+      const emailResult = await sendVerificationEmail(
+        trimmedEmail,
+        full_name.trim(),
+        verificationToken
+      );
+      console.log(`📧 Verification email sent to ${trimmedEmail}:`, emailResult);
+    } catch (emailErr) {
+      console.warn("⚠️ Failed sending verification email during registration:", emailErr);
+    }
+
     return NextResponse.json(
       {
-        message: "Akun berhasil didaftarkan. Selamat datang di Go Great Career!",
+        message: "Akun berhasil didaftarkan. Email verifikasi telah dikirimkan ke kotak masuk Anda.",
         user: {
           id: newUser.id,
           email: newUser.email,

@@ -36,8 +36,10 @@ import {
   Printer,
   Lock,
   CreditCard,
+  Mail,
 } from "lucide-react";
 import { checkUserPaidAccess } from "@/lib/access-check";
+import ResendVerificationButton from "@/components/ResendVerificationButton";
 
 export default async function StudentDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -56,6 +58,7 @@ export default async function StudentDashboardPage() {
     R: 0,
   };
   let hasPaidAccess = false;
+  let isEmailVerified = true;
 
   if (session?.user?.id) {
     try {
@@ -85,6 +88,7 @@ export default async function StudentDashboardPage() {
 
       userProfile = user?.profile;
       activeSession = user?.sessions[0] || null;
+      isEmailVerified = user?.email_verified ?? true;
 
       if (activeSession?.answers) {
         totalAnswers = activeSession.answers.length;
@@ -318,6 +322,26 @@ export default async function StudentDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Email Verification Alert Banner (if not yet verified) */}
+      {!isEmailVerified && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+              <Mail className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-amber-950 dark:text-amber-200">
+                Email Anda Belum Terverifikasi
+              </h4>
+              <p className="text-xs text-amber-800/90 dark:text-amber-300/80 mt-0.5">
+                Silakan periksa kotak masuk atau folder spam email Anda ({session?.user?.email}). Klik tautan di dalam email untuk mengaktifkan akun secara penuh.
+              </p>
+            </div>
+          </div>
+          <ResendVerificationButton email={session?.user?.email || ""} />
+        </div>
+      )}
 
       {/* ================= 3. 4-GRID QUICK KPI STATS ================= */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
