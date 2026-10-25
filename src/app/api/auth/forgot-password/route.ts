@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/mail";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -113,11 +114,13 @@ export async function POST(req: Request) {
     // 6. Send email with reset link
     const recipientName =
       user.profile?.full_name || trimmedEmail.split("@")[0];
+    const origin = getRequestOrigin(req);
 
     const emailResult = await sendPasswordResetEmail(
       trimmedEmail,
       recipientName,
-      token
+      token,
+      origin
     );
 
     if (!emailResult.success) {

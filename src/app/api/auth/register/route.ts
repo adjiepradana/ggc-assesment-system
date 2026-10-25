@@ -3,6 +3,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/mail";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -87,10 +88,12 @@ export async function POST(req: Request) {
 
     // 6. Send verification email via Gmail SMTP Nodemailer
     try {
+      const origin = getRequestOrigin(req);
       const emailResult = await sendVerificationEmail(
         trimmedEmail,
         full_name.trim(),
-        verificationToken
+        verificationToken,
+        origin
       );
       console.log(`📧 Verification email sent to ${trimmedEmail}:`, emailResult);
     } catch (emailErr) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/mail";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -108,10 +109,12 @@ export async function POST(req: Request) {
 
     // Dispatch verification email
     const studentName = user.profile?.full_name || user.email.split("@")[0];
+    const origin = getRequestOrigin(req);
     const emailResult = await sendVerificationEmail(
       trimmedEmail,
       studentName,
-      verificationToken
+      verificationToken,
+      origin
     );
 
     if (!emailResult.success) {

@@ -104,18 +104,48 @@ async function dispatchEmail({
 }
 
 /**
+ * Resolves the application base URL with intelligent fallbacks:
+ * 1. Explicit customBaseUrl passed from the HTTP request context
+ * 2. NEXTAUTH_URL if set and not pointing to localhost
+ * 3. VERCEL_PROJECT_PRODUCTION_URL or VERCEL_URL if hosted on Vercel
+ * 4. NEXTAUTH_URL as-is or http://localhost:3000
+ */
+export function resolveBaseUrl(customBaseUrl?: string): string {
+  if (customBaseUrl && customBaseUrl.startsWith("http")) {
+    return customBaseUrl.replace(/\/$/, "");
+  }
+
+  const nextAuthUrl = process.env.NEXTAUTH_URL;
+  if (nextAuthUrl && !nextAuthUrl.includes("localhost")) {
+    return nextAuthUrl.replace(/\/$/, "");
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return (nextAuthUrl || "http://localhost:3000").replace(/\/$/, "");
+}
+
+/**
  * Sends a luxury-styled account verification email to a newly registered student.
  *
  * @param toEmail - Destination student email address
  * @param studentName - Full name of the student
  * @param token - Secure random email verification token
+ * @param customBaseUrl - Optional request origin URL to guarantee correct domain in email links
  */
 export async function sendVerificationEmail(
   toEmail: string,
   studentName: string,
-  token: string
+  token: string,
+  customBaseUrl?: string
 ): Promise<SendEmailResult> {
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const baseUrl = resolveBaseUrl(customBaseUrl);
   const verificationUrl = `${baseUrl}/auth/verify?token=${encodeURIComponent(token)}`;
   const senderEmail = process.env.EMAIL_USER || "gogreatcareer@gmail.com";
 
@@ -326,9 +356,10 @@ https://gogreatcareer.com
 export async function sendPasswordResetEmail(
   toEmail: string,
   userName: string,
-  token: string
+  token: string,
+  customBaseUrl?: string
 ): Promise<SendEmailResult> {
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const baseUrl = resolveBaseUrl(customBaseUrl);
   const resetUrl = `${baseUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
   const senderEmail = process.env.EMAIL_USER || "gogreatcareer@gmail.com";
 
