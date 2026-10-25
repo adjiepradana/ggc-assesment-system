@@ -43,6 +43,13 @@ import MajorDetailModal from "@/components/results/MajorDetailModal";
 import DimensionDetailModal from "@/components/results/DimensionDetailModal";
 import ActionPlanRoadmap from "@/components/results/ActionPlanRoadmap";
 import ShareCardModal from "@/components/results/ShareCardModal";
+import CareerOrientationSection from "@/components/results/CareerOrientationSection";
+import CareerProfileModal from "@/components/results/CareerProfileModal";
+import {
+  generateCareerOrientation,
+  CareerProfileInput,
+  CareerOrientationSynthesis,
+} from "@/lib/career-orientation";
 
 /* -------------------------------------------------------------------------- */
 /* Small presentational helpers                                               */
@@ -70,13 +77,13 @@ function SectionHeader({
           <Icon className="w-5 h-5" />
         </div>
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ggc-gold-dark">
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ggc-gold-dark dark:text-ggc-gold">
             {eyebrow}
           </span>
-          <h2 id={id} className="fluid-section-title font-black text-ggc-dark tracking-tight leading-tight">
+          <h2 id={id} className="fluid-section-title font-black text-ggc-dark dark:text-white tracking-tight leading-tight">
             {title}
           </h2>
-          {description && <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-2xl">{description}</p>}
+          {description && <p className="text-xs sm:text-sm text-gray-500 dark:text-[#A0B9AE] mt-1 max-w-2xl">{description}</p>}
         </div>
       </div>
       {aside}
@@ -89,9 +96,9 @@ function toPercent(score: number) {
 }
 
 const LEVEL_STYLES: Record<string, string> = {
-  Tinggi: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Sedang: "bg-sky-100 text-sky-800 border-sky-200",
-  Berkembang: "bg-gray-100 text-gray-600 border-gray-200",
+  Tinggi: "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
+  Sedang: "bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800/60",
+  Berkembang: "bg-gray-100 dark:bg-[#07261B] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-[#103D2B]",
 };
 
 /* -------------------------------------------------------------------------- */
@@ -155,6 +162,19 @@ export default function StudentResultsPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeNav, setActiveNav] = useState<string>("overview");
 
+  // Career Orientation & Experience State
+  const [careerProfile, setCareerProfile] = useState<CareerProfileInput | null>(null);
+  const [careerOrientation, setCareerOrientation] = useState<CareerOrientationSynthesis | null>(null);
+  const [isCareerModalOpen, setIsCareerModalOpen] = useState(false);
+
+  const handleCareerProfileSaved = (updatedInput: CareerProfileInput) => {
+    setCareerProfile(updatedInput);
+    if (data?.results) {
+      const newOrientation = generateCareerOrientation(data.results, updatedInput);
+      setCareerOrientation(newOrientation);
+    }
+  };
+
   const handleToggleCompare = (majorId: string) => {
     setSelectedMajorsForCompare((prev) => {
       if (prev.includes(majorId)) {
@@ -181,6 +201,32 @@ export default function StudentResultsPage() {
         }
 
         setData(json);
+
+        // Load career profile from API or localStorage
+        let loadedProfile: CareerProfileInput | null = null;
+        try {
+          const cRes = await fetch(`/api/assessment/career-profile?sessionId=${sessionId}`);
+          if (cRes.ok) {
+            const cData = await cRes.json();
+            if (cData.profile) {
+              loadedProfile = cData.profile;
+            }
+          }
+        } catch (cErr) {
+          console.warn("Could not fetch remote career profile:", cErr);
+        }
+
+        if (!loadedProfile && typeof window !== "undefined") {
+          const cached = localStorage.getItem("ggc_career_profile_data");
+          if (cached) {
+            try {
+              loadedProfile = JSON.parse(cached);
+            } catch {}
+          }
+        }
+
+        setCareerProfile(loadedProfile);
+        setCareerOrientation(generateCareerOrientation(json.results, loadedProfile));
       } catch (err: any) {
         console.error("Error loading assessment results:", err);
         setError(err.message || "Terjadi kesalahan saat memuat hasil evaluasi.");
@@ -244,12 +290,12 @@ export default function StudentResultsPage() {
 
   if (error || !data) {
     return (
-      <div className="max-w-lg mx-auto my-12 p-8 rounded-3xl bg-white border border-red-200 shadow-xl text-center">
-        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+      <div className="max-w-lg mx-auto my-12 p-8 rounded-3xl bg-white dark:bg-[#07261B] border border-red-200 dark:border-red-900/40 shadow-xl text-center transition-colors">
+        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-red-50 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center">
           <AlertTriangle className="w-7 h-7" />
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">Gagal Membuka Laporan</h3>
-        <p className="text-xs text-gray-600 mb-6">{error || "Data asesmen tidak ditemukan."}</p>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Gagal Membuka Laporan</h3>
+        <p className="text-xs text-gray-600 dark:text-[#A0B9AE] mb-6">{error || "Data asesmen tidak ditemukan."}</p>
         <Link
           href="/student/dashboard"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-ggc hover:bg-ggc-light transition-all"
@@ -321,31 +367,28 @@ export default function StudentResultsPage() {
   return (
     <div className="space-y-12 pb-28 sm:pb-16">
       {/* ------------------------------------------------------------------ */}
-      {/* Top Action & Navigation Bar                                        */}
-      {/* ------------------------------------------------------------------ */}
-      {/* ------------------------------------------------------------------ */}
       {/* Top Action & Navigation Bar (Hidden when printing/saving PDF)      */}
       {/* ------------------------------------------------------------------ */}
       <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold transition-colors bg-white dark:bg-[#07261B] px-3 py-2 rounded-xl border border-gray-200 dark:border-[#0E4230] shadow-2xs hover:shadow-xs"
             title="Kembali ke Halaman Utama"
           >
             <Compass className="w-3.5 h-3.5 text-ggc-gold" />
             <span className="hidden sm:inline">Halaman Utama</span>
           </Link>
-          <span className="text-xs text-gray-400">/</span>
+          <span className="text-xs text-gray-400 dark:text-gray-600">/</span>
           <Link
             href="/student/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-ggc transition-colors bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-2xs hover:shadow-xs"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold transition-colors bg-white dark:bg-[#07261B] px-3 py-2 rounded-xl border border-gray-200 dark:border-[#0E4230] shadow-2xs hover:shadow-xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Dashboard Siswa</span>
           </Link>
-          <span className="text-xs text-gray-400">/</span>
-          <span className="text-xs font-bold text-ggc-dark" aria-current="page">
+          <span className="text-xs text-gray-400 dark:text-gray-600">/</span>
+          <span className="text-xs font-bold text-ggc-dark dark:text-white" aria-current="page">
             Laporan Hasil Asesmen
           </span>
         </nav>
@@ -355,10 +398,10 @@ export default function StudentResultsPage() {
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-ggc-dark bg-ggc-gold-subtle hover:bg-ggc-gold/20 border border-ggc-gold/40 shadow-2xs hover:shadow transition-all"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-ggc-dark dark:text-amber-300 bg-ggc-gold-subtle dark:bg-amber-950/60 hover:bg-ggc-gold/20 dark:hover:bg-amber-900/60 border border-ggc-gold/40 shadow-2xs hover:shadow transition-all cursor-pointer"
             title="Bagikan Kartu Prestasi Siswa"
           >
-            <Share2 className="w-3.5 h-3.5 text-ggc-gold-dark" />
+            <Share2 className="w-3.5 h-3.5 text-ggc-gold-dark dark:text-ggc-gold" />
             <span className="hidden sm:inline">Bagikan Kartu</span>
           </button>
 
@@ -378,13 +421,13 @@ export default function StudentResultsPage() {
             type="button"
             onClick={handleDownloadPdf}
             disabled={isDownloadingPdf}
-            className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 shadow-2xs hover:shadow transition-all disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs font-bold text-gray-700 dark:text-white bg-white dark:bg-[#07261B] hover:bg-gray-50 dark:hover:bg-[#0A3324] border border-gray-200 dark:border-[#0E4230] shadow-2xs hover:shadow transition-all disabled:opacity-60 cursor-pointer"
             title="Unduh berkas PDF terpisah yang di-generate server"
           >
             {isDownloadingPdf ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-ggc" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-ggc dark:text-ggc-gold" />
             ) : (
-              <Download className="w-3.5 h-3.5 text-gray-600" />
+              <Download className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
             )}
             <span className="hidden sm:inline">{isDownloadingPdf ? "Memproses..." : "File .pdf"}</span>
           </button>
@@ -394,13 +437,14 @@ export default function StudentResultsPage() {
       {/* ------------------------------------------------------------------ */}
       {/* STICKY IN-PAGE SUB-NAVIGATION (SMOOTH ANCHORS)                     */}
       {/* ------------------------------------------------------------------ */}
-      <div className="no-print sticky top-20 z-30 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 shadow-sm p-1.5 sm:p-2 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none snap-x">
+      <div className="no-print sticky top-20 z-30 bg-white/95 dark:bg-[#07261B]/95 backdrop-blur-md rounded-2xl border border-gray-200/90 dark:border-[#0E4230] shadow-sm p-1.5 sm:p-2 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none snap-x transition-colors">
         <div className="flex items-center gap-1 shrink-0">
           {[
             { id: "overview", label: "Ringkasan" },
             { id: "dimensi", label: "7 Dimensi" },
             { id: "signatures", label: "Signature" },
             { id: "jurusan", label: "Rekomendasi Jurusan" },
+            { id: "orientasi-karir", label: "🧭 Orientasi Karir" },
             { id: "bakat", label: "Subdimensi Bakat" },
             { id: "rencana-aksi", label: "Rencana Aksi" },
             { id: "sintesis", label: "Sintesis Sukses" },
@@ -412,7 +456,7 @@ export default function StudentResultsPage() {
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${
                 activeNav === item.id
                   ? "bg-ggc text-white shadow-2xs"
-                  : "text-gray-600 hover:text-ggc hover:bg-gray-100"
+                  : "text-gray-600 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#0A3324]"
               }`}
             >
               {item.label}
@@ -420,11 +464,11 @@ export default function StudentResultsPage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 ml-auto pl-2 border-l border-gray-200">
+        <div className="flex items-center gap-2 shrink-0 ml-auto pl-2 border-l border-gray-200 dark:border-[#0E4230]">
           <button
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="p-1.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-ggc hover:bg-ggc-subtle flex items-center gap-1.5 transition-colors border border-ggc/20"
+            className="p-1.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-ggc dark:text-ggc-gold hover:bg-ggc-subtle dark:hover:bg-[#0A3324] flex items-center gap-1.5 transition-colors border border-ggc/20 dark:border-ggc-gold/30 cursor-pointer"
             title="Bagikan Persona Studi (Instagram Story & WA)"
           >
             <Share2 className="w-3.5 h-3.5 text-ggc-gold" />
@@ -652,22 +696,22 @@ export default function StudentResultsPage() {
           return (
             <div
               key={stat.label}
-              className="reveal-on-scroll group relative overflow-hidden rounded-2xl bg-white border border-gray-200/80 p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-ggc-gold/50 transition-all duration-300"
+              className="reveal-on-scroll group relative overflow-hidden rounded-2xl bg-white dark:bg-[#07261B] border border-gray-200/80 dark:border-[#0E4230] p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-ggc-gold/50 transition-all duration-300"
             >
               <div
                 className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-ggc-gold/10 group-hover:bg-ggc-gold/20 transition-colors"
                 aria-hidden="true"
               />
               <div className="relative">
-                <div className="w-9 h-9 rounded-xl bg-ggc-subtle text-ggc flex items-center justify-center mb-3 group-hover:bg-ggc group-hover:text-ggc-gold transition-colors">
+                <div className="w-9 h-9 rounded-xl bg-ggc-subtle dark:bg-[#041B12] text-ggc dark:text-ggc-gold flex items-center justify-center mb-3 group-hover:bg-ggc group-hover:text-ggc-gold transition-colors">
                   <Icon className="w-4 h-4" />
                 </div>
-                <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500">{stat.label}</div>
-                <div className="text-2xl sm:text-3xl font-black text-ggc-dark mt-0.5">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{stat.label}</div>
+                <div className="text-2xl sm:text-3xl font-black text-ggc-dark dark:text-white mt-0.5">
                   <CountUp value={stat.value} decimals={stat.decimals} />
-                  <span className="text-sm sm:text-base font-bold text-gray-400">{stat.suffix}</span>
+                  <span className="text-sm sm:text-base font-bold text-gray-400 dark:text-gray-500">{stat.suffix}</span>
                 </div>
-                <div className="text-[11px] text-gray-500 mt-1 truncate" title={stat.hint}>
+                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 truncate" title={stat.hint}>
                   {stat.hint}
                 </div>
               </div>
@@ -689,8 +733,8 @@ export default function StudentResultsPage() {
         />
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-6">
           {/* Radar */}
-          <div className="reveal-on-scroll relative overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-sm p-6">
-            <div className="absolute inset-0 bg-gradient-to-br from-ggc-tint via-white to-ggc-gold-subtle pointer-events-none" aria-hidden="true" />
+          <div className="reveal-on-scroll relative overflow-hidden rounded-3xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#0E4230] shadow-sm p-6 transition-colors">
+            <div className="absolute inset-0 bg-gradient-to-br from-ggc-tint via-white to-ggc-gold-subtle dark:from-[#052016] dark:via-[#07261B] dark:to-[#052016] pointer-events-none" aria-hidden="true" />
             <div className="relative">
               <RadarChart data={radarData} className="max-w-[420px] mx-auto" />
               {strongestDimension && (
@@ -701,8 +745,8 @@ export default function StudentResultsPage() {
                   </span>
                 </div>
               )}
-              <div className="mt-3 pt-3 border-t border-gray-100 text-center">
-                <span className="text-[11px] text-gray-500 italic">
+              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-[#0E4230] text-center">
+                <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
                   💡 Klik salah satu dimensi di samping untuk membuka panduan pengembangan praktis.
                 </span>
               </div>
@@ -710,14 +754,14 @@ export default function StudentResultsPage() {
           </div>
 
           {/* Dimension list with interactive drill-down */}
-          <div className="reveal-on-scroll rounded-3xl bg-white border border-gray-200 shadow-sm p-6 space-y-2">
+          <div className="reveal-on-scroll rounded-3xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#0E4230] shadow-sm p-6 space-y-2 transition-colors">
             {results.dimensionScores.map((dim) => {
               const isTop = dim.category === strongestDimension?.category;
               return (
                 <div
                   key={dim.category}
                   onClick={() => setSelectedDimension(dim)}
-                  className="group p-2.5 -mx-2 rounded-2xl hover:bg-ggc-subtle/50 border border-transparent hover:border-ggc/20 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-ggc/30"
+                  className="group p-2.5 -mx-2 rounded-2xl hover:bg-ggc-subtle/50 dark:hover:bg-[#0A3324] border border-transparent hover:border-ggc/20 dark:hover:border-ggc-gold/30 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-ggc/30"
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
@@ -729,17 +773,17 @@ export default function StudentResultsPage() {
                   title="Klik untuk membuka analisis mendalam & panduan pengembangan dimensi ini"
                 >
                   <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-                    <span className="text-gray-800 flex items-center gap-1.5 group-hover:text-ggc transition-colors">
-                      {isTop && <Crown className="w-3.5 h-3.5 text-ggc-gold-dark" aria-label="Tertinggi" />}
+                    <span className="text-gray-800 dark:text-white flex items-center gap-1.5 group-hover:text-ggc dark:group-hover:text-ggc-gold transition-colors">
+                      {isTop && <Crown className="w-3.5 h-3.5 text-ggc-gold-dark dark:text-ggc-gold" aria-label="Tertinggi" />}
                       {dim.name}
                     </span>
-                    <span className="text-ggc font-black tabular-nums flex items-center gap-1">
+                    <span className="text-ggc dark:text-ggc-gold font-black tabular-nums flex items-center gap-1">
                       {dim.score.toFixed(1)}
-                      <span className="text-gray-400 font-semibold"> / 5 · {dim.percentage}%</span>
+                      <span className="text-gray-400 dark:text-gray-500 font-semibold"> / 5 · {dim.percentage}%</span>
                       <ArrowRight className="w-3.5 h-3.5 text-ggc-gold opacity-0 group-hover:opacity-100 transition-opacity" />
                     </span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-ggc-subtle overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-ggc-subtle dark:bg-[#041B12] overflow-hidden">
                     <div
                       className={`bar-grow h-full rounded-full ${
                         isTop
@@ -749,9 +793,9 @@ export default function StudentResultsPage() {
                       style={{ width: `${dim.percentage}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between mt-1 text-[11px] text-gray-500">
+                  <div className="flex items-center justify-between mt-1 text-[11px] text-gray-500 dark:text-[#A0B9AE]">
                     <p className="line-clamp-1">{dim.description}</p>
-                    <span className="hidden sm:inline text-ggc font-bold text-[10px] shrink-0 ml-2 group-hover:underline">
+                    <span className="hidden sm:inline text-ggc dark:text-ggc-gold font-bold text-[10px] shrink-0 ml-2 group-hover:underline">
                       Detail Tips →
                     </span>
                   </div>
@@ -782,7 +826,7 @@ export default function StudentResultsPage() {
                 className={`reveal-on-scroll group relative overflow-hidden rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 ${
                   isFirst
                     ? "md:order-2 md:min-h-[340px] bg-emerald-luxury text-white shadow-xl ring-2 ring-ggc-gold/60"
-                    : `${idx === 1 ? "md:order-1" : "md:order-3"} bg-white border border-gray-200 shadow-sm hover:shadow-lg hover:border-ggc-gold/50`
+                    : `${idx === 1 ? "md:order-1" : "md:order-3"} bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#0E4230] shadow-sm hover:shadow-lg hover:border-ggc-gold/50`
                 }`}
               >
                 {isFirst && (
@@ -795,42 +839,42 @@ export default function StudentResultsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <span
                       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black ${
-                        isFirst ? "bg-ggc-gold text-ggc-dark" : "bg-ggc-subtle text-ggc"
+                        isFirst ? "bg-ggc-gold text-ggc-dark" : "bg-ggc-subtle dark:bg-emerald-950/80 text-ggc dark:text-emerald-300 border border-transparent dark:border-emerald-800/40"
                       }`}
                     >
                       {isFirst ? <Crown className="w-3.5 h-3.5" /> : null}#{idx + 1}
                     </span>
-                    <span className={`text-xs font-black tabular-nums ${isFirst ? "text-ggc-gold" : "text-ggc"}`}>
+                    <span className={`text-xs font-black tabular-nums ${isFirst ? "text-ggc-gold" : "text-ggc dark:text-ggc-gold"}`}>
                       {sig.score.toFixed(1)} / 5.0
                     </span>
                   </div>
 
-                  <h3 className={`font-display font-black text-xl leading-tight ${isFirst ? "text-white" : "text-ggc-dark"}`}>
+                  <h3 className={`font-display font-black text-xl leading-tight ${isFirst ? "text-white" : "text-ggc-dark dark:text-white"}`}>
                     {sig.title}
                   </h3>
-                  <div className={`text-xs font-semibold mt-1 ${isFirst ? "text-ggc-gold" : "text-ggc-gold-dark"}`}>
+                  <div className={`text-xs font-semibold mt-1 ${isFirst ? "text-ggc-gold" : "text-ggc-gold-dark dark:text-ggc-gold"}`}>
                     {sig.archetype}
                   </div>
-                  <p className={`text-xs leading-relaxed mt-3 ${isFirst ? "text-ggc-subtle/85" : "text-gray-600"}`}>
+                  <p className={`text-xs leading-relaxed mt-3 ${isFirst ? "text-ggc-subtle/85" : "text-gray-600 dark:text-[#A0B9AE]"}`}>
                     {sig.tagline}
                   </p>
 
                   {/* Score bar */}
-                  <div className={`mt-4 h-1.5 rounded-full overflow-hidden ${isFirst ? "bg-white/15" : "bg-gray-100"}`}>
+                  <div className={`mt-4 h-1.5 rounded-full overflow-hidden ${isFirst ? "bg-white/15" : "bg-gray-100 dark:bg-[#041B12]"}`}>
                     <div
                       className="bar-grow h-full rounded-full bg-gradient-to-r from-ggc-gold to-[#E6D5A8]"
                       style={{ width: `${toPercent(sig.score)}%` }}
                     />
                   </div>
 
-                  <ul className={`mt-auto pt-4 flex flex-wrap gap-1.5 ${isFirst ? "" : ""}`}>
+                  <ul className="mt-auto pt-4 flex flex-wrap gap-1.5">
                     {sig.highlightedTraits.map((t) => (
                       <li
                         key={t}
                         className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
                           isFirst
                             ? "bg-white/10 text-white border-white/20"
-                            : "bg-gray-50 text-gray-600 border-gray-200"
+                            : "bg-gray-50 dark:bg-[#041B12] text-gray-600 dark:text-[#C7DCD2] border-gray-200 dark:border-[#103D2B]"
                         }`}
                       >
                         {t}
@@ -856,7 +900,7 @@ export default function StudentResultsPage() {
           icon={Compass}
           aside={
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
                 <Target className="w-3.5 h-3.5" />
                 Top Match: {topMajor?.majorName} ({topMajor?.fitScore}%)
               </span>
@@ -864,7 +908,7 @@ export default function StudentResultsPage() {
                 <button
                   type="button"
                   onClick={() => setIsCompareModalOpen(true)}
-                  className="no-print inline-flex items-center gap-1.5 text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark px-3 py-1.5 rounded-xl shadow-xs hover:shadow"
+                  className="no-print inline-flex items-center gap-1.5 text-xs font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark px-3 py-1.5 rounded-xl shadow-xs hover:shadow cursor-pointer"
                 >
                   <Scale className="w-3.5 h-3.5" />
                   <span>Bandingkan ({selectedMajorsForCompare.length})</span>
@@ -875,7 +919,7 @@ export default function StudentResultsPage() {
         />
 
         {/* Interactive Search & Cluster Filter Toolbar */}
-        <div className="no-print my-4 p-3 sm:p-4 rounded-2xl bg-white border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="no-print my-4 p-3 sm:p-4 rounded-2xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#0E4230] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 transition-colors">
           {/* Cluster filter pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {[
@@ -888,10 +932,10 @@ export default function StudentResultsPage() {
                 key={cl.id}
                 type="button"
                 onClick={() => setClusterFilter(cl.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   clusterFilter === cl.id
                     ? "bg-ggc text-white shadow-2xs"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-gray-100 dark:bg-[#041B12] text-gray-600 dark:text-[#C7DCD2] hover:bg-gray-200 dark:hover:bg-[#093525] border border-transparent dark:border-[#103D2B]"
                 }`}
               >
                 {cl.label}
@@ -907,13 +951,13 @@ export default function StudentResultsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari jurusan atau profesi..."
-              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ggc/30 focus:border-ggc"
+              className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-white dark:bg-[#041B12] text-gray-900 dark:text-white border border-gray-200 dark:border-[#103D2B] focus:outline-none focus:ring-2 focus:ring-ggc/30 focus:border-ggc placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -923,9 +967,9 @@ export default function StudentResultsPage() {
 
         <div className="space-y-5">
           {filteredRecommendations.length === 0 ? (
-            <div className="p-8 text-center bg-white rounded-3xl border border-gray-200">
-              <Search className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-xs text-gray-600 font-semibold">
+            <div className="p-8 text-center bg-white dark:bg-[#07261B] rounded-3xl border border-gray-200 dark:border-[#0E4230] transition-colors">
+              <Search className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+              <p className="text-xs text-gray-600 dark:text-[#A0B9AE] font-semibold">
                 Tidak ada program studi yang cocok dengan kata kunci & filter Anda.
               </p>
               <button
@@ -934,7 +978,7 @@ export default function StudentResultsPage() {
                   setClusterFilter("ALL");
                   setSearchQuery("");
                 }}
-                className="mt-3 px-4 py-2 rounded-xl text-xs font-bold text-ggc bg-ggc-subtle hover:bg-ggc/15 transition-colors"
+                className="mt-3 px-4 py-2 rounded-xl text-xs font-bold text-ggc dark:text-ggc-gold bg-ggc-subtle dark:bg-[#041B12] hover:bg-ggc/15 dark:hover:bg-[#0A3324] transition-colors cursor-pointer"
               >
                 Reset Filter & Pencarian
               </button>
@@ -947,8 +991,8 @@ export default function StudentResultsPage() {
               return (
                 <article
                   key={rec.id}
-                  className={`reveal-on-scroll relative overflow-hidden rounded-3xl bg-white border shadow-sm transition-all duration-300 hover:shadow-xl ${
-                    isFirst ? "border-ggc-gold/70 ring-2 ring-ggc-gold/25" : "border-gray-200 hover:border-ggc/30"
+                  className={`reveal-on-scroll relative overflow-hidden rounded-3xl bg-white dark:bg-[#07261B] border shadow-sm transition-all duration-300 hover:shadow-xl ${
+                    isFirst ? "border-ggc-gold/70 ring-2 ring-ggc-gold/25" : "border-gray-200 dark:border-[#0E4230] hover:border-ggc/30 dark:hover:border-ggc-gold/40"
                   }`}
                 >
                   {isFirst && (
@@ -958,23 +1002,23 @@ export default function StudentResultsPage() {
                   )}
                   <div
                     className={`absolute left-0 inset-y-0 w-1.5 ${
-                      isFirst ? "bg-gradient-to-b from-ggc-gold to-ggc" : "bg-ggc-subtle"
+                      isFirst ? "bg-gradient-to-b from-ggc-gold to-ggc" : "bg-ggc-subtle dark:bg-[#0E4230]"
                     }`}
                     aria-hidden="true"
                   />
 
                   <div className="p-6 sm:p-7 pl-7 sm:pl-9">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-5 border-b border-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-5 border-b border-gray-100 dark:border-[#0E4230]">
                       <ScoreRing value={rec.fitScore} size={84} stroke={8} label="Fit" />
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-[11px] font-black text-gray-400">#{idx + 1}</span>
+                            <span className="text-[11px] font-black text-gray-400 dark:text-gray-500">#{idx + 1}</span>
                             <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${rec.badgeColor}`}>
                               {rec.fitLevel}
                             </span>
-                            <span className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2 py-0.5 rounded-full">
+                            <span className="text-[11px] font-semibold text-ggc dark:text-ggc-gold bg-ggc-subtle dark:bg-[#041B12] px-2 py-0.5 rounded-full border border-transparent dark:border-[#0E4230]">
                               {rec.cluster}
                             </span>
                           </div>
@@ -987,7 +1031,7 @@ export default function StudentResultsPage() {
                                 e.stopPropagation();
                                 setSelectedMajorForDetail(rec);
                               }}
-                              className="no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-dark transition-all shadow-xs hover:shadow-md active:scale-95"
+                              className="no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-dark transition-all shadow-xs hover:shadow-md active:scale-95 cursor-pointer"
                               title="Buka panel rekomendasi kampus PTN/PTS, bedah gaji, dan mata kuliah kunci"
                             >
                               <School className="w-3.5 h-3.5 text-ggc-gold" />
@@ -1001,10 +1045,10 @@ export default function StudentResultsPage() {
                                 e.stopPropagation();
                                 handleToggleCompare(rec.id);
                               }}
-                              className={`no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                              className={`no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                                 isSelectedForCompare
                                   ? "bg-ggc text-white border-ggc shadow-2xs"
-                                  : "bg-gray-50 text-gray-700 border-gray-200 hover:border-ggc hover:text-ggc"
+                                  : "bg-gray-50 dark:bg-[#041B12] text-gray-700 dark:text-[#C7DCD2] border-gray-200 dark:border-[#103D2B] hover:border-ggc hover:text-ggc dark:hover:text-ggc-gold"
                               }`}
                               title="Pilih jurusan ini untuk komparasi multi-matriks"
                             >
@@ -1015,7 +1059,7 @@ export default function StudentResultsPage() {
                         </div>
                         <h3
                           onClick={() => setSelectedMajorForDetail(rec)}
-                          className="text-lg sm:text-xl font-black text-ggc-dark mt-1.5 cursor-pointer hover:text-ggc transition-colors inline-flex items-center gap-2 group/title"
+                          className="text-lg sm:text-xl font-black text-ggc-dark dark:text-white mt-1.5 cursor-pointer hover:text-ggc dark:hover:text-ggc-gold transition-colors inline-flex items-center gap-2 group/title"
                           title="Klik untuk membuka bedah kampus & prospek karier"
                         >
                           <span>{rec.majorName}</span>
@@ -1023,14 +1067,14 @@ export default function StudentResultsPage() {
                             (Bedah Detail ↗)
                           </span>
                         </h3>
-                        <p className="text-xs text-gray-500">{rec.faculty}</p>
+                        <p className="text-xs text-gray-500 dark:text-[#A0B9AE]">{rec.faculty}</p>
                       </div>
                     </div>
 
                     {/* Key attributes vs benchmark */}
                     {rec.keyAttributes?.length > 0 && (
                       <div className="mt-5">
-                        <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">
+                        <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
                           Atribut Kunci vs Benchmark Jurusan
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
@@ -1041,13 +1085,13 @@ export default function StudentResultsPage() {
                             return (
                               <div key={attr.name}>
                                 <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
-                                  <span className="text-gray-700 truncate pr-2">{attr.name}</span>
-                                  <span className={`tabular-nums ${meets ? "text-emerald-700" : "text-amber-700"}`}>
+                                  <span className="text-gray-700 dark:text-[#C7DCD2] truncate pr-2">{attr.name}</span>
+                                  <span className={`tabular-nums ${meets ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}`}>
                                     {attr.score.toFixed(1)}
-                                    <span className="text-gray-400"> / {attr.benchmark.toFixed(1)}</span>
+                                    <span className="text-gray-400 dark:text-gray-500"> / {attr.benchmark.toFixed(1)}</span>
                                   </span>
                                 </div>
-                                <div className="relative h-2 rounded-full bg-gray-100">
+                                <div className="relative h-2 rounded-full bg-gray-100 dark:bg-[#041B12]">
                                   <div className="absolute inset-0 overflow-hidden rounded-full">
                                     <div
                                       className={`bar-grow h-full rounded-full ${
@@ -1057,7 +1101,7 @@ export default function StudentResultsPage() {
                                     />
                                   </div>
                                   <div
-                                    className="absolute -top-1 -bottom-1 w-0.5 bg-ggc-dark rounded"
+                                    className="absolute -top-1 -bottom-1 w-0.5 bg-ggc-dark dark:bg-ggc-gold rounded"
                                     style={{ left: `${benchPct}%` }}
                                     title={`Benchmark ${attr.benchmark.toFixed(1)}`}
                                     aria-hidden="true"
@@ -1072,37 +1116,37 @@ export default function StudentResultsPage() {
 
                     {/* Insights */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
-                      <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-200/80 flex items-start gap-3">
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-white dark:from-[#052016] dark:to-[#072B1E] border border-emerald-200/80 dark:border-emerald-800/40 flex items-start gap-3 transition-colors">
                         <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                           <Lightbulb className="w-4 h-4" />
                         </div>
                         <div>
-                          <h5 className="text-xs font-bold text-emerald-900 mb-1">Mengapa Jurusan Ini Cocok?</h5>
-                          <p className="text-xs text-emerald-950/80 leading-relaxed">{rec.whyThisFit}</p>
+                          <h5 className="text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">Mengapa Jurusan Ini Cocok?</h5>
+                          <p className="text-xs text-emerald-950/80 dark:text-[#C7DCD2] leading-relaxed">{rec.whyThisFit}</p>
                         </div>
                       </div>
-                      <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-white border border-amber-200/80 flex items-start gap-3">
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-white dark:from-[#201705] dark:to-[#2B2007] border border-amber-200/80 dark:border-amber-800/40 flex items-start gap-3 transition-colors">
                         <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
                           <AlertTriangle className="w-4 h-4" />
                         </div>
                         <div>
-                          <h5 className="text-xs font-bold text-amber-900 mb-1">Hal yang Perlu Diantisipasi</h5>
-                          <p className="text-xs text-amber-950/80 leading-relaxed">{rec.whatToWatchOutFor}</p>
+                          <h5 className="text-xs font-bold text-amber-900 dark:text-amber-300 mb-1">Hal yang Perlu Diantisipasi</h5>
+                          <p className="text-xs text-amber-950/80 dark:text-[#C7DCD2] leading-relaxed">{rec.whatToWatchOutFor}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Career prospects & Footer Action */}
-                    <div className="pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                    <div className="pt-4 border-t border-gray-100 dark:border-[#0E4230] flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-bold text-gray-500 flex items-center gap-1 mr-1">
-                          <Briefcase className="w-3.5 h-3.5 text-ggc" />
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1 mr-1">
+                          <Briefcase className="w-3.5 h-3.5 text-ggc dark:text-ggc-gold" />
                           Prospek Profesi:
                         </span>
                         {rec.careerProspects.map((career) => (
                           <span
                             key={career}
-                            className="text-[11px] font-semibold text-ggc bg-ggc-subtle px-2.5 py-1 rounded-lg border border-ggc/15 hover:bg-ggc hover:text-white transition-colors"
+                            className="text-[11px] font-semibold text-ggc dark:text-ggc-gold bg-ggc-subtle dark:bg-[#041B12] px-2.5 py-1 rounded-lg border border-ggc/15 dark:border-[#0E4230] hover:bg-ggc hover:text-white dark:hover:bg-ggc transition-colors"
                           >
                             {career}
                           </span>
@@ -1112,7 +1156,7 @@ export default function StudentResultsPage() {
                       <button
                         type="button"
                         onClick={() => setSelectedMajorForDetail(rec)}
-                        className="no-print inline-flex items-center gap-1 text-xs font-bold text-ggc hover:text-ggc-dark hover:underline py-1 ml-auto"
+                        className="no-print inline-flex items-center gap-1 text-xs font-bold text-ggc dark:text-ggc-gold hover:text-ggc-dark dark:hover:text-white hover:underline py-1 ml-auto cursor-pointer"
                       >
                         <span>Lihat Kampus Terbaik & Gaji</span>
                         <ArrowRight className="w-3.5 h-3.5 text-ggc-gold" />
@@ -1157,6 +1201,25 @@ export default function StudentResultsPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
+      {/* SECTION ORIENTASI KARIR & PROYEKSI MASA DEPAN                      */}
+      {/* ------------------------------------------------------------------ */}
+      <section id="orientasi-karir" aria-labelledby="career-orientation-title">
+        <SectionHeader
+          id="career-orientation-title"
+          eyebrow="Career Orientation & Pathways"
+          title="Orientasi Karir & Proyeksi Masa Depan"
+          description="Sintesis cerdas antara hasil psikometrik 84 butir soal Anda dengan pengalaman nyata (organisasi formal OSIS/BEM, komunitas non-formal Karang Taruna, hobi, dan jurusan Anda)."
+          icon={Compass}
+        />
+        {careerOrientation && (
+          <CareerOrientationSection
+            orientation={careerOrientation}
+            onOpenEditModal={() => setIsCareerModalOpen(true)}
+          />
+        )}
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
       {/* Talent Subdimensions                                               */}
       {/* ------------------------------------------------------------------ */}
       <section id="bakat" aria-labelledby="talent-title">
@@ -1172,32 +1235,32 @@ export default function StudentResultsPage() {
             <div
               key={sub.key}
               className={`reveal-on-scroll group rounded-2xl p-5 border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                idx === 0 ? "bg-ggc-gold-subtle border-ggc-gold/50" : "bg-white border-gray-200"
+                idx === 0 ? "bg-ggc-gold-subtle dark:bg-amber-950/40 border-ggc-gold/50" : "bg-white dark:bg-[#07261B] border-gray-200 dark:border-[#0E4230]"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span
                     className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black ${
-                      idx === 0 ? "bg-ggc text-ggc-gold" : "bg-ggc-subtle text-ggc"
+                      idx === 0 ? "bg-ggc text-ggc-gold" : "bg-ggc-subtle dark:bg-[#041B12] text-ggc dark:text-emerald-400"
                     }`}
                   >
                     {idx + 1}
                   </span>
-                  <h3 className="text-sm font-bold text-gray-800 leading-snug">{sub.name}</h3>
+                  <h3 className="text-sm font-bold text-gray-800 dark:text-white leading-snug">{sub.name}</h3>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border shrink-0 ${LEVEL_STYLES[sub.level]}`}>
                   {sub.level}
                 </span>
               </div>
               <div className="mt-4 flex items-end justify-between">
-                <span className="text-2xl font-black text-ggc-dark tabular-nums">
+                <span className="text-2xl font-black text-ggc-dark dark:text-white tabular-nums">
                   {sub.score.toFixed(1)}
-                  <span className="text-xs font-bold text-gray-400"> / 5.0</span>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-500"> / 5.0</span>
                 </span>
-                <span className="text-xs font-bold text-ggc-gold-dark">{sub.percentage}%</span>
+                <span className="text-xs font-bold text-ggc-gold-dark dark:text-ggc-gold">{sub.percentage}%</span>
               </div>
-              <div className="mt-2 h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-[#041B12] overflow-hidden">
                 <div
                   className="bar-grow h-full rounded-full bg-gradient-to-r from-ggc to-ggc-gold"
                   style={{ width: `${sub.percentage}%` }}
@@ -1366,6 +1429,13 @@ export default function StudentResultsPage() {
           cluster: m.cluster,
         }))}
         sessionId={results.sessionId}
+      />
+
+      <CareerProfileModal
+        isOpen={isCareerModalOpen}
+        onClose={() => setIsCareerModalOpen(false)}
+        initialData={careerProfile}
+        onSaveSuccess={handleCareerProfileSaved}
       />
     </div>
   );

@@ -174,19 +174,19 @@ export default function ActionPlanRoadmap({
               Target: {topMajorName}
             </span>
           </div>
-          <h3 className="text-lg sm:text-xl font-black text-ggc-dark">
+          <h3 className="text-lg sm:text-xl font-black text-ggc-dark dark:text-white">
             Rencana Aksi 100 Hari Menuju Kampus Impian
           </h3>
-          <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-gray-600 dark:text-[#A0B9AE] mt-1 max-w-2xl leading-relaxed">
             Panduan bertahap untuk memaksimalkan potensi <strong>{signatureTitle}</strong> Anda menjadi tiket masuk perguruan tinggi unggulan.
           </p>
         </div>
 
         {/* Live Progress Card */}
-        <div className="shrink-0 bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-gray-200/90 shadow-xs min-w-[220px]">
-          <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-1.5">
+        <div className="shrink-0 bg-white/95 dark:bg-[#07261B]/95 backdrop-blur-md p-4 rounded-2xl border border-gray-200/90 dark:border-[#0E4230] shadow-xs min-w-[220px] transition-colors">
+          <div className="flex items-center justify-between text-xs font-bold text-gray-700 dark:text-[#C7DCD2] mb-1.5">
             <span>Progres Rencana:</span>
-            <span className="text-ggc font-black">{progressPercent}%</span>
+            <span className="text-ggc dark:text-ggc-gold font-black">{progressPercent}%</span>
           </div>
           <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden border border-gray-200">
             <div
@@ -220,28 +220,28 @@ export default function ActionPlanRoadmap({
               key={stagePlan.stage}
               className={`rounded-2xl sm:rounded-3xl p-5 sm:p-6 border transition-all duration-200 ${
                 stageCompleted
-                  ? "bg-emerald-50/60 border-emerald-300 shadow-sm"
-                  : "bg-white border-gray-200 shadow-xs hover:border-gray-300"
+                  ? "bg-emerald-50/60 dark:bg-[#052519] border-emerald-300 dark:border-emerald-800 shadow-sm"
+                  : "bg-white dark:bg-[#07261B] border-gray-200 dark:border-[#0E4230] shadow-xs hover:border-gray-300 dark:hover:border-[#1A5C43]"
               }`}
             >
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-[#0E4230]">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-ggc px-2 py-0.5 rounded-lg bg-ggc-subtle">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-ggc dark:text-emerald-400 px-2 py-0.5 rounded-lg bg-ggc-subtle dark:bg-[#0A3324]">
                     {stagePlan.stage}
                   </span>
-                  <span className="text-xs font-bold text-gray-400">({stagePlan.timeframe})</span>
+                  <span className="text-xs font-bold text-gray-400 dark:text-gray-400">({stagePlan.timeframe})</span>
                 </div>
                 {stageCompleted && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Tuntas
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-100/80 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Tuntas
                   </span>
                 )}
               </div>
 
-              <h4 className="text-sm sm:text-base font-black text-ggc-dark mb-1">
+              <h4 className="text-sm sm:text-base font-black text-ggc-dark dark:text-white mb-1">
                 {stagePlan.title}
               </h4>
-              <p className="text-[11px] text-gray-500 mb-4 leading-relaxed italic">
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4 leading-relaxed italic">
                 {stagePlan.focus}
               </p>
 
@@ -256,8 +256,8 @@ export default function ActionPlanRoadmap({
                       onClick={() => toggleStep(step.id)}
                       className={`group p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
                         isChecked
-                          ? "bg-white border-emerald-300 text-gray-800 shadow-2xs"
-                          : "bg-gray-50/70 border-gray-200 hover:bg-white hover:border-ggc-gold/60 text-gray-700"
+                          ? "bg-white dark:bg-[#062419] border-emerald-300 dark:border-emerald-700/60 text-gray-800 dark:text-gray-200 shadow-2xs"
+                          : "bg-gray-50/70 dark:bg-[#041B12] border-gray-200 dark:border-[#103D2B] hover:bg-white dark:hover:bg-[#07261B] hover:border-ggc-gold/60 text-gray-700 dark:text-[#C7DCD2]"
                       }`}
                       role="checkbox"
                       aria-checked={isChecked}
@@ -275,20 +275,20 @@ export default function ActionPlanRoadmap({
                             <CheckSquare className="w-4 h-4" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-md border-2 border-gray-300 group-hover:border-ggc transition-colors bg-white" />
+                          <div className="w-5 h-5 rounded-md border-2 border-gray-300 dark:border-gray-600 group-hover:border-ggc transition-colors bg-white dark:bg-[#07261B]" />
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <span
                           className={`text-xs leading-relaxed block ${
-                            isChecked ? "line-through text-gray-400" : "font-semibold text-gray-800"
+                            isChecked ? "line-through text-gray-400 dark:text-gray-500" : "font-semibold text-gray-800 dark:text-[#E8F1EC]"
                           }`}
                         >
                           {step.text}
                         </span>
                         {step.hint && !isChecked && (
-                          <span className="text-[10px] text-gray-500 mt-1 block">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 block">
                             💡 {step.hint}
                           </span>
                         )}

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { calculateAssessmentScores } from "@/lib/scoring";
 import { all84QuestionsData } from "@/lib/questions-data";
 import * as XLSX from "xlsx";
 
@@ -29,11 +28,14 @@ export async function GET() {
           profile: true,
           sessions: {
             orderBy: { started_at: "desc" },
-            include: {
-              answers: {
-                include: {
-                  question: true,
-                },
+            select: {
+              id: true,
+              status: true,
+              started_at: true,
+              completed_at: true,
+              result_data: true,
+              _count: {
+                select: { answers: true },
               },
             },
           },
@@ -48,17 +50,14 @@ export async function GET() {
           let topMajor = "-";
           let fitScore = 0;
 
-          if (sess && sess.answers.length > 0) {
-            const answersRecord: Record<string, number> = {};
-            for (const ans of sess.answers) {
-              const code = ans.question?.code || ans.question_id;
-              answersRecord[code] = ans.selected_value;
-            }
-            const scores = calculateAssessmentScores(sess.id, answersRecord);
-            topSignature = scores.potentialSignatures[0]?.title || "-";
-            topMajor = scores.studyRecommendations[0]?.majorName || "-";
-            fitScore = scores.studyRecommendations[0]?.fitScore || 0;
+          if (sess?.result_data) {
+            const scores = sess.result_data as any;
+            topSignature = scores.potentialSignatures?.[0]?.title || "-";
+            topMajor = scores.studyRecommendations?.[0]?.majorName || "-";
+            fitScore = scores.studyRecommendations?.[0]?.fitScore || 0;
           }
+
+          const answeredCount = sess?._count?.answers || 0;
 
           return {
             No: idx + 1,
@@ -68,7 +67,7 @@ export async function GET() {
             "Asal Sekolah": u.profile?.school_name || "-",
             "Jenjang / Kelas": u.profile?.grade || "-",
             "Status Sesi": sess?.status || "BELUM_MULAI",
-            "Soal Terjawab": sess ? `${sess.answers.length} / 84` : "0 / 84",
+            "Soal Terjawab": sess ? `${answeredCount} / 84` : "0 / 84",
             "Waktu Mulai": sess ? new Date(sess.started_at).toLocaleString("id-ID") : "-",
             "Waktu Selesai": sess?.completed_at ? new Date(sess.completed_at).toLocaleString("id-ID") : "-",
             "Top Potential Signature": topSignature,
@@ -77,74 +76,12 @@ export async function GET() {
           };
         });
       }
-    } catch (dbErr) {
-      console.warn("DB fetch fallback in admin export route:", dbErr);
-    }
-
-    // Fallback sample data if DB is empty
-    if (studentsRows.length === 0) {
-      studentsRows = [
-        {
-          No: 1,
-          "Nama Lengkap": "Muhammad Kevin Pratama",
-          Email: "student@ggc.id",
-          "No. WhatsApp": "081234567890",
-          "Asal Sekolah": "SMA Negeri 1 Jakarta",
-          "Jenjang / Kelas": "Kelas 12 MIPA",
-          "Status Sesi": "COMPLETED",
-          "Soal Terjawab": "84 / 84",
-          "Waktu Mulai": new Date(Date.now() - 3600000 * 2).toLocaleString("id-ID"),
-          "Waktu Selesai": new Date(Date.now() - 3600000).toLocaleString("id-ID"),
-          "Top Potential Signature": "The Analytical Strategist",
-          "Rekomendasi Jurusan Utama": "Teknik Informatika & Ilmu Komputer",
-          "Study Fit Score (%)": "92%",
-        },
-        {
-          No: 2,
-          "Nama Lengkap": "Alya Zahra Salsabila",
-          Email: "alya.zahra@gmail.com",
-          "No. WhatsApp": "085712345678",
-          "Asal Sekolah": "SMA Labschool Kebayoran",
-          "Jenjang / Kelas": "Kelas 12 IPS",
-          "Status Sesi": "COMPLETED",
-          "Soal Terjawab": "84 / 84",
-          "Waktu Mulai": new Date(Date.now() - 86400000).toLocaleString("id-ID"),
-          "Waktu Selesai": new Date(Date.now() - 86400000 + 1800000).toLocaleString("id-ID"),
-          "Top Potential Signature": "The Visionary Creator",
-          "Rekomendasi Jurusan Utama": "Desain Komunikasi Visual (DKV) & UI/UX",
-          "Study Fit Score (%)": "89%",
-        },
-        {
-          No: 3,
-          "Nama Lengkap": "Rayhan Dimas Fadhilah",
-          Email: "rayhan.dimas@yahoo.com",
-          "No. WhatsApp": "081398765432",
-          "Asal Sekolah": "SMK Negeri 26 Jakarta (Teknik)",
-          "Jenjang / Kelas": "Kelas 12 Teknik Elektronika",
-          "Status Sesi": "IN_PROGRESS",
-          "Soal Terjawab": "48 / 84",
-          "Waktu Mulai": new Date(Date.now() - 1800000).toLocaleString("id-ID"),
-          "Waktu Selesai": "-",
-          "Top Potential Signature": "The Structural Engineer",
-          "Rekomendasi Jurusan Utama": "Teknik Rekayasa Elektro & Robotika",
-          "Study Fit Score (%)": "81%",
-        },
-        {
-          No: 4,
-          "Nama Lengkap": "Nabila Putri Kirana",
-          Email: "nabila.kirana@outlook.com",
-          "No. WhatsApp": "082144556677",
-          "Asal Sekolah": "SMA Kanisius Jakarta",
-          "Jenjang / Kelas": "Kelas 11 MIPA",
-          "Status Sesi": "COMPLETED",
-          "Soal Terjawab": "84 / 84",
-          "Waktu Mulai": new Date(Date.now() - 86400000 * 4).toLocaleString("id-ID"),
-          "Waktu Selesai": new Date(Date.now() - 86400000 * 4 + 2100000).toLocaleString("id-ID"),
-          "Top Potential Signature": "The Empathetic Catalyst",
-          "Rekomendasi Jurusan Utama": "Psikologi & Ilmu Perilaku Manusia",
-          "Study Fit Score (%)": "88%",
-        },
-      ];
+    } catch (dbErr: any) {
+      console.error("❌ [Admin Export] DB fetch error:", dbErr);
+      return NextResponse.json(
+        { error: "Gagal mengambil data siswa untuk ekspor." },
+        { status: 500 }
+      );
     }
 
     // 2. Gather Question Bank Data

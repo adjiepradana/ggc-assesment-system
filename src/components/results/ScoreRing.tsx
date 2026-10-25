@@ -26,9 +26,9 @@ export default function ScoreRing({
   const clamped = Math.max(0, Math.min(100, value));
   const offset = circumference * (1 - clamped / 100);
 
-  const trackColor = tone === "dark" ? "rgba(255,255,255,0.12)" : "#EBF4F0";
-  const numberColor = tone === "dark" ? "text-white" : "text-ggc-dark";
-  const labelColor = tone === "dark" ? "text-ggc-gold" : "text-gray-500";
+  const trackClass = tone === "dark" ? "stroke-white/15" : "stroke-[#EBF4F0] dark:stroke-[#0E4230]";
+  const numberColor = tone === "dark" ? "text-white" : "text-ggc-dark dark:text-white";
+  const labelColor = tone === "dark" ? "text-ggc-gold" : "text-gray-500 dark:text-gray-400";
   const big = size >= 120;
 
   return (
@@ -46,7 +46,7 @@ export default function ScoreRing({
             <stop offset="100%" stopColor={tone === "dark" ? "#A6863F" : "#126348"} />
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={trackColor} strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" className={trackClass} strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}

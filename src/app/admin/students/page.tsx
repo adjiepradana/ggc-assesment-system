@@ -481,10 +481,10 @@ export default function AdminStudentsPage() {
 
                               <a
                                 href={`/api/assessment/results/${sess.id}/pdf`}
-                                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-ggc-dark bg-ggc-gold/20 hover:bg-ggc-gold/40 border border-ggc-gold/40 rounded-lg transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-ggc-dark dark:text-ggc-gold bg-ggc-gold/20 dark:bg-ggc-gold/25 hover:bg-ggc-gold/40 dark:hover:bg-ggc-gold/35 border border-ggc-gold/40 dark:border-ggc-gold/40 rounded-lg transition-colors"
                                 title="Unduh PDF Resmi"
                               >
-                                <Download className="w-3 h-3 text-ggc-gold-dark" />
+                                <Download className="w-3 h-3 text-ggc-gold-dark dark:text-ggc-gold" />
                                 <span className="hidden xl:inline">PDF</span>
                               </a>
                             </>

@@ -83,8 +83,11 @@ export default function InteractiveRadarChart({
             <polygon
               key={lvl}
               points={points}
-              fill={lvl === 1.0 ? "#FAFBF9" : "none"}
-              stroke="#E5E7EB"
+              className={`${
+                lvl === 1.0
+                  ? "fill-[#FAFBF9] dark:fill-[#041D14]/80 stroke-gray-200 dark:stroke-[#0E4230]"
+                  : "fill-none stroke-gray-200 dark:stroke-[#0E4230]/70"
+              }`}
               strokeWidth={lvl === 1.0 ? "1.5" : "1"}
               strokeDasharray={lvl === 0.5 || lvl === 0.75 ? "3 3" : undefined}
             />
@@ -101,7 +104,7 @@ export default function InteractiveRadarChart({
               y1={center}
               x2={x}
               y2={y}
-              stroke="#D1D5DB"
+              className="stroke-gray-300 dark:stroke-[#103D2B]"
               strokeWidth="1"
             />
           );
@@ -149,8 +152,7 @@ export default function InteractiveRadarChart({
                 textAnchor="middle"
                 fontSize="10"
                 fontWeight="bold"
-                fill="#063424"
-                className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-1"
+                className="opacity-0 group-hover:opacity-100 transition-opacity fill-gray-900 dark:fill-white font-black"
               >
                 {item.value}%
               </text>
@@ -175,9 +177,8 @@ export default function InteractiveRadarChart({
               y={y + 4}
               textAnchor={textAnchor}
               fontSize="10"
-              fontWeight="600"
-              fill="#374151"
-              className="tracking-tight"
+              fontWeight="700"
+              className="tracking-tight fill-gray-700 dark:fill-[#D1E2DA] transition-colors"
             >
               {item.shortName || item.axis}
             </text>

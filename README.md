@@ -94,13 +94,10 @@ Buka browser di [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## 🔑 Kredensial Uji Coba (Demo Accounts)
+## 🔑 Akun Admin Awal
 
-Untuk mempermudah pengujian, sistem telah dilengkapi tombol **Autofill 1-Click** pada halaman Login:
+Tidak ada akun demo bawaan. Setiap siswa wajib mendaftar, memverifikasi email, dan membayar sebelum mengerjakan asesmen.
 
-| Peran | Email | Kata Sandi | Halaman Akses |
-|---|---|---|---|
-| **Admin** | `admin@ggc.id` | `admin123` | `/admin/dashboard` |
-| **Siswa** | `student@ggc.id` | `student123` | `/student/dashboard` |
-
-Atau daftarkan akun siswa baru secara mandiri di `/auth/register`.
+1. Isi `SEED_ADMIN_EMAIL` dan `SEED_ADMIN_PASSWORD` (minimal 12 karakter) di `.env`.
+2. Jalankan `npm run prisma:seed` untuk membuat akun admin dan 84 soal.
+3. Jika database lama masih berisi akun demo `admin@ggc.id` / `student@ggc.id`, jalankan `npm run disable-demo-accounts`.

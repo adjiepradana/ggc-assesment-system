@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { snap } from "@/lib/midtrans";
 
@@ -10,85 +13,199 @@ const DEFAULT_ASSESSMENT_PRICE = 49000;
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const session = await getServerSession(authOptions);
+    const isAuthenticated = !!(session?.user?.id || session?.user?.email);
+
+    const body = await req.json().catch(() => ({}));
     const { name, email, phone, password } = body;
 
-    // 1. Validation
-    if (!name || !email) {
-      return NextResponse.json(
-        { error: "Nama dan email wajib diisi untuk memesan asesmen." },
-        { status: 400 }
-      );
-    }
+    let customerEmail: string;
+    let customerName: string;
+    let customerPhone: string | null = phone?.trim() || null;
+    let hashedPassword: string | null = null;
+    let studentUser: any = null;
 
-    if (!password || password.length < 6) {
-      return NextResponse.json(
-        { error: "Kata sandi akun minimal 6 karakter." },
-        { status: 400 }
-      );
-    }
+    if (isAuthenticated && session?.user) {
+      // ==========================================
+      // 1. AUTHENTICATED USER CHECKOUT FLOW
+      // ==========================================
+      const currentUserId = session.user.id;
+      const sessionEmail = session.user.email?.toLowerCase().trim();
 
-    const trimmedEmail = email.toLowerCase().trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      return NextResponse.json(
-        { error: "Format email tidak valid." },
-        { status: 400 }
-      );
-    }
+      studentUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            ...(currentUserId ? [{ id: currentUserId }] : []),
+            ...(sessionEmail ? [{ email: sessionEmail }] : []),
+          ],
+        },
+        include: {
+          profile: true,
+        },
+      });
 
-    // Hash password to securely store and pass through Midtrans metadata
-    const hashedPassword = await bcrypt.hash(password, 10);
+      if (!studentUser) {
+        return NextResponse.json(
+          { error: "Sesi login tidak valid. Pengguna tidak ditemukan." },
+          { status: 401 }
+        );
+      }
 
-    // SECURITY ENFORCEMENT:
-    // Strictly enforce the price to server-side constant (Rp 49.000).
-    // Client-supplied amount values are completely ignored to prevent price tampering attacks.
-    const price = DEFAULT_ASSESSMENT_PRICE;
-    const orderId = `GGC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      customerEmail = studentUser.email;
+      customerName =
+        name?.trim() ||
+        studentUser.profile?.full_name ||
+        session.user.name ||
+        "Siswa GGC";
 
-    // Ensure student user account exists in DB so client auto-login succeeds smoothly upon payment completion
-    let studentUser = await prisma.user.findUnique({
-      where: { email: trimmedEmail },
-    });
+      if (!customerPhone && studentUser.profile?.phone_number) {
+        customerPhone = studentUser.profile.phone_number;
+      }
 
-    if (!studentUser) {
-      studentUser = await prisma.user.create({
-        data: {
-          email: trimmedEmail,
-          password_hash: hashedPassword,
-          role: "STUDENT",
-          is_active: true,
-          email_verified: false,
-          profile: {
-            create: {
-              full_name: name.trim(),
-              phone_number: phone ? phone.trim() : null,
+      // If user provided a phone number and profile doesn't have it, update profile
+      if (phone?.trim() && !studentUser.profile?.phone_number && studentUser.profile?.id) {
+        try {
+          await prisma.studentProfile.update({
+            where: { id: studentUser.profile.id },
+            data: { phone_number: phone.trim() },
+          });
+        } catch (updateErr) {
+          console.warn("Could not auto-save phone number to profile:", updateErr);
+        }
+      }
+    } else {
+      // ==========================================
+      // 2. GUEST (UNAUTHENTICATED) CHECKOUT FLOW
+      // ==========================================
+      if (!name || !email) {
+        return NextResponse.json(
+          { error: "Nama dan email wajib diisi untuk memesan asesmen." },
+          { status: 400 }
+        );
+      }
+
+      if (!password || password.length < 8) {
+        return NextResponse.json(
+          { error: "Password must be at least 8 characters long." },
+          { status: 400 }
+        );
+      }
+
+      const trimmedEmail = email.toLowerCase().trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        return NextResponse.json(
+          { error: "Format email tidak valid." },
+          { status: 400 }
+        );
+      }
+
+      customerEmail = trimmedEmail;
+      customerName = name.trim();
+
+      // Hash password once, stored ONLY in internal database (never sent to Midtrans)
+      hashedPassword = await bcrypt.hash(password, 10);
+
+      // Check if user already exists
+      studentUser = await prisma.user.findUnique({
+        where: { email: customerEmail },
+        include: {
+          orders: { where: { status: "SUCCESS" }, select: { id: true }, take: 1 },
+          sessions: { select: { id: true }, take: 1 },
+        },
+      });
+
+      if (!studentUser) {
+        studentUser = await prisma.user.create({
+          data: {
+            email: customerEmail,
+            password_hash: hashedPassword,
+            role: "STUDENT",
+            is_active: true,
+            email_verified: false,
+            profile: {
+              create: {
+                full_name: customerName,
+                phone_number: customerPhone,
+              },
             },
           },
-        },
-      });
-    } else {
-      studentUser = await prisma.user.update({
-        where: { id: studentUser.id },
-        data: {
-          password_hash: hashedPassword,
-          is_active: true,
-        },
-      });
+          include: {
+            orders: { where: { status: "SUCCESS" }, select: { id: true }, take: 1 },
+            sessions: { select: { id: true }, take: 1 },
+          },
+        });
+      } else {
+        // SECURITY (anti account-takeover):
+        // Never let an anonymous checkout request overwrite the password of an existing active account.
+        const isAbandonedCheckoutAccount =
+          studentUser.role === "STUDENT" &&
+          studentUser.email_verified === false &&
+          studentUser.orders.length === 0 &&
+          studentUser.sessions.length === 0;
+
+        if (!isAbandonedCheckoutAccount) {
+          return NextResponse.json(
+            {
+              error:
+                "Email ini sudah terdaftar. Silakan masuk (login) menggunakan akun Anda terlebih dahulu.",
+              code: "EMAIL_ALREADY_REGISTERED",
+            },
+            { status: 409 }
+          );
+        }
+
+        studentUser = await prisma.user.update({
+          where: { id: studentUser.id },
+          data: {
+            password_hash: hashedPassword,
+            is_active: true,
+          },
+          include: {
+            orders: { where: { status: "SUCCESS" }, select: { id: true }, take: 1 },
+            sessions: { select: { id: true }, take: 1 },
+          },
+        });
+      }
     }
 
-    // 2. Prepare Midtrans Snap parameters with hashed password in custom_field1
+    // ==========================================
+    // 3. PRE-CREATE ORDER RECORD IN DATABASE
+    // ==========================================
+    // Server-side constant price enforcement (Rp 49.000) prevents price tampering
+    const price = DEFAULT_ASSESSMENT_PRICE;
+    const orderId = `GGC-${Date.now()}-${crypto.randomInt(1000, 10000)}`;
+
+    const preCreatedOrder = await prisma.order.create({
+      data: {
+        order_id: orderId,
+        user_id: studentUser.id,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone,
+        amount: price,
+        status: "PENDING",
+        payment_details: {
+          ...(hashedPassword
+            ? { hashedPassword }
+            : { is_authenticated_purchase: true, user_id: studentUser.id }),
+        },
+      },
+    });
+
+    // ==========================================
+    // 4. PREPARE MIDTRANS SNAP PARAMETERS
+    // ==========================================
     const parameter: any = {
       transaction_details: {
         order_id: orderId,
         gross_amount: price,
       },
       customer_details: {
-        first_name: name.trim(),
-        email: trimmedEmail,
-        phone: phone ? phone.trim() : undefined,
+        first_name: customerName,
+        email: customerEmail,
+        phone: customerPhone || undefined,
       },
-      custom_field1: hashedPassword,
       item_details: [
         {
           id: "GGC-STUDY-FIT-FULL",
@@ -104,7 +221,9 @@ export async function POST(req: Request) {
       },
     };
 
-    // 3. Request Snap transaction token from Midtrans
+    // ==========================================
+    // 5. REQUEST SNAP TRANSACTION TOKEN
+    // ==========================================
     let transactionToken = "";
     let redirectUrl = "";
 
@@ -115,45 +234,44 @@ export async function POST(req: Request) {
     } catch (midtransErr: any) {
       console.error("❌ Midtrans createTransaction error:", midtransErr);
 
-      // Fallback for mock/local sandbox testing if server key is not yet configured with live Midtrans
-      if (
+      // Fallback mock token is ONLY permitted outside production when server key is missing or unauthorized
+      const isDevOrTest = process.env.NODE_ENV !== "production";
+      const isServerKeyMissing =
         !process.env.MIDTRANS_SERVER_KEY ||
-        process.env.MIDTRANS_SERVER_KEY.includes("your_server_key_here")
-      ) {
+        process.env.MIDTRANS_SERVER_KEY.includes("your_server_key_here");
+      const isAuthError =
+        midtransErr?.httpStatusCode === 401 ||
+        midtransErr?.ApiResponse?.error === "Unauthorized";
+
+      if (isDevOrTest && (isServerKeyMissing || isAuthError)) {
+        console.warn(
+          "⚠️ [Dev Mode] Falling back to mock Snap token due to unconfigured/unauthorized Midtrans server key."
+        );
         transactionToken = `mock-snap-token-${orderId}`;
         redirectUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${transactionToken}`;
       } else {
         return NextResponse.json(
           {
-            error: "Gagal menghubungkan ke gateway pembayaran Midtrans. Mohon periksa konfigurasi server key.",
-            details: midtransErr?.message || String(midtransErr),
+            error:
+              "Gateway pembayaran sedang tidak dapat dihubungi. Silakan coba beberapa saat lagi.",
           },
-          { status: 500 }
+          { status: 502 }
         );
       }
     }
 
-    // 4. Save order to database
-    try {
-      await prisma.order.create({
-        data: {
-          order_id: orderId,
-          user_id: studentUser.id,
-          customer_name: name.trim(),
-          customer_email: trimmedEmail,
-          customer_phone: phone ? phone.trim() : null,
-          amount: price,
-          status: "PENDING",
-          snap_token: transactionToken,
-          snap_redirect_url: redirectUrl,
-          payment_details: {
-            hashedPassword,
-          },
-        },
-      });
-    } catch (dbErr) {
-      console.warn("⚠️ Could not persist order record to database:", dbErr);
-    }
+    // ==========================================
+    // 6. UPDATE ORDER RECORD WITH SNAP TOKEN
+    // ==========================================
+    await prisma.order.update({
+      where: { id: preCreatedOrder.id },
+      data: {
+        snap_token: transactionToken,
+        snap_redirect_url: redirectUrl,
+      },
+    });
+
+    const isMock = transactionToken.startsWith("mock-snap-token-");
 
     return NextResponse.json({
       success: true,
@@ -161,12 +279,13 @@ export async function POST(req: Request) {
       snap_token: transactionToken,
       token: transactionToken,
       redirect_url: redirectUrl,
+      is_mock: isMock,
       client_key: process.env.MIDTRANS_CLIENT_KEY || process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY,
     });
   } catch (error: any) {
     console.error("Error in /api/payment/checkout:", error);
     return NextResponse.json(
-      { error: error?.message || "Terjadi kesalahan internal saat membuat transaksi." },
+      { error: "Terjadi kesalahan internal saat membuat transaksi. Silakan coba lagi." },
       { status: 500 }
     );
   }

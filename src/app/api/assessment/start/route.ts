@@ -40,11 +40,9 @@ export async function GET() {
     }
 
     // VERIFICATION GATEKEEPER:
-    // Only users with verified emails (or admin/demo accounts) are permitted to start/access the assessment
-    const isBypassAccount =
-      session.user.role === "ADMIN" ||
-      session.user.email === "student@ggc.id" ||
-      session.user.email === "admin@ggc.id";
+    // Only users with verified emails (or admins) are permitted to start/access the assessment.
+    // There is no demo-account bypass: every student must verify and pay.
+    const isBypassAccount = session.user.role === "ADMIN";
 
     const studentUserRecord = await prisma.user.findUnique({
       where: { id: userId },
@@ -103,7 +101,21 @@ export async function GET() {
         });
       }
     } catch (dbErr) {
-      console.warn("DB connection fallback for assessment/start:", dbErr);
+      console.error("DB error in assessment/start:", dbErr);
+
+      // SAFETY: Never hand out an in-memory mock session in production.
+      // Answers would silently fail to save and the student would lose their work.
+      if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+          {
+            error: "SERVICE_UNAVAILABLE",
+            message:
+              "Server sedang mengalami gangguan koneksi database. Jawaban Anda aman — silakan muat ulang halaman dalam beberapa saat.",
+          },
+          { status: 503 }
+        );
+      }
+
       dbConnected = false;
       // In-memory fallback representation for local development without DB
       assessmentSession = {
@@ -190,9 +202,7 @@ export async function GET() {
     console.error("Error in /api/assessment/start:", error);
     return NextResponse.json(
       {
-        error: "Gagal menginisialisasi sesi asesmen.",
-        details: error?.message || String(error),
-        stack: error?.stack,
+        error: "Terjadi kesalahan internal. Silakan coba lagi.",
       },
       { status: 500 }
     );

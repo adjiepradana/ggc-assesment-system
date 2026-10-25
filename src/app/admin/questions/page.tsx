@@ -187,24 +187,24 @@ function QuestionCmsContent() {
   return (
     <div className="space-y-6 pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200/90 dark:border-[#0E4230]">
         <div>
           <div className="flex items-center gap-2">
             <Link
               href="/admin/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-ggc transition-colors bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-[#A0B9AE] hover:text-ggc dark:hover:text-ggc-gold transition-colors bg-white dark:bg-[#07261B] px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#0E4230] shadow-xs"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Admin Dashboard</span>
             </Link>
-            <span className="text-xs text-gray-400">/</span>
-            <span className="text-xs font-semibold text-ggc-dark">Question Bank CMS</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">/</span>
+            <span className="text-xs font-semibold text-ggc-dark dark:text-emerald-300">Question Bank CMS</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-ggc-dark mt-2 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-ggc-dark dark:text-white mt-2 tracking-tight">
             Question Bank Manager (84 Butir Instrumen)
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-[#A0B9AE] mt-1">
             Kelola butir pernyataan, kategori dimensi, subdimensi penilaian, dan status keaktifan soal asesmen.
           </p>
         </div>
@@ -214,7 +214,7 @@ function QuestionCmsContent() {
             setFeedbackMsg(null);
             setIsAddModalOpen(true);
           }}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md transition-all self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-ggc hover:bg-ggc-light shadow-md transition-all self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4 text-ggc-gold" />
           <span>+ Tambah Butir Soal Baru</span>
@@ -227,10 +227,10 @@ function QuestionCmsContent() {
           <button
             key={dim.key}
             onClick={() => setSelectedCategory(dim.key)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
               selectedCategory === dim.key
-                ? "bg-ggc text-white border-ggc shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                ? "bg-ggc text-white border-ggc shadow-xs"
+                : "bg-white dark:bg-[#07261B] text-gray-600 dark:text-[#A0B9AE] border-gray-200 dark:border-[#0E4230] hover:bg-gray-50 dark:hover:bg-[#041B12]"
             }`}
           >
             {dim.name}
@@ -239,9 +239,9 @@ function QuestionCmsContent() {
       </div>
 
       {/* Search & Statistics Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-gray-200 shadow-sm">
-        <div className="text-xs text-gray-500">
-          Menampilkan <strong>{questions.length}</strong> butir instrumen aktif
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-[#07261B] border border-gray-200 dark:border-[#0E4230] shadow-xs transition-colors">
+        <div className="text-xs text-gray-500 dark:text-[#A0B9AE]">
+          Menampilkan <strong className="text-gray-800 dark:text-white">{questions.length}</strong> butir instrumen aktif
         </div>
 
         <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-72">
@@ -257,20 +257,20 @@ function QuestionCmsContent() {
       </div>
 
       {/* Questions List Table */}
-      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#07261B] rounded-3xl border border-gray-200 dark:border-[#0E4230] shadow-xs overflow-hidden transition-colors">
         {loading ? (
-          <div className="py-16 text-center text-xs text-gray-400">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-ggc" />
+          <div className="py-16 text-center text-xs text-gray-400 dark:text-[#A0B9AE]">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-ggc dark:text-ggc-gold" />
             <span>Memuat bank soal...</span>
           </div>
         ) : questions.length === 0 ? (
-          <div className="py-16 text-center text-xs text-gray-500">
+          <div className="py-16 text-center text-xs text-gray-500 dark:text-[#A0B9AE]">
             Tidak ada butir soal yang sesuai filter pencarian.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 text-gray-600 uppercase font-bold border-b border-gray-100">
+              <thead className="bg-gray-50 dark:bg-[#031810]/70 text-gray-600 dark:text-[#A0B9AE] uppercase font-bold border-b border-gray-100 dark:border-[#0E4230]">
                 <tr>
                   <th className="px-6 py-3.5">Kode</th>
                   <th className="px-6 py-3.5">Dimensi</th>
@@ -280,28 +280,28 @@ function QuestionCmsContent() {
                   <th className="px-6 py-3.5 text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-[#0E4230]">
                 {questions.map((q) => (
-                  <tr key={q.id} className="hover:bg-gray-50/80 transition-colors">
+                  <tr key={q.id} className="hover:bg-gray-50/80 dark:hover:bg-[#0B4632]/20 transition-colors">
                     {/* Code */}
-                    <td className="px-6 py-4 font-mono font-black text-ggc text-sm">
+                    <td className="px-6 py-4 font-mono font-black text-ggc dark:text-ggc-gold text-sm">
                       {q.code}
                     </td>
 
                     {/* Dimension Badge */}
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-ggc-subtle text-ggc border border-ggc/20">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-ggc-subtle dark:bg-emerald-950/80 text-ggc dark:text-emerald-300 border border-ggc/20 dark:border-emerald-800/40">
                         {q.dimension_category}
                       </span>
                     </td>
 
                     {/* Subdimension */}
-                    <td className="px-6 py-4 font-semibold text-gray-800">
+                    <td className="px-6 py-4 font-semibold text-gray-800 dark:text-gray-200">
                       {q.subdimensi}
                     </td>
 
                     {/* Text */}
-                    <td className="px-6 py-4 text-gray-700 max-w-md leading-relaxed">
+                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300 max-w-md leading-relaxed">
                       {q.question_text}
                     </td>
 
@@ -309,10 +309,10 @@ function QuestionCmsContent() {
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleToggleActive(q)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all border ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all border cursor-pointer ${
                           q.is_active
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                            : "bg-gray-100 text-gray-500 border-gray-300"
+                            ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700"
                         }`}
                         title="Klik untuk ubah status aktif"
                       >

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { calculateAssessmentScores } from "@/lib/scoring";
-import { all84QuestionsData } from "@/lib/questions-data";
+import { Prisma } from "@prisma/client";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -35,11 +35,14 @@ export async function GET(req: Request) {
           profile: true,
           sessions: {
             orderBy: { started_at: "desc" },
-            include: {
-              answers: {
-                include: {
-                  question: true,
-                },
+            select: {
+              id: true,
+              status: true,
+              started_at: true,
+              completed_at: true,
+              result_data: true,
+              _count: {
+                select: { answers: true },
               },
             },
           },
@@ -62,16 +65,11 @@ export async function GET(req: Request) {
         let topMajor = "-";
         let fitScore = 0;
 
-        if (latestSession && latestSession.answers.length > 0) {
-          const answersRecord: Record<string, number> = {};
-          for (const ans of latestSession.answers) {
-            const code = ans.question?.code || ans.question_id;
-            answersRecord[code] = ans.selected_value;
-          }
-          const scores = calculateAssessmentScores(latestSession.id, answersRecord);
-          topSignature = scores.potentialSignatures[0]?.title || "-";
-          topMajor = scores.studyRecommendations[0]?.majorName || "-";
-          fitScore = scores.studyRecommendations[0]?.fitScore || 0;
+        if (latestSession?.result_data) {
+          const scores = latestSession.result_data as any;
+          topSignature = scores.potentialSignatures?.[0]?.title || "-";
+          topMajor = scores.studyRecommendations?.[0]?.majorName || "-";
+          fitScore = scores.studyRecommendations?.[0]?.fitScore || 0;
         }
 
         return {
@@ -79,8 +77,8 @@ export async function GET(req: Request) {
           name: u.profile?.full_name || u.email.split("@")[0],
           email: u.email,
           phoneNumber: u.profile?.phone_number || "-",
-          school: u.profile?.school_name || "SMA Negeri 1 Jakarta",
-          grade: u.profile?.grade || "Kelas 12",
+          school: u.profile?.school_name || "-",
+          grade: u.profile?.grade || "-",
           isActive: u.is_active,
           session: latestSession
             ? {
@@ -88,7 +86,7 @@ export async function GET(req: Request) {
                 status: latestSession.status,
                 startedAt: latestSession.started_at,
                 completedAt: latestSession.completed_at,
-                answeredCount: latestSession.answers.length,
+                answeredCount: latestSession._count?.answers || 0,
                 topSignature,
                 topMajor,
                 fitScore,
@@ -97,133 +95,12 @@ export async function GET(req: Request) {
           createdAt: u.created_at,
         };
       });
-    } catch (dbErr) {
-      console.warn("DB fetch fallback in admin students route:", dbErr);
-    }
-
-    // Rich fallback data for developer preview if database is not populated
-    if (studentsList.length === 0) {
-      const mockStudents = [
-        {
-          id: "stu-1",
-          name: "Muhammad Kevin Pratama",
-          email: "student@ggc.id",
-          phoneNumber: "081234567890",
-          school: "SMA Negeri 1 Jakarta",
-          grade: "Kelas 12 MIPA",
-          session: {
-            id: "sess-demo-1",
-            status: "COMPLETED",
-            startedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-            completedAt: new Date(Date.now() - 3600000).toISOString(),
-            answeredCount: 84,
-            topSignature: "The Analytical Strategist",
-            topMajor: "Teknik Informatika & Ilmu Komputer",
-            fitScore: 92,
-          },
-          createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-        },
-        {
-          id: "stu-2",
-          name: "Alya Zahra Salsabila",
-          email: "alya.zahra@gmail.com",
-          phoneNumber: "085712345678",
-          school: "SMA Labschool Kebayoran",
-          grade: "Kelas 12 IPS",
-          session: {
-            id: "sess-demo-2",
-            status: "COMPLETED",
-            startedAt: new Date(Date.now() - 86400000).toISOString(),
-            completedAt: new Date(Date.now() - 86400000 + 1800000).toISOString(),
-            answeredCount: 84,
-            topSignature: "The Visionary Creator",
-            topMajor: "Desain Komunikasi Visual (DKV) & UI/UX",
-            fitScore: 89,
-          },
-          createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-        },
-        {
-          id: "stu-3",
-          name: "Rayhan Dimas Fadhilah",
-          email: "rayhan.dimas@yahoo.com",
-          phoneNumber: "081398765432",
-          school: "SMK Negeri 26 Jakarta (Teknik)",
-          grade: "Kelas 12 Teknik Elektronika",
-          session: {
-            id: "sess-demo-3",
-            status: "IN_PROGRESS",
-            startedAt: new Date(Date.now() - 1800000).toISOString(),
-            completedAt: null,
-            answeredCount: 48,
-            topSignature: "The Structural Engineer",
-            topMajor: "Teknik Rekayasa Elektro & Robotika",
-            fitScore: 81,
-          },
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-          id: "stu-4",
-          name: "Nabila Putri Kirana",
-          email: "nabila.kirana@outlook.com",
-          phoneNumber: "082144556677",
-          school: "SMA Kanisius Jakarta",
-          grade: "Kelas 11 MIPA",
-          session: {
-            id: "sess-demo-4",
-            status: "COMPLETED",
-            startedAt: new Date(Date.now() - 86400000 * 4).toISOString(),
-            completedAt: new Date(Date.now() - 86400000 * 4 + 2100000).toISOString(),
-            answeredCount: 84,
-            topSignature: "The Empathetic Catalyst",
-            topMajor: "Psikologi & Ilmu Perilaku Manusia",
-            fitScore: 88,
-          },
-          createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-        },
-        {
-          id: "stu-5",
-          name: "Fadhil Arya Pratama",
-          email: "fadhil.arya@gmail.com",
-          phoneNumber: "081900112233",
-          school: "SMA Taruna Nusantara",
-          grade: "Kelas 12 MIPA",
-          session: {
-            id: "sess-demo-5",
-            status: "COMPLETED",
-            startedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-            completedAt: new Date(Date.now() - 86400000 * 5 + 1900000).toISOString(),
-            answeredCount: 84,
-            topSignature: "The Quantitative Architect",
-            topMajor: "Bisnis, Manajemen & Kewirausahaan",
-            fitScore: 85,
-          },
-          createdAt: new Date(Date.now() - 86400000 * 6).toISOString(),
-        },
-        {
-          id: "stu-6",
-          name: "Jessica Christie Wijaya",
-          email: "jessica.wijaya@gmail.com",
-          phoneNumber: "081288776655",
-          school: "SMA Santa Ursula Jakarta",
-          grade: "Kelas 12 IPS",
-          session: {
-            id: "sess-demo-6",
-            status: "IN_PROGRESS",
-            startedAt: new Date(Date.now() - 900000).toISOString(),
-            completedAt: null,
-            answeredCount: 24,
-            topSignature: "The Persuasive Articulator",
-            topMajor: "Ilmu Hukum & Hubungan Internasional",
-            fitScore: 78,
-          },
-          createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-        },
-      ];
-
-      studentsList = mockStudents;
-      totalRegisteredStudents = mockStudents.length;
-      totalActiveSessions = mockStudents.filter((s) => s.session?.status === "IN_PROGRESS").length;
-      totalCompletedSessions = mockStudents.filter((s) => s.session?.status === "COMPLETED").length;
+    } catch (dbErr: any) {
+      console.error("❌ [Admin Students] DB fetch error:", dbErr);
+      return NextResponse.json(
+        { error: "Gagal memuat rekapitulasi data siswa dari database." },
+        { status: 500 }
+      );
     }
 
     // Apply filtering
@@ -316,6 +193,7 @@ export async function PATCH(req: Request) {
             data: {
               status: "IN_PROGRESS",
               completed_at: null,
+              result_data: Prisma.DbNull,
             },
           }),
         ]);
@@ -330,6 +208,11 @@ export async function PATCH(req: Request) {
 
       const studentName = studentUser.profile?.full_name || studentUser.email;
 
+      await logAdminAction(session.user.id, "RESET_SESSION", studentId, {
+        studentEmail: studentUser.email,
+        studentName,
+      });
+
       return NextResponse.json({
         success: true,
         message: `Sesi asesmen untuk ${studentName} berhasil di-reset. Siswa dapat mengerjakan ulang 84 butir soal dari awal.`,
@@ -337,7 +220,8 @@ export async function PATCH(req: Request) {
     }
 
     // 2. Action: TOGGLE_ACTIVE (Soft delete / Ban / Restore)
-    // Toggles User.is_active. When false, NextAuth authorize callback blocks their login attempt.
+    // Toggles User.is_active. When false, NextAuth authorize callback blocks login attempts (constant-time check),
+    // and periodic JWT revalidation forces active sessions to revoke and logout within 5 minutes (Phase 2.5).
     if (action === "TOGGLE_ACTIVE" || action === "REVOKE_ACCESS" || action === "RESTORE_ACCESS") {
       const targetActive =
         action === "REVOKE_ACCESS"
@@ -353,6 +237,12 @@ export async function PATCH(req: Request) {
 
       const studentName = studentUser.profile?.full_name || studentUser.email;
       const statusLabel = targetActive ? "diaktifkan kembali" : "dicabut (nonaktif)";
+
+      await logAdminAction(session.user.id, action, studentId, {
+        studentEmail: studentUser.email,
+        studentName,
+        isActive: targetActive,
+      });
 
       return NextResponse.json({
         success: true,

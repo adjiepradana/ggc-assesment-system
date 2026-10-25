@@ -1,11 +1,21 @@
 import React from "react";
 import Navbar from "@/components/Navbar";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function StudentLayout({
+export default async function StudentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
+  // Phase 2.5: Guard against stale JWT tokens in server rendering
+  if (!session || !session.user || (session as any).error === "UserDeactivatedOrDeleted") {
+    redirect("/auth/login?error=SessionRevoked");
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-ggc-tint dark:bg-[#031810] text-gray-900 dark:text-[#E8F1EC] transition-colors overflow-x-hidden">
       <Navbar />

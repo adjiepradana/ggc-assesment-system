@@ -8,6 +8,7 @@ import {
   Image,
 } from "@react-pdf/renderer";
 import { ScoringResult } from "@/lib/scoring";
+import { CareerOrientationSynthesis } from "@/lib/career-orientation";
 
 interface ReportPdfProps {
   student: {
@@ -18,6 +19,7 @@ interface ReportPdfProps {
   };
   results: ScoringResult;
   logoSrc?: string;
+  careerOrientation?: CareerOrientationSynthesis | null;
 }
 
 // Define elegant PDF styles using GGC branding
@@ -447,12 +449,69 @@ const styles = StyleSheet.create({
     fontSize: 6,
     color: "#9CA3AF",
   },
+
+  // Career Orientation Styles (Page 4)
+  careerBadgeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    marginBottom: 6,
+  },
+  careerBadge: {
+    backgroundColor: "#F0FDF4",
+    borderWidth: 0.8,
+    borderColor: "#BBF7D0",
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
+    borderRadius: 4,
+  },
+  careerBadgeText: {
+    fontSize: 6.5,
+    fontWeight: "bold",
+    color: "#166534",
+  },
+  trajCard: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 0.8,
+    borderColor: "#E5E7EB",
+    borderRadius: 6,
+    padding: 6,
+    marginBottom: 5,
+  },
+  trajHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 2.5,
+  },
+  trajTitle: {
+    fontSize: 7.5,
+    fontWeight: "bold",
+    color: "#063424",
+  },
+  trajRating: {
+    fontSize: 6,
+    fontWeight: "bold",
+    color: "#A6863F",
+  },
+  trajNarrative: {
+    fontSize: 6.2,
+    color: "#374151",
+    lineHeight: 1.3,
+    marginBottom: 2.5,
+  },
+  trajRoles: {
+    fontSize: 6,
+    color: "#1F2937",
+    fontWeight: "bold",
+  },
 });
 
 export default function ReportPdfDocument({
   student,
   results,
   logoSrc,
+  careerOrientation,
 }: ReportPdfProps) {
   const topMajor = results.studyRecommendations[0];
   const readinessPercent = Math.round(
@@ -461,6 +520,7 @@ export default function ReportPdfDocument({
   const sessionDocId = `GGC-SFA-${(results.sessionId || "SESI")
     .slice(0, 8)
     .toUpperCase()}-2026`;
+  const totalPages = careerOrientation?.hasProfile ? 4 : 3;
 
   const dimensionFocusMap: Record<string, string> = {
     TALENT: "Potensi Kognitif & Logika",
@@ -604,7 +664,7 @@ export default function ReportPdfDocument({
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            © {new Date().getFullYear()} Go Great Career (GGC) • Halaman 1 dari 3 • Dokumen Rahasia Siswa
+            © {new Date().getFullYear()} Go Great Career (GGC) • Halaman 1 dari {totalPages} • Dokumen Rahasia Siswa
           </Text>
           <Text style={styles.footerText}>ID Sesi: {results.sessionId.slice(0, 16)}...</Text>
         </View>
@@ -744,7 +804,7 @@ export default function ReportPdfDocument({
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            © {new Date().getFullYear()} Go Great Career (GGC) • Halaman 2 dari 3 • Validasi Hasil Matriks
+            © {new Date().getFullYear()} Go Great Career (GGC) • Halaman 2 dari {totalPages} • Validasi Hasil Matriks
           </Text>
           <Text style={styles.footerText}>Status Validasi: CERTIFIED & ACCURATE</Text>
         </View>
@@ -855,11 +915,130 @@ export default function ReportPdfDocument({
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            © {new Date().getFullYear()} Go Great Career (GGC) • Halaman 3 dari 3 • Dokumen Sah & Bersertifikat
+            © {new Date().getFullYear()} Go Great Career (GGC) • Halaman 3 dari {totalPages} • Dokumen Sah & Bersertifikat
           </Text>
           <Text style={styles.footerText}>Verifikasi Digital: VALID & CERTIFIED</Text>
         </View>
       </Page>
+
+      {/* ========================================================================= */}
+      {/* PAGE 4: ORIENTASI KARIR & SINTESIS KEPEMIMPINAN (JIKA ADA DATA)           */}
+      {/* ========================================================================= */}
+      {careerOrientation?.hasProfile && (
+        <Page size="A4" style={styles.page}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerBrandContainer}>
+              {logoSrc ? <Image src={logoSrc} style={styles.logoImage} /> : null}
+              <View style={styles.headerBrand}>
+                <Text style={styles.headerTitle}>ORIENTASI KARIR & SINTESIS KEPEMIMPINAN</Text>
+                <Text style={styles.headerSubtitle}>
+                  PEMETAAN JALUR PROFESI, PENGALAMAN NYATA & ARKETIPE KERJA (MATRIX 3)
+                </Text>
+              </View>
+            </View>
+            <View style={styles.headerBadge}>
+              <Text style={styles.headerBadgeText}>
+                SCORE: {careerOrientation.readinessScore}/100
+              </Text>
+            </View>
+          </View>
+
+          {/* Context Badges */}
+          <View style={styles.careerBadgeRow}>
+            <View style={styles.careerBadge}>
+              <Text style={styles.careerBadgeText}>
+                Jurusan: {careerOrientation.profileData.educationLevel} - {careerOrientation.profileData.currentMajor}
+              </Text>
+            </View>
+            {careerOrientation.profileData.formalOrg ? (
+              <View style={styles.careerBadge}>
+                <Text style={styles.careerBadgeText}>
+                  Formal: {careerOrientation.profileData.formalOrg} ({careerOrientation.profileData.formalOrgRole})
+                </Text>
+              </View>
+            ) : null}
+            {careerOrientation.profileData.nonFormalExp ? (
+              <View style={styles.careerBadge}>
+                <Text style={styles.careerBadgeText}>
+                  Komunitas: {careerOrientation.profileData.nonFormalExp}
+                </Text>
+              </View>
+            ) : null}
+            {careerOrientation.profileData.workExp || careerOrientation.profileData.hobbyInterest ? (
+              <View style={styles.careerBadge}>
+                <Text style={styles.careerBadgeText}>
+                  Praktis: {careerOrientation.profileData.workExp || careerOrientation.profileData.hobbyInterest}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Archetype Box */}
+          <View style={[styles.infoBox, { marginBottom: 8, padding: 8 }]}>
+            <Text style={{ fontSize: 6, fontWeight: "bold", color: "#A6863F", textTransform: "uppercase" }}>
+              ARKETIPE KEPEMIMPINAN & GAYA KOLABORASI
+            </Text>
+            <Text style={{ fontSize: 9.5, fontWeight: "bold", color: "#063424", marginTop: 1.5 }}>
+              {careerOrientation.leadershipArchetype.name}
+            </Text>
+            <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#126348", marginBottom: 3 }}>
+              {careerOrientation.leadershipArchetype.subtitle}
+            </Text>
+            <Text style={{ fontSize: 6.5, color: "#374151", lineHeight: 1.3 }}>
+              {careerOrientation.leadershipArchetype.description}
+            </Text>
+            <View style={{ flexDirection: "row", marginTop: 3, gap: 8 }}>
+              <Text style={{ fontSize: 6, color: "#063424", fontWeight: "bold" }}>
+                Superpower: {careerOrientation.leadershipArchetype.superpower}
+              </Text>
+            </View>
+          </View>
+
+          {/* Section: 3 Strategic Trajectories */}
+          <Text style={[styles.sectionTitle, { fontSize: 8, marginBottom: 4 }]}>
+            3 JALUR KARIR STRATEGIS PILIHAN
+          </Text>
+
+          {careerOrientation.strategicTrajectories.map((traj, tIdx) => (
+            <View key={tIdx} style={styles.trajCard}>
+              <View style={styles.trajHeader}>
+                <Text style={styles.trajTitle}>
+                  Jalur {tIdx + 1}: {traj.title}
+                </Text>
+                <Text style={styles.trajRating}>{traj.prospectRating}</Text>
+              </View>
+              <Text style={styles.trajNarrative}>{traj.whyFitNarrative}</Text>
+              <Text style={styles.trajRoles}>
+                Contoh Peran: {traj.roleExamples.join(" • ")}
+              </Text>
+              <Text style={{ fontSize: 5.8, color: "#6B7280", marginTop: 2 }}>
+                Keahlian Kunci: {traj.skillsToMaster.join(", ")}
+              </Text>
+            </View>
+          ))}
+
+          {/* Action Roadmap Summary */}
+          <View style={[styles.infoBox, { marginTop: 4, marginBottom: 8 }]}>
+            <Text style={[styles.infoLabel, { marginBottom: 2 }]}>
+              Peta Rencana Aksi Karir (Roadmap Tahapan):
+            </Text>
+            <Text style={{ fontSize: 6.2, color: "#374151", lineHeight: 1.3 }}>
+              • Bulan 1–3: {careerOrientation.actionRoadmap.immediateStep}{"\n"}
+              • Bulan 6–12: {careerOrientation.actionRoadmap.mediumTermStep}{"\n"}
+              • Tahun 2–3: {careerOrientation.actionRoadmap.longTermGoal}
+            </Text>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              © {new Date().getFullYear()} Go Great Career (GGC) • Halaman 4 dari 4 • Dokumen Orientasi Karir
+            </Text>
+            <Text style={styles.footerText}>Status Validasi: CERTIFIED & ACCURATE</Text>
+          </View>
+        </Page>
+      )}
     </Document>
   );
 }

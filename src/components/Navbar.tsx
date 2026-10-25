@@ -23,6 +23,8 @@ import {
   Layers,
   HelpCircle,
   ExternalLink,
+  Settings,
+  Receipt,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -99,6 +101,17 @@ export default function Navbar() {
                     >
                       <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
                       <span>Asesmen Study Fit</span>
+                    </Link>
+                    <Link
+                      href="/student/settings"
+                      className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                        pathname === "/student/settings"
+                          ? "bg-ggc text-white shadow-xs"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold hover:bg-gray-50 dark:hover:bg-[#07261B]"
+                      }`}
+                    >
+                      <Settings className="w-3.5 h-3.5 text-ggc-gold" />
+                      <span>Pengaturan</span>
                     </Link>
                   </>
                 )}
@@ -242,6 +255,13 @@ export default function Navbar() {
             ) : (
               <div className="hidden sm:flex items-center gap-2">
                 <Link
+                  href="/order/track"
+                  className="px-3 py-2 text-xs font-semibold text-gray-600 dark:text-[#A0B9AE] hover:text-ggc dark:hover:text-ggc-gold transition-colors flex items-center gap-1.5"
+                >
+                  <Receipt className="w-3.5 h-3.5 text-ggc-gold" />
+                  <span>Cek Pesanan</span>
+                </Link>
+                <Link
                   href="/auth/login"
                   className="px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-[#C7DCD2] hover:text-ggc dark:hover:text-ggc-gold transition-colors"
                 >
@@ -370,6 +390,22 @@ export default function Navbar() {
                       <div className="flex items-center gap-3">
                         <Sparkles className="w-4 h-4 text-ggc-gold" />
                         <span>Asesmen Study Fit (84 Butir)</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 opacity-50" />
+                    </Link>
+
+                    <Link
+                      href="/student/settings"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                        pathname === "/student/settings"
+                          ? "bg-ggc text-white shadow-xs"
+                          : "text-gray-700 dark:text-[#C7DCD2] hover:bg-gray-100 dark:hover:bg-[#0A3324]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Settings className="w-4 h-4 text-ggc-gold" />
+                        <span>Pengaturan Akun & Keamanan</span>
                       </div>
                       <ChevronRight className="w-4 h-4 opacity-50" />
                     </Link>
@@ -502,6 +538,14 @@ export default function Navbar() {
                       className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-gray-700 dark:text-[#C7DCD2] bg-gray-50 dark:bg-[#07261B] hover:bg-gray-100 dark:hover:bg-[#0A3324] border border-gray-200 dark:border-[#103D2B] transition-colors"
                     >
                       <span>Sudah Punya Akun? Masuk</span>
+                    </Link>
+                    <Link
+                      href="/order/track"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-gray-600 dark:text-[#A0B9AE] bg-transparent hover:bg-gray-100 dark:hover:bg-[#07261B] transition-colors"
+                    >
+                      <Receipt className="w-3.5 h-3.5 text-ggc-gold" />
+                      <span>Sudah Bayar? Cek Status Pesanan</span>
                     </Link>
                   </div>
                 )}

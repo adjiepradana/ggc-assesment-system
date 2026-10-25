@@ -13,12 +13,12 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  GraduationCap,
   Sparkles,
   Compass,
   CheckCircle2,
   Layers,
   Award,
+  Receipt,
 } from "lucide-react";
 
 function LoginForm() {
@@ -45,6 +45,16 @@ function LoginForm() {
       }
     }
   }, [status, session, callbackUrl, router]);
+
+  // Phase 2.5: Detect forced logout / revoked session query parameter
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "SessionRevoked") {
+      setError(
+        "Sesi login Anda telah berakhir atau hak akses akun telah dinonaktifkan oleh administrator. Silakan hubungi admin atau login kembali."
+      );
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,17 +92,6 @@ function LoginForm() {
       setError("Terjadi kesalahan jaringan. Silakan coba lagi.");
       setIsLoading(false);
     }
-  };
-
-  const handleDemoFill = (role: "STUDENT" | "ADMIN") => {
-    if (role === "STUDENT") {
-      setEmail("student@ggc.id");
-      setPassword("student123");
-    } else {
-      setEmail("admin@ggc.id");
-      setPassword("admin123");
-    }
-    setError(null);
   };
 
   return (
@@ -176,6 +175,14 @@ function LoginForm() {
               )}
             </button>
           </div>
+          <div className="flex justify-end mt-2">
+            <Link
+              href="/auth/forgot-password"
+              className="text-xs font-semibold text-ggc dark:text-ggc-gold hover:text-ggc-light dark:hover:text-ggc-gold-light transition-colors"
+            >
+              Lupa Kata Sandi?
+            </Link>
+          </div>
         </div>
 
         {/* Submit Button */}
@@ -197,34 +204,24 @@ function LoginForm() {
         </div>
       </form>
 
-      {/* Demo Credentials Quick-Fill helper */}
-      <div className="mt-7 pt-6 border-t border-gray-100 dark:border-[#103D2B]">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-[#A0B9AE] mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
-          <span>Akses Cepat Akun Percobaan (Seed Demo)</span>
+      {/* Track Order Direct Link (Phase 2.4 - User closed tab before auto-login) */}
+      <div className="mt-5 p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/50 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 min-w-0">
+          <Receipt className="w-4 h-4 text-ggc-gold shrink-0" />
+          <span className="text-gray-700 dark:text-[#C7DCD2] font-medium truncate">
+            Sudah bayar tapi tab tertutup?
+          </span>
         </div>
-        <div className="grid grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={() => handleDemoFill("STUDENT")}
-            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc/10 dark:bg-emerald-950/60 text-ggc dark:text-emerald-300 hover:bg-ggc/20 dark:hover:bg-emerald-900/60 border border-ggc/20 dark:border-emerald-800/40 transition-all shadow-2xs hover:scale-101 cursor-pointer"
-          >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Akun Siswa</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDemoFill("ADMIN")}
-            className="inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-ggc-gold/20 dark:bg-ggc-gold/25 text-ggc-gold-dark dark:text-ggc-gold hover:bg-ggc-gold/30 border border-ggc-gold/30 transition-all shadow-2xs hover:scale-101 cursor-pointer"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Akun Admin</span>
-          </button>
-        </div>
+        <Link
+          href="/order/track"
+          className="font-bold text-ggc dark:text-ggc-gold hover:underline whitespace-nowrap ml-2 shrink-0"
+        >
+          Cek Status Pesanan &rarr;
+        </Link>
       </div>
 
       {/* Register Link */}
-      <div className="mt-6 text-center pt-2">
+      <div className="mt-4 text-center pt-1">
         <p className="text-xs text-gray-600 dark:text-[#A0B9AE]">
           Belum memiliki akun terdaftar?{" "}
           <Link

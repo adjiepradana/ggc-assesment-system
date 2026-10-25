@@ -30,12 +30,12 @@ export default function AdminLayout({
     if (pathname === "/admin/dashboard") return "Dashboard Overview & Analitik";
     if (pathname.startsWith("/admin/questions")) return "Manajemen Bank Soal (84 Butir)";
     if (pathname.startsWith("/admin/students")) return "Data Partisipan & Sesi Siswa";
-    if (pathname.startsWith("/admin/access-codes")) return "Kode Akses Lynk.id";
+    if (pathname.startsWith("/admin/transactions")) return "Manajemen Transaksi Midtrans";
     return "Admin Console";
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F7F5] flex flex-col selection:bg-ggc selection:text-white">
+    <div className="min-h-screen bg-[#F4F7F5] dark:bg-[#031810] text-gray-900 dark:text-[#E8F1EC] flex flex-col selection:bg-ggc selection:text-white transition-colors duration-250">
       {/* 1. Left Sidebar Navigation (260px Desktop & Mobile Slide-in Drawer) */}
       <AdminSidebar
         isMobileOpen={isMobileOpen}
@@ -43,7 +43,7 @@ export default function AdminLayout({
       />
 
       {/* 2. Top Mobile Header (< 1024px) */}
-      <header className="lg:hidden sticky top-0 z-30 h-16 bg-[#063424] text-white px-4 flex items-center justify-between border-b border-[#0B4632] shadow-md">
+      <header className="lg:hidden sticky top-0 z-30 h-16 bg-[#063424] dark:bg-[#02130C] text-white px-4 flex items-center justify-between border-b border-[#0B4632] dark:border-[#0E4230] shadow-md">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -86,18 +86,18 @@ export default function AdminLayout({
       {/* 3. Main Content Wrapper (Shifted right by 260px on Desktop) */}
       <div className="lg:pl-[260px] flex-1 flex flex-col min-w-0">
         {/* Desktop Top Header Bar */}
-        <div className="hidden lg:flex h-16 bg-white border-b border-gray-200/90 px-8 items-center justify-between sticky top-0 z-20 shadow-2xs">
+        <div className="hidden lg:flex h-16 bg-white dark:bg-[#07261B] border-b border-gray-200/90 dark:border-[#0E4230] px-8 items-center justify-between sticky top-0 z-20 shadow-2xs backdrop-blur-md transition-colors duration-250">
           {/* Breadcrumb & Section indicator */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold text-gray-500">Portal Administrator</span>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <span className="font-bold text-ggc-dark">{getPageTitle()}</span>
+            <span className="font-semibold text-gray-500 dark:text-[#A0B9AE]">Portal Administrator</span>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+            <span className="font-bold text-ggc-dark dark:text-white">{getPageTitle()}</span>
           </div>
 
           {/* Right Header Status & Admin Identity */}
           <div className="flex items-center gap-4">
             {/* Database indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>PostgreSQL Connected</span>
             </div>
@@ -105,22 +105,22 @@ export default function AdminLayout({
             {/* Quick Live Preview link */}
             <Link
               href="/"
-              className="text-xs font-bold text-gray-700 hover:text-ggc transition-colors flex items-center gap-1.5 border border-gray-200 px-3 py-1.5 rounded-xl bg-gray-50/80 hover:bg-gray-100 shadow-2xs"
+              className="text-xs font-bold text-gray-700 dark:text-[#E8F1EC] hover:text-ggc dark:hover:text-ggc-gold transition-colors flex items-center gap-1.5 border border-gray-200 dark:border-[#0E4230] px-3 py-1.5 rounded-xl bg-gray-50/80 dark:bg-[#041B12] hover:bg-gray-100 dark:hover:bg-[#0B3525] shadow-2xs"
             >
               <Compass className="w-3.5 h-3.5 text-ggc-gold" />
               <span>Kembali ke Halaman Utama</span>
             </Link>
 
             {/* Admin Avatar */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-gray-200">
-              <div className="w-8 h-8 rounded-xl bg-ggc text-ggc-gold font-bold flex items-center justify-center text-xs shadow-sm">
+            <div className="flex items-center gap-2.5 pl-2 border-l border-gray-200 dark:border-[#0E4230]">
+              <div className="w-8 h-8 rounded-xl bg-ggc text-ggc-gold font-bold flex items-center justify-center text-xs shadow-sm ring-1 ring-ggc-gold/30">
                 {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : "A"}
               </div>
               <div className="text-right">
-                <div className="text-xs font-bold text-gray-800 leading-tight">
+                <div className="text-xs font-bold text-gray-800 dark:text-white leading-tight">
                   {session?.user?.name || "Admin GGC"}
                 </div>
-                <div className="text-[10px] text-gray-500">Super Administrator</div>
+                <div className="text-[10px] text-gray-500 dark:text-[#A0B9AE]">Super Administrator</div>
               </div>
             </div>
           </div>
@@ -132,9 +132,9 @@ export default function AdminLayout({
         </main>
 
         {/* Admin Footer */}
-        <footer className="py-5 px-8 bg-white border-t border-gray-200 text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <footer className="py-5 px-8 bg-white dark:bg-[#07261B] border-t border-gray-200 dark:border-[#0E4230] text-xs text-gray-500 dark:text-[#A0B9AE] flex flex-col sm:flex-row items-center justify-between gap-3 transition-colors duration-250">
           <p>© {new Date().getFullYear()} Go Great Career (GGC) • Enterprise Multi-Matrix Assessment Console</p>
-          <div className="flex items-center gap-3 text-gray-400">
+          <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500">
             <span>84-Item Psychometric Instrument</span>
             <span>•</span>
             <span>Role-Based Access Control (RBAC)</span>

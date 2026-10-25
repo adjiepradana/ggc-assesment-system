@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAdminAction } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,11 @@ export async function PATCH(
       const updated = await prisma.question.update({
         where: { id },
         data: updateData,
+      });
+
+      await logAdminAction(session.user.id, "UPDATE_QUESTION", id, {
+        code: updated.code,
+        changes: updateData,
       });
 
       return NextResponse.json({
@@ -78,6 +84,8 @@ export async function DELETE(
         where: { id },
         data: { is_active: false },
       });
+
+      await logAdminAction(session.user.id, "DEACTIVATE_QUESTION", id);
 
       return NextResponse.json({
         success: true,

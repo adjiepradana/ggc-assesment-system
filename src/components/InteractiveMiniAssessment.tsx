@@ -79,37 +79,37 @@ export default function InteractiveMiniAssessment() {
   const currentReaction = reactionMap[selectedValue];
 
   return (
-    <div className="rounded-3xl bg-white p-5 sm:p-7 shadow-2xl border border-ggc-gold/40 backdrop-blur-xl relative overflow-hidden transition-all duration-300">
+    <div className="rounded-3xl bg-white dark:bg-[#07261B] p-5 sm:p-7 shadow-2xl border border-ggc-gold/40 backdrop-blur-xl relative overflow-hidden transition-all duration-300">
       {/* Top Header Badge */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+      <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230]">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-ggc text-ggc-gold flex items-center justify-center font-bold shadow-sm">
             <Zap className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-ggc-gold-dark">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-ggc-gold-dark dark:text-ggc-gold">
               Coba Langsung (Mini Simulator)
             </div>
-            <div className="text-xs sm:text-sm font-black text-ggc-dark">
+            <div className="text-xs sm:text-sm font-black text-ggc-dark dark:text-white">
               Simulasi Respon 1 Butir Soal
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>Live Calculator</span>
         </div>
       </div>
 
       {/* Simulated Question Card */}
-      <div className="mt-4 p-4 rounded-2xl bg-ggc-tint/60 border border-ggc-subtle">
-        <div className="flex items-center justify-between text-[11px] text-gray-500 font-semibold mb-1.5">
+      <div className="mt-4 p-4 rounded-2xl bg-ggc-tint/60 dark:bg-[#041B12] border border-ggc-subtle dark:border-[#0E4230] transition-colors">
+        <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 font-semibold mb-1.5">
           <span>Item T01 • Bakat Logika Analitikal</span>
-          <span className="text-ggc font-bold">1 dari 84 Soal</span>
+          <span className="text-ggc dark:text-ggc-gold font-bold">1 dari 84 Soal</span>
         </div>
-        <p className="text-xs sm:text-sm font-bold text-gray-800 leading-relaxed">
-          "Saya dengan cepat mampu menangkap pola sebab-akibat dalam data angka atau grafik rumit."
+        <p className="text-xs sm:text-sm font-bold text-gray-800 dark:text-[#E8F1EC] leading-relaxed">
+          &ldquo;Saya dengan cepat mampu menangkap pola sebab-akibat dalam data angka atau grafik rumit.&rdquo;
         </p>
 
         {/* 5 Likert Buttons */}
@@ -121,16 +121,16 @@ export default function InteractiveMiniAssessment() {
                 key={opt.val}
                 type="button"
                 onClick={() => handleSelect(opt.val)}
-                className={`py-2 px-1 rounded-xl text-center transition-all duration-200 flex flex-col items-center justify-center border ${
+                className={`py-2 px-1 rounded-xl text-center transition-all duration-200 flex flex-col items-center justify-center border cursor-pointer ${
                   isSelected
                     ? "bg-ggc text-white border-ggc-gold shadow-md shadow-ggc/20 scale-105 ring-2 ring-ggc-gold/40"
-                    : "bg-white text-gray-700 hover:bg-ggc-subtle/50 border-gray-200 hover:border-ggc/30"
+                    : "bg-white dark:bg-[#07261B] text-gray-700 dark:text-[#C7DCD2] hover:bg-ggc-subtle/50 dark:hover:bg-[#0A3324] border-gray-200 dark:border-[#103D2B] hover:border-ggc/30 dark:hover:border-ggc-gold/40"
                 }`}
               >
                 <span className="text-xs sm:text-sm font-black">{opt.val}</span>
                 <span
                   className={`text-[9px] font-semibold mt-0.5 ${
-                    isSelected ? "text-ggc-gold" : "text-gray-500"
+                    isSelected ? "text-ggc-gold" : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {opt.short}
@@ -177,14 +177,14 @@ export default function InteractiveMiniAssessment() {
         </div>
 
         <p className="mt-2.5 text-[11px] text-ggc-subtle/90 leading-relaxed italic">
-          "{currentReaction.desc}"
+          &ldquo;{currentReaction.desc}&rdquo;
         </p>
       </div>
 
       {/* CTA Button to Full 84 Questions */}
-      <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-        <span className="text-[11px] text-gray-500 flex items-center gap-1">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+      <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#0E4230] flex items-center justify-between">
+        <span className="text-[11px] text-gray-500 dark:text-[#A0B9AE] flex items-center gap-1">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span>84 Soal Lengkap Siap Dikerjakan</span>
         </span>
         <Link

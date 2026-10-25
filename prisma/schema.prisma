@@ -66,6 +66,18 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
+  @@map("password_reset_tokens")
+}
+
 enum OrderStatus {
   PENDING
   SUCCESS
@@ -97,15 +109,16 @@ model Order {
 }
 
 model StudentProfile {
-  id           String   @id @default(uuid())
-  user_id      String   @unique
-  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  full_name    String
-  phone_number String?
-  school_name  String?
-  grade        String?
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  user_id            String   @unique
+  user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  full_name          String
+  phone_number       String?
+  school_name        String?
+  grade              String?
+  career_preferences Json?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
 
   @@map("student_profiles")
 }
@@ -128,13 +141,15 @@ model Question {
 }
 
 model AssessmentSession {
-  id           String             @id @default(uuid())
-  user_id      String
-  user         User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  status       SessionStatus      @default(IN_PROGRESS)
-  started_at   DateTime           @default(now())
-  completed_at DateTime?
-  answers      AssessmentAnswer[]
+  id             String             @id @default(uuid())
+  user_id        String
+  user           User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  status         SessionStatus      @default(IN_PROGRESS)
+  started_at     DateTime           @default(now())
+  completed_at   DateTime?
+  career_profile Json?
+  result_data    Json?
+  answers        AssessmentAnswer[]
 
   @@index([user_id])
   @@index([status])
@@ -170,3 +185,20 @@ model AccessCode {
   @@index([used_by])
   @@map("access_codes")
 }
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  admin_id   String
+  action     String
+  target_id  String?
+  details    Json?
+  created_at DateTime @default(now())
+
+  @@index([admin_id])
+  @@index([action])
+  @@map("admin_audit_logs")
+}
+
+
+
+

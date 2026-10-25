@@ -1,4 +1,10 @@
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+const RESEND_FROM_EMAIL =
+  process.env.RESEND_FROM_EMAIL || "Go Great Career <onboarding@resend.dev>";
 
 /**
  * Reusable Gmail SMTP Transporter for Go Great Career (GGC)
@@ -18,6 +24,83 @@ export interface SendEmailResult {
   success: boolean;
   messageId?: string;
   error?: string;
+}
+
+/**
+ * Dispatches an email using Resend transactional ESP if available,
+ * falling back to Nodemailer SMTP, and finally dev logging if unconfigured.
+ */
+async function dispatchEmail({
+  to,
+  subject,
+  html,
+  text,
+  logContext,
+  localFallbackUrl,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  logContext: string;
+  localFallbackUrl: string;
+}): Promise<SendEmailResult> {
+  // 1. Primary: Resend ESP
+  if (resend) {
+    try {
+      const { data, error } = await resend.emails.send({
+        from: RESEND_FROM_EMAIL,
+        to,
+        subject,
+        html,
+        text,
+      });
+
+      if (!error && data?.id) {
+        console.log(`✉️ [Resend] ${logContext} sent to ${to}. ID: ${data.id}`);
+        return { success: true, messageId: data.id };
+      }
+      console.warn(
+        `⚠️ [Resend] Sending failed (${error?.message}). Falling back to Nodemailer...`
+      );
+    } catch (err: any) {
+      console.warn(
+        `⚠️ [Resend] Exception (${err?.message}). Falling back to Nodemailer...`
+      );
+    }
+  }
+
+  // 2. Secondary Fallback: Nodemailer SMTP
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    try {
+      const senderEmail = process.env.EMAIL_USER;
+      const info = await mailTransporter.sendMail({
+        from: `"Go Great Career (GGC)" <${senderEmail}>`,
+        to,
+        subject,
+        text,
+        html,
+      });
+      console.log(`✉️ [Nodemailer] ${logContext} sent to ${to}. ID: ${info.messageId}`);
+      return { success: true, messageId: info.messageId };
+    } catch (smtpErr: any) {
+      console.error(`❌ [Nodemailer] Failed to send ${logContext}:`, smtpErr);
+      return {
+        success: false,
+        error: smtpErr?.message || "Failed to send email via SMTP.",
+      };
+    }
+  }
+
+  // 3. Dev / Mock Fallback if neither ESP nor SMTP credentials are provided
+  console.warn(
+    `⚠️ [Mail] RESEND_API_KEY and SMTP credentials not set. Simulated ${logContext} for ${to}. Action Link:`,
+    localFallbackUrl
+  );
+  return {
+    success: true,
+    messageId: "mock-local-dev-id",
+  };
 }
 
 /**
@@ -120,7 +203,7 @@ https://gogreatcareer.com
               </h2>
 
               <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.65; color: #334155;">
-                Selamat datang di platform evaluasi studi resmi <strong>Go Great Career</strong>. Akun Anda telah berhasil didaftarkan dengan kode akses resmi Lynk.id.
+                Selamat datang di platform evaluasi studi resmi <strong>Go Great Career</strong>. Pembayaran tiket asesmen Anda telah berhasil dikonfirmasi dan akun Anda telah aktif.
               </p>
 
               <p style="margin: 0 0 28px 0; font-size: 15px; line-height: 1.65; color: #334155;">
@@ -223,37 +306,174 @@ https://gogreatcareer.com
 </html>
   `.trim();
 
-  try {
-    // If credentials are not yet configured in local environment, log a warning and return safe mock response
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.warn(
-        "⚠️ [Nodemailer] EMAIL_USER atau EMAIL_PASS belum disetel di file .env. Verification email link:",
-        verificationUrl
-      );
-      return {
-        success: true,
-        messageId: "mock-local-email-id",
-      };
-    }
+  return dispatchEmail({
+    to: toEmail,
+    subject: emailSubject,
+    html: htmlContent,
+    text: plainTextContent,
+    logContext: "Verification email",
+    localFallbackUrl: verificationUrl,
+  });
+}
 
-    const info = await mailTransporter.sendMail({
-      from: `"Go Great Career (GGC)" <${senderEmail}>`,
-      to: toEmail,
-      subject: emailSubject,
-      text: plainTextContent,
-      html: htmlContent,
-    });
+/**
+ * Sends a luxury-styled password reset email to a student.
+ *
+ * @param toEmail - Destination user email address
+ * @param userName - Full name of the user
+ * @param token - Secure random password reset token
+ */
+export async function sendPasswordResetEmail(
+  toEmail: string,
+  userName: string,
+  token: string
+): Promise<SendEmailResult> {
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const resetUrl = `${baseUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
+  const senderEmail = process.env.EMAIL_USER || "gogreatcareer@gmail.com";
 
-    console.log(`✉️ [Nodemailer] Verification email sent to ${toEmail}. Message ID: ${info.messageId}`);
-    return {
-      success: true,
-      messageId: info.messageId,
-    };
-  } catch (error: any) {
-    console.error("❌ [Nodemailer] Error sending verification email:", error);
-    return {
-      success: false,
-      error: error?.message || "Gagal mengirim email verifikasi.",
-    };
-  }
+  const sanitizedName = userName
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  const emailSubject = "Atur Ulang Kata Sandi Akun Anda - Go Great Career (GGC)";
+
+  const plainTextContent = `
+Halo ${userName},
+
+Kami menerima permintaan untuk mengatur ulang kata sandi akun Go Great Career Anda.
+
+Silakan klik tautan di bawah ini untuk membuat kata sandi baru:
+${resetUrl}
+
+Tautan ini hanya berlaku selama 1 jam. Jika Anda tidak meminta pengaturan ulang kata sandi, abaikan email ini dengan aman. Kata sandi lama Anda tidak akan berubah.
+
+Salam,
+Tim Go Great Career
+https://gogreatcareer.com
+  `.trim();
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${emailSubject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F4F8F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1E293B;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F4F8F5; padding: 40px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFFFF; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(11, 70, 50, 0.08); border: 1px solid #E2EBE5;">
+          
+          <!-- Luxury Header Banner -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #072F22 0%, #0B4632 60%, #135E44 100%); background-color: #0B4632; padding: 38px 32px 32px 32px; text-align: center;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto 14px auto;">
+                <tr>
+                  <td style="background-color: rgba(197, 168, 105, 0.18); border: 1px solid #C5A869; padding: 6px 16px; border-radius: 9999px; text-align: center;">
+                    <span style="font-size: 11px; font-weight: 800; color: #F5E8C7; letter-spacing: 2px; text-transform: uppercase;">
+                      🔒 PEMULIHAN KEAMANAN AKUN
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="margin: 0; font-size: 24px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.5px;">
+                GO GREAT CAREER
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Gold Line -->
+          <tr>
+            <td style="height: 4px; background: linear-gradient(90deg, #E6D5A8 0%, #C5A869 50%, #9A7D3E 100%); background-color: #C5A869; font-size: 0; line-height: 0;">&nbsp;</td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 38px 36px 32px 36px;">
+              <h2 style="margin: 0 0 16px 0; font-size: 19px; font-weight: 800; color: #0B4632;">
+                Halo, ${sanitizedName}! 👋
+              </h2>
+
+              <p style="margin: 0 0 18px 0; font-size: 14px; line-height: 1.65; color: #334155;">
+                Kami menerima permintaan untuk mengatur ulang kata sandi akun <strong>Go Great Career</strong> yang terhubung dengan alamat email ini.
+              </p>
+
+              <p style="margin: 0 0 28px 0; font-size: 14px; line-height: 1.65; color: #334155;">
+                Silakan klik tombol di bawah ini untuk membuat kata sandi baru akun Anda:
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 28px 0;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                      <tr>
+                        <td align="center" style="border-radius: 14px; background: linear-gradient(135deg, #0B4632 0%, #156247 100%); background-color: #0B4632; box-shadow: 0 6px 18px rgba(11, 70, 50, 0.28); border: 1.5px solid #C5A869;">
+                          <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 15px 36px; font-size: 14px; font-weight: 800; color: #FFFFFF; text-decoration: none; border-radius: 14px; letter-spacing: 0.3px;">
+                            Atur Ulang Kata Sandi &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Fallback Direct Link -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8F9FA; border-left: 3px solid #C5A869; border-radius: 4px; margin: 0 0 24px 0;">
+                <tr>
+                  <td style="padding: 12px 16px;">
+                    <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 600; color: #64748B;">
+                      Atau salin tautan berikut ke peramban (browser) Anda:
+                    </p>
+                    <p style="margin: 0; font-size: 11px; line-height: 1.5; word-break: break-all; color: #0B4632; font-family: monospace;">
+                      <a href="${resetUrl}" target="_blank" style="color: #0B4632; text-decoration: underline;">
+                        ${resetUrl}
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Expiration Warning -->
+              <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #94A3B8; text-align: center;">
+                🔒 Tautan ini hanya berlaku selama <strong>1 jam</strong>. Jika Anda tidak meminta pengaturan ulang kata sandi, abaikan email ini dengan aman.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #F8FAF9; border-top: 1px solid #E2ECE6; padding: 24px 32px; text-align: center;">
+              <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #0B4632;">
+                Go Great Career (GGC)
+              </p>
+              <p style="margin: 0; font-size: 10px; color: #94A3B8; line-height: 1.4;">
+                © ${new Date().getFullYear()} Go Great Career. Hak cipta dilindungi undang-undang.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+
+  return dispatchEmail({
+    to: toEmail,
+    subject: emailSubject,
+    html: htmlContent,
+    text: plainTextContent,
+    logContext: "Password reset email",
+    localFallbackUrl: resetUrl,
+  });
 }

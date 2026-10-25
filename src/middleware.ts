@@ -6,6 +6,12 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
+    // Phase 2.5: Force logout if user token is marked invalid or deactivated
+    if (!token || token.isInvalid || token.isActive === false || !token.id) {
+      const loginUrl = new URL("/auth/login?error=SessionRevoked", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
     // Strict Role-Based Access Control (RBAC)
     if (pathname.startsWith("/admin")) {
       if (token?.role !== "ADMIN") {
@@ -35,9 +41,9 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
-        // Require authentication for all /student/* and /admin/* routes
+        // Require authentication for all /student/* and /admin/* routes, ensuring token is active and valid
         if (pathname.startsWith("/student") || pathname.startsWith("/admin")) {
-          return !!token;
+          return !!token && !token.isInvalid && token.isActive !== false && !!token.id;
         }
         return true;
       },

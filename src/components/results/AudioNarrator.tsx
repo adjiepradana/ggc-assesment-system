@@ -105,7 +105,7 @@ export default function AudioNarrator({
 
   return (
     <div
-      className={`no-print flex items-center justify-between flex-wrap gap-3 p-3.5 sm:p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-ggc-gold/30 shadow-md ${className}`}
+      className={`no-print flex items-center justify-between flex-wrap gap-3 p-3.5 sm:p-4 rounded-2xl bg-white/95 dark:bg-[#07261B]/95 backdrop-blur-md border border-ggc-gold/30 dark:border-[#0E4230] shadow-md transition-colors ${className}`}
       role="region"
       aria-label="Pemutar narasi suara ringkasan asesmen"
     >
@@ -113,7 +113,7 @@ export default function AudioNarrator({
         <button
           type="button"
           onClick={handleTogglePlay}
-          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm ${
+          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm cursor-pointer ${
             isPlaying
               ? "bg-ggc-gold text-ggc-dark scale-105 ring-2 ring-ggc-gold/50"
               : "bg-ggc text-white hover:bg-ggc-light active:scale-95"
@@ -126,14 +126,14 @@ export default function AudioNarrator({
 
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-ggc-dark">Narasi Ringkasan Asesmen</span>
+            <span className="text-xs font-bold text-ggc-dark dark:text-white">Narasi Ringkasan Asesmen</span>
             {isPlaying && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 animate-pulse">
-                <Volume2 className="w-3 h-3 text-emerald-600" /> Memutar
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 animate-pulse">
+                <Volume2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Memutar
               </span>
             )}
           </div>
-          <p className="text-[11px] text-gray-500 line-clamp-1">
+          <p className="text-[11px] text-gray-500 dark:text-[#A0B9AE] line-clamp-1">
             Dengarkan intisari rekomendasi & sintesis potensi Anda dibacakan secara otomatis
           </p>
         </div>

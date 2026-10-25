@@ -7,47 +7,36 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Starting GGC Assessment System database seed...");
 
-  // 1. Seed Default Admin User
-  const adminPassword = await bcrypt.hash("admin123", 10);
-  await prisma.user.upsert({
-    where: { email: "admin@ggc.id" },
-    update: {},
-    create: {
-      email: "admin@ggc.id",
-      password_hash: adminPassword,
-      role: Role.ADMIN,
-      profile: {
-        create: {
-          full_name: "GGC Master Administrator",
-          phone_number: "081122334455",
-          school_name: "GGC Assessment Headquarter",
-          grade: "Staff Administrator",
-        },
-      },
-    },
-  });
-  console.log("✅ Admin user seeded: admin@ggc.id");
+  // 1. Seed initial Admin user from environment variables (no hardcoded / guessable credentials).
+  // No demo student is created: every student must register, verify, and pay.
+  const adminEmail = process.env.SEED_ADMIN_EMAIL?.toLowerCase().trim();
+  const adminPasswordPlain = process.env.SEED_ADMIN_PASSWORD;
 
-  // 2. Seed Sample Student User
-  const studentPassword = await bcrypt.hash("student123", 10);
-  await prisma.user.upsert({
-    where: { email: "student@ggc.id" },
-    update: {},
-    create: {
-      email: "student@ggc.id",
-      password_hash: studentPassword,
-      role: Role.STUDENT,
-      profile: {
-        create: {
-          full_name: "Muhammad Kevin Pratama",
-          phone_number: "081234567890",
-          school_name: "SMA Negeri 1 Jakarta",
-          grade: "Kelas 12 MIPA",
+  if (adminEmail && adminPasswordPlain) {
+    if (adminPasswordPlain.length < 12) {
+      throw new Error("SEED_ADMIN_PASSWORD minimal 12 karakter.");
+    }
+    const adminPassword = await bcrypt.hash(adminPasswordPlain, 12);
+    await prisma.user.upsert({
+      where: { email: adminEmail },
+      // Never overwrite an existing admin's password on re-seed
+      update: {},
+      create: {
+        email: adminEmail,
+        password_hash: adminPassword,
+        role: Role.ADMIN,
+        email_verified: true,
+        profile: {
+          create: {
+            full_name: "GGC Administrator",
+          },
         },
       },
-    },
-  });
-  console.log("✅ Sample student user seeded: student@ggc.id");
+    });
+    console.log(`✅ Admin user ensured: ${adminEmail}`);
+  } else {
+    console.log("ℹ️ SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD tidak di-set, melewati pembuatan admin.");
+  }
 
   // 3. Seed 84 Questions across 7 Dimensions
   console.log(`📦 Seeding ${all84QuestionsData.length} assessment question items across 7 dimensions...`);

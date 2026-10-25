@@ -64,9 +64,12 @@ export default function RadarChart({ data, className = "" }: RadarChartProps) {
               return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
             })
             .join(" ")}
-          fill={ring === 100 ? "#F3F8F5" : "none"}
-          stroke="#0B4632"
-          strokeOpacity={ring === 100 ? 0.18 : 0.1}
+          className={
+            ring === 100
+              ? "fill-[#F3F8F5] dark:fill-[#041D14]/80 stroke-[#0B4632] dark:stroke-[#1A5C43] opacity-90"
+              : "fill-none stroke-[#0B4632]/20 dark:stroke-[#1A5C43]/40"
+          }
+          strokeWidth={1}
           strokeDasharray={ring === 100 ? undefined : "3 4"}
         />
       ))}
@@ -74,16 +77,39 @@ export default function RadarChart({ data, className = "" }: RadarChartProps) {
       {/* Spokes */}
       {data.map((_, i) => {
         const p = point(i, total, RADIUS);
-        return <line key={i} x1={0} y1={0} x2={p.x} y2={p.y} stroke="#0B4632" strokeOpacity={0.12} />;
+        return (
+          <line
+            key={i}
+            x1={0}
+            y1={0}
+            x2={p.x}
+            y2={p.y}
+            className="stroke-[#0B4632]/20 dark:stroke-[#1A5C43]/40"
+          />
+        );
       })}
 
       {/* Data polygon + vertices */}
       <g className="radar-bloom">
-        <polygon points={polygon} fill="url(#radarFill)" stroke="#0B4632" strokeWidth={2} strokeLinejoin="round" />
+        <polygon
+          points={polygon}
+          fill="url(#radarFill)"
+          className="stroke-[#0B4632] dark:stroke-emerald-400"
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
         {data.map((d, i) => {
           const p = point(i, total, (Math.max(0, Math.min(100, d.value)) / 100) * RADIUS);
           return (
-            <circle key={i} cx={p.x} cy={p.y} r={4} fill="#C5A869" stroke="#063424" strokeWidth={1.5} />
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={4}
+              fill="#C5A869"
+              className="stroke-[#063424] dark:stroke-[#E8F1EC]"
+              strokeWidth={1.5}
+            />
           );
         })}
       </g>
@@ -98,7 +124,7 @@ export default function RadarChart({ data, className = "" }: RadarChartProps) {
               x={p.x}
               y={p.y - 2}
               textAnchor={anchor}
-              className="fill-ggc-dark"
+              className="fill-ggc-dark dark:fill-[#E8F1EC]"
               style={{ fontSize: 11, fontWeight: 800 }}
             >
               {d.label}
@@ -107,7 +133,8 @@ export default function RadarChart({ data, className = "" }: RadarChartProps) {
               x={p.x}
               y={p.y + 11}
               textAnchor={anchor}
-              style={{ fontSize: 10, fontWeight: 700, fill: "#A6863F" }}
+              className="fill-[#A6863F] dark:fill-[#ECC880]"
+              style={{ fontSize: 10, fontWeight: 700 }}
             >
               {d.value}%
             </text>

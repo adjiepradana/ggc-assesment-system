@@ -37,9 +37,11 @@ import {
   Lock,
   CreditCard,
   Mail,
+  Settings,
 } from "lucide-react";
 import { checkUserPaidAccess } from "@/lib/access-check";
 import ResendVerificationButton from "@/components/ResendVerificationButton";
+import BuyAssessmentButton from "@/components/BuyAssessmentButton";
 
 export default async function StudentDashboardPage({
   searchParams,
@@ -94,8 +96,7 @@ export default async function StudentDashboardPage({
       activeSession = user?.sessions[0] || null;
       isEmailVerified =
         user?.email_verified === true ||
-        session.user.role === "ADMIN" ||
-        session.user.email === "student@ggc.id";
+        session.user.role === "ADMIN";
 
       if (activeSession?.answers) {
         totalAnswers = activeSession.answers.length;
@@ -326,6 +327,14 @@ export default async function StudentDashboardPage({
               <Target className="w-4 h-4 text-ggc-gold" />
               <span>Target: PTN / PTS Favorit</span>
             </div>
+            <Link
+              href="/student/settings"
+              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 active:scale-[0.98] backdrop-blur-sm px-3.5 py-2 rounded-xl border border-white/20 text-white transition-all cursor-pointer shadow-xs"
+              title="Atur profil, nomor kontak, & kata sandi"
+            >
+              <Settings className="w-4 h-4 text-ggc-gold" />
+              <span>Pengaturan Akun</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -588,14 +597,10 @@ export default async function StudentDashboardPage({
               </div>
 
               <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-                <Link
-                  href="/student/assessment"
-                  className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-ggc-dark bg-gradient-to-r from-[#E6D5A8] via-ggc-gold to-ggc-gold-dark hover:shadow-lg transition-all text-sm group shadow-md cursor-pointer"
-                >
-                  <CreditCard className="w-4 h-4 text-ggc-dark" />
-                  <span>Beli Akses Sekarang (Rp 49.000)</span>
-                  <ArrowRight className="w-4 h-4 text-ggc-dark transition-transform duration-200 group-hover:translate-x-1" />
-                </Link>
+                <BuyAssessmentButton
+                  userName={session?.user?.name || undefined}
+                  userEmail={session?.user?.email || undefined}
+                />
               </div>
             </div>
           </div>

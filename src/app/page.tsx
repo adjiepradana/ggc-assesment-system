@@ -45,6 +45,7 @@ import {
   FileQuestion,
   LayoutDashboard,
   CreditCard,
+  Receipt,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -368,8 +369,35 @@ export default function HomePage() {
     });
   }, [faqCategory, faqSearch]);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: "GGC Study Fit Assessment™ - Tiket Akses Lengkap 84 Butir",
+    image: ["https://gogreatcareer.com/logo.png"],
+    description:
+      "Asesmen tes minat bakat online akurat dengan 84 butir soal holistik multi-matriks untuk menemukan potensi dan kecocokan jurusan kuliah PTN/PTS.",
+    brand: {
+      "@type": "Brand",
+      name: "Go Great Career (GGC)",
+    },
+    offers: {
+      "@type": "Offer",
+      url: "https://gogreatcareer.com",
+      priceCurrency: "IDR",
+      price: 49000,
+      priceValidUntil: "2027-12-31",
+      itemCondition: "https://schema.org/NewCondition",
+      availability: "https://schema.org/InStock",
+    },
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFBF9] dark:bg-[#031810] text-gray-900 dark:text-[#E8F1EC] overflow-x-hidden selection:bg-ggc selection:text-white pb-20 sm:pb-0 transition-colors duration-200">
+      {/* Search Engine Structured Data (JSON-LD) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
 
       {/* ================= HERO SECTION WITH INTERACTIVE RADAR & MINI SIMULATOR ================= */}
@@ -474,6 +502,20 @@ export default function HomePage() {
                 )}
               </div>
 
+              {/* Quick Track Order Link for returning paying users */}
+              {!session && (
+                <div className="mt-3.5 flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#A0B9AE]">
+                  <Receipt className="w-3.5 h-3.5 text-ggc-gold" />
+                  <span>Sudah bayar sebelumnya?</span>
+                  <Link
+                    href="/order/track"
+                    className="font-bold text-ggc dark:text-ggc-gold hover:underline"
+                  >
+                    Cek Status Pesanan di sini &rarr;
+                  </Link>
+                </div>
+              )}
+
               {/* Interactive Quick Trust Highlights (Clean In-Flow Grid, Zero Overlapping) */}
               <div className="mt-10 pt-7 border-t border-gray-200/80 dark:border-[#0E4230]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-700 dark:text-[#C7DCD2]">
@@ -527,14 +569,14 @@ export default function HomePage() {
 
               {/* Top View Mode Selector Pills & Status Indicator */}
               <div className="flex items-center justify-between gap-2 mb-3 relative z-20">
-                <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl bg-white/90 border border-gray-200/90 shadow-xs">
+                <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl bg-white/90 dark:bg-[#07261B]/90 border border-gray-200/90 dark:border-[#0E4230] shadow-xs">
                   <button
                     type="button"
                     onClick={() => setHeroTab("simulation")}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                       heroTab === "simulation"
                         ? "bg-ggc text-white shadow-xs"
-                        : "text-gray-600 hover:text-ggc hover:bg-gray-100"
+                        : "text-gray-600 dark:text-[#A0B9AE] hover:text-ggc dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                     }`}
                   >
                     <BarChart3 className="w-3.5 h-3.5 text-ggc-gold" />
@@ -546,7 +588,7 @@ export default function HomePage() {
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                       heroTab === "try"
                         ? "bg-ggc text-white shadow-xs"
-                        : "text-gray-600 hover:text-ggc hover:bg-gray-100"
+                        : "text-gray-600 dark:text-[#A0B9AE] hover:text-ggc dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#0A3324]"
                     }`}
                   >
                     <Zap className="w-3.5 h-3.5 text-amber-500" />
@@ -554,7 +596,7 @@ export default function HomePage() {
                   </button>
                 </div>
 
-                <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-2xs">
+                <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold shadow-2xs">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span>Auto-Save Aktif</span>
                 </div>
@@ -564,9 +606,9 @@ export default function HomePage() {
               {heroTab === "try" ? (
                 <InteractiveMiniAssessment />
               ) : (
-                <div className="relative rounded-3xl bg-white p-5 sm:p-7 shadow-2xl border border-ggc-gold/40 backdrop-blur-xl">
+                <div className="relative rounded-3xl bg-white dark:bg-[#07261B] p-5 sm:p-7 shadow-2xl border border-ggc-gold/40 backdrop-blur-xl transition-colors">
                   {/* Card Header with Official Logo */}
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                  <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230]">
                     <div className="flex items-center gap-3">
                       <img
                         src="/logo.png"
@@ -574,15 +616,15 @@ export default function HomePage() {
                         className="w-10 h-10 object-contain drop-shadow-sm"
                       />
                       <div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-ggc-gold-dark">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-ggc-gold-dark dark:text-ggc-gold">
                           Simulasi Radar Bakat 6 Sumbu
                         </div>
-                        <div className="text-sm font-black text-ggc-dark">
+                        <div className="text-sm font-black text-ggc-dark dark:text-white">
                           Amanda Putri • Kelas 12
                         </div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-ggc-gold" />
                       <span>96% Very Strong Fit</span>
                     </span>
@@ -620,14 +662,14 @@ export default function HomePage() {
                   </div>
 
                   {/* Card Action */}
-                  <div className="mt-4 pt-3.5 border-t border-gray-100 flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 flex items-center gap-1.5 font-medium">
-                      <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-[#0E4230] flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-gray-500 dark:text-[#A0B9AE] flex items-center gap-1.5 font-medium">
+                      <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>15–20 Menit Selesai</span>
                     </span>
                     <Link
                       href="/auth/register"
-                      className="text-xs font-bold text-ggc hover:text-ggc-dark flex items-center gap-1 transition-colors"
+                      className="text-xs font-bold text-ggc dark:text-ggc-gold hover:text-ggc-dark dark:hover:text-white flex items-center gap-1 transition-colors"
                     >
                       <span>Mulai Asesmen</span>
                       <ArrowRight className="w-3.5 h-3.5 text-ggc-gold" />
@@ -638,8 +680,8 @@ export default function HomePage() {
 
               {/* In-flow bottom reassurance badge (No Overlapping) */}
               <div className="mt-3.5 text-center">
-                <p className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/85 border border-gray-200/80 text-[11px] font-semibold text-gray-600 shadow-2xs">
-                  <FileText className="w-3.5 h-3.5 text-ggc" />
+                <p className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-[#07261B]/90 border border-gray-200/80 dark:border-[#0E4230] text-[11px] font-semibold text-gray-600 dark:text-[#A0B9AE] shadow-2xs">
+                  <FileText className="w-3.5 h-3.5 text-ggc dark:text-ggc-gold" />
                   <span>Dokumen hasil resmi siap didiskusikan bareng orang tua & guru BK</span>
                 </p>
               </div>
@@ -1420,12 +1462,21 @@ export default function HomePage() {
                   <span>Beli Akses Asesmen 84 Butir (Rp 49.000)</span>
                   <ArrowRight className="w-4 h-4 text-ggc-dark" />
                 </button>
-                <Link
-                  href="/auth/register"
-                  className="text-[11px] text-white/80 hover:text-white text-center font-semibold underline underline-offset-4"
-                >
-                  Atau Daftar Akun Langsung →
-                </Link>
+                <div className="flex items-center justify-center gap-3 text-[11px] text-white/80">
+                  <Link
+                    href="/auth/register"
+                    className="hover:text-white font-semibold underline underline-offset-4"
+                  >
+                    Daftar Akun Langsung →
+                  </Link>
+                  <span>•</span>
+                  <Link
+                    href="/order/track"
+                    className="hover:text-[#F5E8C7] font-semibold underline underline-offset-4 text-[#F5E8C7]"
+                  >
+                    Cek Status Pesanan
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -1666,13 +1717,13 @@ export default function HomePage() {
             {/* Right Column: FAQ Accordion Cards with Spotlight Glow (8 cols) */}
             <div className="lg:col-span-8 space-y-4">
               {filteredFaqs.length === 0 ? (
-                <div className="p-10 rounded-3xl bg-[#FAFBF9] border border-gray-200 text-center">
-                  <HelpCircle className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                  <h4 className="text-base font-bold text-gray-800">
+                <div className="p-10 rounded-3xl bg-[#FAFBF9] dark:bg-[#07261B] border border-gray-200 dark:border-[#0E4230] text-center transition-colors">
+                  <HelpCircle className="w-10 h-10 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-gray-800 dark:text-white">
                     Tidak Ditemukan Pertanyaan yang Cocok
                   </h4>
-                  <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-                    Kata kunci "{faqSearch}" tidak sesuai dengan pertanyaan yang tersedia. Silakan gunakan kata kunci lain atau reset pencarian.
+                  <p className="text-xs text-gray-500 dark:text-[#A0B9AE] mt-1 max-w-sm mx-auto">
+                    Kata kunci &ldquo;{faqSearch}&rdquo; tidak sesuai dengan pertanyaan yang tersedia. Silakan gunakan kata kunci lain atau reset pencarian.
                   </p>
                   <button
                     type="button"
@@ -1680,7 +1731,7 @@ export default function HomePage() {
                       setFaqSearch("");
                       setFaqCategory("ALL");
                     }}
-                    className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-ggc bg-ggc-subtle hover:bg-ggc/20 transition-colors"
+                    className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-ggc dark:text-ggc-gold bg-ggc-subtle dark:bg-[#041B12] hover:bg-ggc/20 dark:hover:bg-[#0A3525] border border-transparent dark:border-[#0E4230] transition-colors cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Reset Pencarian</span>

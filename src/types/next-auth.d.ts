@@ -11,12 +11,14 @@ declare module "next-auth" {
       name?: string | null;
       image?: string | null;
     } & DefaultSession["user"];
+    error?: string;
   }
 
   interface User extends DefaultUser {
     id: string;
     email: string;
     role: Role;
+    isActive?: boolean;
   }
 }
 
@@ -25,5 +27,9 @@ declare module "next-auth/jwt" {
     id: string;
     email?: string | null;
     role: Role;
+    isActive?: boolean;
+    isInvalid?: boolean;
+    lastValidated?: number;
+    error?: string;
   }
 }

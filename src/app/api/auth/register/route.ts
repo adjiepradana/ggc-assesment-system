@@ -29,9 +29,9 @@ export async function POST(req: Request) {
       );
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       return NextResponse.json(
-        { error: "Kata sandi minimal harus 6 karakter." },
+        { error: "Password must be at least 8 characters long." },
         { status: 400 }
       );
     }
@@ -111,8 +111,16 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error("Registration error:", error);
+    const clientMessage =
+      error?.message &&
+      !error.message.includes("prisma") &&
+      !error.message.includes("invocation") &&
+      !error.message.includes("database") &&
+      !error.message.includes("column")
+        ? error.message
+        : "Terjadi kesalahan internal saat pendaftaran. Silakan coba beberapa saat lagi.";
     return NextResponse.json(
-      { error: error.message || "Terjadi kesalahan internal saat pendaftaran." },
+      { error: clientMessage },
       { status: 500 }
     );
   }

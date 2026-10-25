@@ -80,9 +80,9 @@ export async function POST(req: Request) {
       );
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       return NextResponse.json(
-        { error: "Kata sandi minimal 6 karakter." },
+        { error: "Password must be at least 8 characters long." },
         { status: 400 }
       );
     }

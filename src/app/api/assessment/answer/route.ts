@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { session_id, question_id, selected_value } = body;
+    const { session_id, question_id, selected_value, client_timestamp } = body;
 
     // Validation
     if (!session_id || !question_id || selected_value === undefined) {
@@ -63,6 +63,42 @@ export async function POST(req: Request) {
         );
       }
 
+      // Monotonic Timestamp Guard (Phase 2.1): prevent late-arriving stale packets from overwriting newer answers
+      if (client_timestamp && typeof client_timestamp === "number") {
+        const existingAnswer = await prisma.assessmentAnswer.findUnique({
+          where: {
+            session_id_question_id: {
+              session_id,
+              question_id,
+            },
+          },
+        });
+
+        if (
+          existingAnswer &&
+          existingAnswer.answered_at &&
+          existingAnswer.answered_at.getTime() > client_timestamp
+        ) {
+          return NextResponse.json({
+            success: true,
+            stale: true,
+            message: "Request diabaikan karena timestamp lebih lama dari data saat ini.",
+            answer: {
+              id: existingAnswer.id,
+              session_id: existingAnswer.session_id,
+              question_id: existingAnswer.question_id,
+              selected_value: existingAnswer.selected_value,
+              answered_at: existingAnswer.answered_at,
+            },
+          });
+        }
+      }
+
+      const answerDate =
+        client_timestamp && typeof client_timestamp === "number"
+          ? new Date(client_timestamp)
+          : new Date();
+
       // 2. Upsert answer
       const answer = await prisma.assessmentAnswer.upsert({
         where: {
@@ -73,12 +109,13 @@ export async function POST(req: Request) {
         },
         update: {
           selected_value: val,
-          answered_at: new Date(),
+          answered_at: answerDate,
         },
         create: {
           session_id,
           question_id,
           selected_value: val,
+          answered_at: answerDate,
         },
       });
 
@@ -92,24 +129,23 @@ export async function POST(req: Request) {
           answered_at: answer.answered_at,
         },
       });
-    } catch (dbErr) {
-      console.warn("DB write fallback for assessment/answer:", dbErr);
-      // Graceful response for local dev if DB is offline
-      return NextResponse.json({
-        success: true,
-        answer: {
-          id: `ans-${Date.now()}`,
-          session_id,
-          question_id,
-          selected_value: val,
-          answered_at: new Date(),
+    } catch (dbErr: any) {
+      console.error("❌ [Assessment Answer] DB write error:", dbErr);
+      return NextResponse.json(
+        {
+          error: "SERVICE_UNAVAILABLE",
+          message: "Gagal menyimpan jawaban ke basis data. Silakan periksa koneksi Anda dan coba lagi.",
         },
-      });
+        { status: 503 }
+      );
     }
-  } catch (error) {
-    console.error("Error in /api/assessment/answer:", error);
+  } catch (error: any) {
+    console.error("❌ [Assessment Answer] Internal error:", error);
     return NextResponse.json(
-      { error: "Terjadi kesalahan internal saat menyimpan jawaban." },
+      {
+        error: "INTERNAL_SERVER_ERROR",
+        message: "Terjadi kesalahan internal saat menyimpan jawaban.",
+      },
       { status: 500 }
     );
   }

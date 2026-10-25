@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateAssessmentScores } from "@/lib/scoring";
 import { all84QuestionsData } from "@/lib/questions-data";
+import { generateCareerOrientation } from "@/lib/career-orientation";
 import React from "react";
 import fs from "fs";
 import path from "path";
@@ -122,12 +123,22 @@ export async function GET(
       };
     }
 
-    // If answers are fewer than 10 (e.g. preview mode or freshly started), generate deterministic baseline answers
-    if (Object.keys(answersRecord).length < 20) {
-      for (const q of all84QuestionsData) {
-        const charCode = q.code.charCodeAt(1) + q.code.charCodeAt(2);
-        answersRecord[q.code] = (charCode % 3) + 3;
-      }
+    // Require authentic session and answers from database
+    if (!userSession) {
+      return NextResponse.json(
+        { error: "NOT_FOUND", message: "Sesi asesmen tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    if (Object.keys(answersRecord).length === 0) {
+      return NextResponse.json(
+        {
+          error: "INCOMPLETE_DATA",
+          message: "Data jawaban untuk sesi ini belum tersedia atau belum selesai dikerjakan.",
+        },
+        { status: 400 }
+      );
     }
 
     const studentInfo = {
@@ -137,16 +148,24 @@ export async function GET(
       email: authSession.user.email,
     };
 
-    // Calculate assessment scores based on actual student answers
-    const results = calculateAssessmentScores(
-      userSession?.id || sessionId,
-      answersRecord,
-      {
-        fullName: studentInfo.name,
-        schoolName: studentInfo.school,
-        grade: studentInfo.grade,
-      }
-    );
+    // Phase 4.6: Fetch pre-computed results directly from the database for instant PDF generation
+    let results = userSession?.result_data;
+
+    if (!results) {
+      // Fallback: calculate assessment scores on the fly for legacy completed sessions
+      results = calculateAssessmentScores(
+        userSession?.id || sessionId,
+        answersRecord,
+        {
+          fullName: studentInfo.name,
+          schoolName: studentInfo.school,
+          grade: studentInfo.grade,
+        }
+      );
+    }
+
+    const savedCareerProfile = (studentProfile as any)?.career_preferences || null;
+    const careerOrientation = generateCareerOrientation(results, savedCareerProfile);
 
     // Read official logo as base64 data URI if available
     let logoSrc: string | undefined;
@@ -165,6 +184,7 @@ export async function GET(
       student: studentInfo,
       results,
       logoSrc,
+      careerOrientation,
     }) as any;
 
     const pdfBuffer = await renderToBuffer(pdfDocument);

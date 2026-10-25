@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateAssessmentScores } from "@/lib/scoring";
-import { all84QuestionsData } from "@/lib/questions-data";
 
 export const dynamic = "force-dynamic";
 
@@ -104,18 +103,36 @@ export async function GET(
         });
       }
     } catch (dbErr) {
-      console.warn("DB fetch fallback in results route:", dbErr);
+      console.error("DB error in results route:", dbErr);
+      return NextResponse.json(
+        {
+          error: "SERVICE_UNAVAILABLE",
+          message: "Gagal mengambil data asesmen dari basis data.",
+        },
+        { status: 503 }
+      );
     }
 
-    // Fallback if session is in dev environment without DB persistence
+    // Require authentic session from database
     if (!userSession) {
-      userSession = {
-        id: sessionId,
-        status: "COMPLETED",
-        started_at: new Date(Date.now() - 30 * 60 * 1000),
-        completed_at: new Date(),
-        user_id: authSession.user.id,
-      };
+      return NextResponse.json(
+        {
+          error: "NOT_FOUND",
+          message: "Sesi asesmen tidak ditemukan.",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Require authentic answers from database
+    if (Object.keys(answersRecord).length === 0) {
+      return NextResponse.json(
+        {
+          error: "INCOMPLETE_DATA",
+          message: "Data jawaban untuk sesi ini belum tersedia atau belum selesai dikerjakan.",
+        },
+        { status: 400 }
+      );
     }
 
     if (!studentProfile) {
@@ -127,15 +144,6 @@ export async function GET(
       };
     }
 
-    // If answers are fewer than 10, generate baseline answers
-    if (Object.keys(answersRecord).length < 20) {
-      for (const q of all84QuestionsData) {
-        const charCode = q.code.charCodeAt(1) + q.code.charCodeAt(2);
-        const demoScore = (charCode % 3) + 3;
-        answersRecord[q.code] = demoScore;
-      }
-    }
-
     const studentInfo = {
       name: studentProfile?.full_name || authSession.user.name || "Siswa GGC",
       school: studentProfile?.school_name || "SMA / SMK Sederajat",
@@ -143,16 +151,28 @@ export async function GET(
       email: authSession.user.email,
     };
 
-    // Calculate multi-matrix scoring
-    const results = calculateAssessmentScores(
-      userSession.id || sessionId,
-      answersRecord,
-      {
-        fullName: studentInfo.name,
-        schoolName: studentInfo.school,
-        grade: studentInfo.grade,
-      }
-    );
+    // Phase 4.6: Retrieve pre-computed JSON results directly from the database for instant response
+    let results = userSession.result_data;
+
+    if (!results) {
+      // Fallback: calculate on-the-fly for legacy completed sessions and backfill result_data
+      results = calculateAssessmentScores(
+        userSession.id || sessionId,
+        answersRecord,
+        {
+          fullName: studentInfo.name,
+          schoolName: studentInfo.school,
+          grade: studentInfo.grade,
+        }
+      );
+
+      prisma.assessmentSession
+        .update({
+          where: { id: userSession.id },
+          data: { result_data: results as any },
+        })
+        .catch((err) => console.warn("Could not backfill session result_data:", err));
+    }
 
     return NextResponse.json({
       success: true,
