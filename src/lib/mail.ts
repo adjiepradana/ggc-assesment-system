@@ -75,11 +75,16 @@ async function dispatchEmail({
     try {
       const senderEmail = process.env.EMAIL_USER;
       const info = await mailTransporter.sendMail({
-        from: `"Go Great Career (GGC)" <${senderEmail}>`,
+        from: `"Go Great Career" <${senderEmail}>`,
         to,
+        replyTo: senderEmail,
         subject,
         text,
         html,
+        headers: {
+          "X-Auto-Response-Suppress": "OOF, AutoReply",
+          "X-Priority": "3",
+        },
       });
       console.log(`✉️ [Nodemailer] ${logContext} sent to ${to}. ID: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
@@ -157,13 +162,13 @@ export async function sendVerificationEmail(
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-  const emailSubject = "Verifikasi Email Akun Anda - Go Great Career (GGC) Study Fit Assessment™";
+  const emailSubject = "Aktivasi Akun Go Great Career Anda";
 
   const plainTextContent = `
 Halo ${studentName},
 
 Selamat datang di Go Great Career (GGC)!
-Terima kasih telah mendaftar di platform evaluasi studi kami: "GGC Study Fit Assessment™".
+Terima kasih telah mendaftar di platform evaluasi studi kami: GGC Study Fit Assessment.
 
 Untuk mengaktifkan akun dan mulai mengerjakan instrumen asesmen multi-matriks 84 butir pertanyaan, silakan lakukan verifikasi email Anda melalui tautan di bawah ini:
 
@@ -187,6 +192,11 @@ https://gogreatcareer.com
   <title>${emailSubject}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #F4F8F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; color: #1E293B;">
+  <!-- Preheader preview text for mail clients -->
+  <div style="display: none; max-height: 0px; overflow: hidden; font-size: 1px; line-height: 1px; color: #fff; opacity: 0;">
+    Silakan klik tautan di dalam email ini untuk menyelesaikan verifikasi dan mulai asesmen Go Great Career Anda.
+  </div>
+
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F4F8F5; padding: 40px 12px;">
     <tr>
       <td align="center">
@@ -202,7 +212,7 @@ https://gogreatcareer.com
                 <tr>
                   <td style="background-color: rgba(197, 168, 105, 0.18); border: 1px solid #C5A869; padding: 6px 16px; border-radius: 9999px; text-align: center;">
                     <span style="font-size: 11px; font-weight: 800; color: #F5E8C7; letter-spacing: 2px; text-transform: uppercase;">
-                      ★ STUDY FIT ASSESSMENT™
+                      STUDY FIT ASSESSMENT
                     </span>
                   </td>
                 </tr>
@@ -370,7 +380,7 @@ export async function sendPasswordResetEmail(
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-  const emailSubject = "Atur Ulang Kata Sandi Akun Anda - Go Great Career (GGC)";
+  const emailSubject = "Instruksi Reset Password Akun Go Great Career";
 
   const plainTextContent = `
 Halo ${userName},
@@ -396,6 +406,11 @@ https://gogreatcareer.com
   <title>${emailSubject}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #F4F8F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1E293B;">
+  <!-- Preheader preview text for mail clients -->
+  <div style="display: none; max-height: 0px; overflow: hidden; font-size: 1px; line-height: 1px; color: #fff; opacity: 0;">
+    Permintaan reset password akun Go Great Career Anda. Tautan pemulihan berlaku selama 1 jam.
+  </div>
+
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F4F8F5; padding: 40px 12px;">
     <tr>
       <td align="center">
