@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { fulfillPaidOrder } from "@/lib/fulfillment";
+import { fulfillPaidOrder, VerifiedPaymentEvidence } from "@/lib/fulfillment";
+import {
+  MIDTRANS_CORE_API_BASE_URL,
+  MIDTRANS_SERVER_KEY,
+} from "@/lib/midtrans-config";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +34,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
+    const serverKey = process.env.MIDTRANS_SERVER_KEY || MIDTRANS_SERVER_KEY;
     if (!serverKey || serverKey.includes("your_server_key_here")) {
       return NextResponse.json(
         {
@@ -74,10 +78,7 @@ export async function GET(req: Request) {
     }
 
     // 3. Prepare Midtrans API endpoint and Basic Auth
-    const isProduction = process.env.MIDTRANS_IS_PRODUCTION === "true";
-    const midtransBaseUrl = isProduction
-      ? "https://api.midtrans.com"
-      : "https://api.sandbox.midtrans.com";
+    const midtransBaseUrl = MIDTRANS_CORE_API_BASE_URL;
     const basicAuth = Buffer.from(`${serverKey}:`).toString("base64");
 
     const settledOrders: string[] = [];
@@ -129,10 +130,38 @@ export async function GET(req: Request) {
           (transactionStatus === "capture" && fraudStatus === "accept");
 
         if (isSettled) {
+          const numericGrossAmount = Math.round(
+            Number(midtransData.gross_amount)
+          );
+          if (
+            !Number.isFinite(numericGrossAmount) ||
+            numericGrossAmount !== order.amount
+          ) {
+            errorDetails.push({
+              order_id: order.order_id,
+              error: `Gross amount mismatch (expected ${order.amount}, got ${midtransData.gross_amount})`,
+            });
+            continue;
+          }
+
           console.log(`🎉 [Cron Sync Rescuer] Fulfilling order ${order.order_id}...`);
+          const evidence: VerifiedPaymentEvidence = {
+            orderId: order.order_id,
+            transactionId: midtransData.transaction_id,
+            transactionStatus: transactionStatus,
+            fraudStatus: fraudStatus,
+            grossAmount: midtransData.gross_amount,
+            statusCode: midtransData.status_code,
+            signatureHash: midtransData.signature_key,
+            paymentType: midtransData.payment_type,
+            settlementTime: midtransData.settlement_time,
+            source: "MIDTRANS_CORE_API_VERIFY",
+            rawPayload: midtransData,
+          };
+
           const fulfillResult = await fulfillPaidOrder(
             order,
-            midtransData,
+            evidence,
             midtransData.payment_type
           );
 

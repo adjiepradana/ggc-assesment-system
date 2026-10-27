@@ -1,26 +1,12 @@
 /**
- * Extracts the client-facing base URL from an incoming Next.js Request.
- * Prioritizes Origin, Referer, and X-Forwarded-Host headers.
+ * Returns the validated server-side application base URL from NEXTAUTH_URL.
+ * SECURITY (Fix F-02): Never derives security URLs from untrusted request headers
+ * (Origin, Referer, X-Forwarded-Host, Host) to prevent Host/Origin link poisoning.
  */
-export function getRequestOrigin(req: Request): string {
-  const origin = req.headers.get("origin");
-  if (origin && origin.startsWith("http")) {
-    return origin.replace(/\/$/, "");
+export function getRequestOrigin(_req?: Request): string {
+  const nextAuthUrl = process.env.NEXTAUTH_URL?.trim();
+  if (nextAuthUrl && nextAuthUrl.startsWith("http")) {
+    return nextAuthUrl.replace(/\/+$/, "");
   }
-
-  const referer = req.headers.get("referer");
-  if (referer && referer.startsWith("http")) {
-    try {
-      const url = new URL(referer);
-      return url.origin;
-    } catch {}
-  }
-
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
-  const proto = req.headers.get("x-forwarded-proto") || "https";
-  if (host && !host.includes("localhost")) {
-    return `${proto}://${host}`.replace(/\/$/, "");
-  }
-
-  return "";
+  return "http://localhost:3000";
 }

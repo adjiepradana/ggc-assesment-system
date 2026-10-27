@@ -124,6 +124,17 @@ export async function GET(
       );
     }
 
+    // SECURITY & INTEGRITY (F-11): Strictly require session to be COMPLETED before exposing or computing results
+    if (userSession.status !== "COMPLETED") {
+      return NextResponse.json(
+        {
+          error: "SESSION_NOT_COMPLETED",
+          message: "Asesmen belum diselesaikan.",
+        },
+        { status: 409 }
+      );
+    }
+
     // Require authentic answers from database
     if (Object.keys(answersRecord).length === 0) {
       return NextResponse.json(

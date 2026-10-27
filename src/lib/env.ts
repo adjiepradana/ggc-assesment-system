@@ -18,6 +18,8 @@ const envSchema = z.object({
       "NEXTAUTH_URL must be a valid URL string (e.g. http://localhost:3000 or https://yourdomain.com)."
     ),
 
+  MIDTRANS_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
+
   MIDTRANS_SERVER_KEY: z
     .string()
     .min(1, "MIDTRANS_SERVER_KEY cannot be empty."),

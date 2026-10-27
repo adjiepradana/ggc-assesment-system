@@ -67,16 +67,23 @@ export async function POST(req: Request) {
       );
     }
 
+    if (user.is_active === false) {
+      return NextResponse.json(
+        { error: "Akun ini telah dinonaktifkan oleh administrator." },
+        { status: 403 }
+      );
+    }
+
     // 5. Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 6. Update user password and delete used token atomically
+    // 6. Update user password, increment token_version (F-10), and delete used token atomically
     await prisma.$transaction([
       prisma.user.update({
         where: { id: user.id },
         data: {
           password_hash: hashedPassword,
-          is_active: true,
+          token_version: { increment: 1 },
         },
       }),
       prisma.passwordResetToken.deleteMany({

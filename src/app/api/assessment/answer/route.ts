@@ -22,7 +22,10 @@ export async function POST(req: Request) {
     // Validation
     if (!session_id || !question_id || selected_value === undefined) {
       return NextResponse.json(
-        { error: "Parameter session_id, question_id, dan selected_value wajib diisi." },
+        {
+          error:
+            "Parameter session_id, question_id, dan selected_value wajib diisi.",
+        },
         { status: 400 }
       );
     }
@@ -30,7 +33,10 @@ export async function POST(req: Request) {
     const val = Number(selected_value);
     if (!Number.isInteger(val) || val < 1 || val > 5) {
       return NextResponse.json(
-        { error: "Nilai jawaban harus berupa bilangan bulat antara 1 sampai 5." },
+        {
+          error:
+            "Nilai jawaban harus berupa bilangan bulat antara 1 sampai 5.",
+        },
         { status: 400 }
       );
     }
@@ -63,13 +69,59 @@ export async function POST(req: Request) {
         );
       }
 
+      // 2. Resolve the corresponding QuestionSetItem in the session's bound QuestionSet
+      let questionSetItem = await prisma.questionSetItem.findFirst({
+        where: {
+          question_set_id: userSession.question_set_id,
+          OR: [
+            { legacy_question_id: question_id },
+            { id: question_id },
+            { code: question_id },
+          ],
+        },
+      });
+
+      let resolvedLegacyQuestionId =
+        questionSetItem?.legacy_question_id || question_id;
+
+      if (!questionSetItem) {
+        // Look up Question by id or code, then find matching QuestionSetItem by code
+        const legacyQuestion = await prisma.question.findFirst({
+          where: {
+            OR: [{ id: question_id }, { code: question_id }],
+          },
+        });
+
+        if (legacyQuestion) {
+          resolvedLegacyQuestionId = legacyQuestion.id;
+          questionSetItem = await prisma.questionSetItem.findUnique({
+            where: {
+              question_set_id_code: {
+                question_set_id: userSession.question_set_id,
+                code: legacyQuestion.code,
+              },
+            },
+          });
+        }
+      }
+
+      if (!questionSetItem) {
+        return NextResponse.json(
+          {
+            error:
+              "Butir soal tidak ditemukan dalam paket instrumen sesi asesmen ini.",
+          },
+          { status: 400 }
+        );
+      }
+
       // Monotonic Timestamp Guard (Phase 2.1): prevent late-arriving stale packets from overwriting newer answers
       if (client_timestamp && typeof client_timestamp === "number") {
         const existingAnswer = await prisma.assessmentAnswer.findUnique({
           where: {
             session_id_question_id: {
               session_id,
-              question_id,
+              question_id: resolvedLegacyQuestionId,
             },
           },
         });
@@ -82,11 +134,13 @@ export async function POST(req: Request) {
           return NextResponse.json({
             success: true,
             stale: true,
-            message: "Request diabaikan karena timestamp lebih lama dari data saat ini.",
+            message:
+              "Request diabaikan karena timestamp lebih lama dari data saat ini.",
             answer: {
               id: existingAnswer.id,
               session_id: existingAnswer.session_id,
               question_id: existingAnswer.question_id,
+              question_set_item_id: existingAnswer.question_set_item_id,
               selected_value: existingAnswer.selected_value,
               answered_at: existingAnswer.answered_at,
             },
@@ -99,21 +153,23 @@ export async function POST(req: Request) {
           ? new Date(client_timestamp)
           : new Date();
 
-      // 2. Upsert answer
+      // 3. Upsert answer with question_set_item_id
       const answer = await prisma.assessmentAnswer.upsert({
         where: {
           session_id_question_id: {
             session_id,
-            question_id,
+            question_id: resolvedLegacyQuestionId,
           },
         },
         update: {
+          question_set_item_id: questionSetItem.id,
           selected_value: val,
           answered_at: answerDate,
         },
         create: {
           session_id,
-          question_id,
+          question_id: resolvedLegacyQuestionId,
+          question_set_item_id: questionSetItem.id,
           selected_value: val,
           answered_at: answerDate,
         },
@@ -125,6 +181,7 @@ export async function POST(req: Request) {
           id: answer.id,
           session_id: answer.session_id,
           question_id: answer.question_id,
+          question_set_item_id: answer.question_set_item_id,
           selected_value: answer.selected_value,
           answered_at: answer.answered_at,
         },
@@ -134,7 +191,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: "SERVICE_UNAVAILABLE",
-          message: "Gagal menyimpan jawaban ke basis data. Silakan periksa koneksi Anda dan coba lagi.",
+          message:
+            "Gagal menyimpan jawaban ke basis data. Silakan periksa koneksi Anda dan coba lagi.",
         },
         { status: 503 }
       );

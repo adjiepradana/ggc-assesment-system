@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,23 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         { error: "Unauthorized. Anda harus masuk terlebih dahulu." },
         { status: 401 }
+      );
+    }
+
+    // Rate Limit (F-09): max 5 password change requests per minute per user
+    const rateLimit = await consumeRateLimit(
+      `password-change:user:${session.user.id}`,
+      5,
+      60_000
+    );
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "TOO_MANY_REQUESTS",
+          message:
+            "Terlalu banyak permintaan perubahan kata sandi. Silakan tunggu 1 menit.",
+        },
+        { status: 429 }
       );
     }
 
@@ -77,13 +95,14 @@ export async function PUT(req: Request) {
       );
     }
 
-    // 4. Hash and save new password
+    // 4. Hash and save new password, incrementing token_version to revoke prior JWT sessions (F-10)
     const hashedNewPassword = await bcrypt.hash(new_password, 10);
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
         password_hash: hashedNewPassword,
+        token_version: { increment: 1 },
       },
     });
 

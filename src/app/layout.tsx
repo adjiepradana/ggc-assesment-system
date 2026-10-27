@@ -11,7 +11,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXTAUTH_URL || "https://gogreatcareer.com";
+const siteUrl = process.env.NEXTAUTH_URL || "https://gogreatcareer.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

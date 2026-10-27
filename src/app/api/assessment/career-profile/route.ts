@@ -3,10 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateAssessmentScores } from "@/lib/scoring";
-import { all84QuestionsData } from "@/lib/questions-data";
 import {
   generateCareerOrientation,
   CareerProfileInput,
+  assertCareerProfileSessionOwnership,
 } from "@/lib/career-orientation";
 
 export const dynamic = "force-dynamic";
@@ -25,59 +25,95 @@ export async function GET(req: Request) {
     const sessionId = searchParams.get("sessionId");
 
     let studentProfile: any = null;
-    let answersRecord: Record<string, number> = {};
+    const answersRecord: Record<string, number> = {};
 
-    try {
-      studentProfile = await prisma.studentProfile.findUnique({
-        where: { user_id: session.user.id },
-      });
+    studentProfile = await prisma.studentProfile.findUnique({
+      where: { user_id: session.user.id },
+    });
 
-      if (sessionId) {
-        const userSession = await prisma.assessmentSession.findUnique({
+    const userSession = sessionId
+      ? await prisma.assessmentSession.findUnique({
           where: { id: sessionId },
           include: {
-            answers: { include: { question: true } },
+            answers: {
+              include: {
+                question: true,
+                question_set_item: true,
+              },
+            },
+          },
+        })
+      : await prisma.assessmentSession.findFirst({
+          where: { user_id: session.user.id },
+          orderBy: { started_at: "desc" },
+          include: {
+            answers: {
+              include: {
+                question: true,
+                question_set_item: true,
+              },
+            },
           },
         });
 
-        if (userSession?.answers) {
-          for (const ans of userSession.answers) {
-            const code = ans.question?.code || ans.question_id;
-            answersRecord[code] = ans.selected_value;
-          }
-        }
-      }
-    } catch (dbErr) {
-      console.warn("DB read fallback for career-profile:", dbErr);
+    if (!userSession) {
+      return NextResponse.json(
+        { error: "NOT_FOUND", message: "Sesi asesmen tidak ditemukan." },
+        { status: 404 }
+      );
     }
 
-    // Default answers fallback for testing if fewer than 20
-    if (Object.keys(answersRecord).length < 20) {
-      for (const q of all84QuestionsData) {
-        const charCode = q.code.charCodeAt(1) + q.code.charCodeAt(2);
-        answersRecord[q.code] = (charCode % 3) + 3;
+    // SECURITY (F-05): Enforce session ownership check against IDOR
+    if (!assertCareerProfileSessionOwnership(userSession, session.user)) {
+      return NextResponse.json(
+        { error: "Forbidden. Anda tidak memiliki akses ke sesi asesmen ini." },
+        { status: 403 }
+      );
+    }
+
+    if (userSession.answers) {
+      for (const ans of userSession.answers) {
+        const weight = ans.question_set_item?.scoring_weight ?? 1;
+        if (weight <= 0) continue;
+        const code =
+          ans.question_set_item?.code || ans.question?.code || ans.question_id;
+        answersRecord[code] = ans.selected_value;
       }
+    }
+
+    // INTEGRITY (F-18): Never synthesize fake answers when answers < 20
+    if (Object.keys(answersRecord).length < 20) {
+      return NextResponse.json(
+        {
+          error: "INSUFFICIENT_ANSWERS",
+          message: "Minimal 20 jawaban diperlukan untuk orientasi karier.",
+        },
+        { status: 400 }
+      );
     }
 
     const scoringResults = calculateAssessmentScores(
-      sessionId || "current-session",
+      userSession.id,
       answersRecord,
       {
-        fullName: studentProfile?.full_name || session.user.name || "Siswa GGC",
+        fullName:
+          studentProfile?.full_name || session.user.name || "Siswa GGC",
         schoolName: studentProfile?.school_name || "SMA / SMK Sederajat",
         grade: studentProfile?.grade || "Kelas 12",
       }
     );
 
-    const savedPreferences = (studentProfile as any)?.career_preferences || null;
+    const savedPreferences =
+      (studentProfile as any)?.career_preferences || null;
 
     let profileInput: CareerProfileInput | null = null;
     if (savedPreferences) {
       profileInput = savedPreferences;
     } else if (studentProfile?.school_name || studentProfile?.grade) {
-      // Semi-populated from profile
       profileInput = {
-        educationLevel: studentProfile.grade?.toLowerCase().includes("smk") ? "SMK" : "SMA",
+        educationLevel: studentProfile.grade?.toLowerCase().includes("smk")
+          ? "SMK"
+          : "SMA",
         currentMajor: "MIPA / Saintek",
         formalOrg: "",
         formalOrgRole: "Belum Ada",
@@ -127,6 +163,68 @@ export async function POST(req: Request) {
       careerAspiration,
     } = body;
 
+    const userSession = sessionId
+      ? await prisma.assessmentSession.findUnique({
+          where: { id: sessionId },
+          include: {
+            answers: {
+              include: {
+                question: true,
+                question_set_item: true,
+              },
+            },
+          },
+        })
+      : await prisma.assessmentSession.findFirst({
+          where: { user_id: session.user.id },
+          orderBy: { started_at: "desc" },
+          include: {
+            answers: {
+              include: {
+                question: true,
+                question_set_item: true,
+              },
+            },
+          },
+        });
+
+    if (!userSession) {
+      return NextResponse.json(
+        { error: "NOT_FOUND", message: "Sesi asesmen tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    // SECURITY (F-05): Enforce session ownership check against IDOR
+    if (!assertCareerProfileSessionOwnership(userSession, session.user)) {
+      return NextResponse.json(
+        { error: "Forbidden. Anda tidak memiliki akses ke sesi asesmen ini." },
+        { status: 403 }
+      );
+    }
+
+    const answersRecord: Record<string, number> = {};
+    if (userSession.answers) {
+      for (const ans of userSession.answers) {
+        const weight = ans.question_set_item?.scoring_weight ?? 1;
+        if (weight <= 0) continue;
+        const code =
+          ans.question_set_item?.code || ans.question?.code || ans.question_id;
+        answersRecord[code] = ans.selected_value;
+      }
+    }
+
+    // INTEGRITY (F-18): Never synthesize fake answers when answers < 20
+    if (Object.keys(answersRecord).length < 20) {
+      return NextResponse.json(
+        {
+          error: "INSUFFICIENT_ANSWERS",
+          message: "Minimal 20 jawaban diperlukan untuk orientasi karier.",
+        },
+        { status: 400 }
+      );
+    }
+
     const profileInput: CareerProfileInput = {
       educationLevel: educationLevel || "SMA",
       currentMajor: currentMajor || "Umum",
@@ -138,59 +236,28 @@ export async function POST(req: Request) {
       careerAspiration: careerAspiration || "",
     };
 
-    let studentProfile: any = null;
-    let answersRecord: Record<string, number> = {};
-
-    try {
-      // 1. Try to persist in database
-      studentProfile = await prisma.studentProfile.upsert({
-        where: { user_id: session.user.id },
-        update: {
-          career_preferences: profileInput as any,
-        },
-        create: {
-          user_id: session.user.id,
-          full_name: session.user.name || "Siswa GGC",
-          school_name: educationLevel || "SMA",
-          grade: currentMajor || "Kelas 12",
-          career_preferences: profileInput as any,
-        },
-      });
-
-      if (sessionId) {
-        const userSession = await prisma.assessmentSession.findUnique({
-          where: { id: sessionId },
-          include: {
-            answers: { include: { question: true } },
-          },
-        });
-
-        if (userSession?.answers) {
-          for (const ans of userSession.answers) {
-            const code = ans.question?.code || ans.question_id;
-            answersRecord[code] = ans.selected_value;
-          }
-        }
-      }
-    } catch (dbErr) {
-      console.warn("Database upsert warning for career profile (safe fallback):", dbErr);
-    }
-
-    // Default answers fallback for testing if fewer than 20
-    if (Object.keys(answersRecord).length < 20) {
-      for (const q of all84QuestionsData) {
-        const charCode = q.code.charCodeAt(1) + q.code.charCodeAt(2);
-        answersRecord[q.code] = (charCode % 3) + 3;
-      }
-    }
+    // INTEGRITY (DISC-05, F-18): Never overwrite school_name with educationLevel or grade with currentMajor.
+    // Store career preferences cleanly inside career_preferences JSON.
+    const studentProfile = await prisma.studentProfile.upsert({
+      where: { user_id: session.user.id },
+      update: {
+        career_preferences: profileInput as any,
+      },
+      create: {
+        user_id: session.user.id,
+        full_name: session.user.name || "Siswa GGC",
+        career_preferences: profileInput as any,
+      },
+    });
 
     const scoringResults = calculateAssessmentScores(
-      sessionId || "current-session",
+      userSession.id,
       answersRecord,
       {
-        fullName: studentProfile?.full_name || session.user.name || "Siswa GGC",
-        schoolName: studentProfile?.school_name || educationLevel || "SMA",
-        grade: studentProfile?.grade || currentMajor || "Kelas 12",
+        fullName:
+          studentProfile?.full_name || session.user.name || "Siswa GGC",
+        schoolName: studentProfile?.school_name || "SMA / SMK Sederajat",
+        grade: studentProfile?.grade || "Kelas 12",
       }
     );
 

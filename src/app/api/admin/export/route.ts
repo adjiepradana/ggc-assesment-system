@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { all84QuestionsData } from "@/lib/questions-data";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { sanitizeExcelRow } from "@/lib/excel-sanitize";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export async function GET() {
     }
 
     // 1. Gather Student Data
-    let studentsRows: any[] = [];
+    let studentsRows: Record<string, unknown>[] = [];
 
     try {
       const users = await prisma.user.findMany({
@@ -59,7 +60,7 @@ export async function GET() {
 
           const answeredCount = sess?._count?.answers || 0;
 
-          return {
+          return sanitizeExcelRow({
             No: idx + 1,
             "Nama Lengkap": u.profile?.full_name || u.email.split("@")[0],
             Email: u.email,
@@ -73,7 +74,7 @@ export async function GET() {
             "Top Potential Signature": topSignature,
             "Rekomendasi Jurusan Utama": topMajor,
             "Study Fit Score (%)": fitScore ? `${fitScore}%` : "-",
-          };
+          });
         });
       }
     } catch (dbErr: any) {
@@ -85,57 +86,58 @@ export async function GET() {
     }
 
     // 2. Gather Question Bank Data
-    let questionRows = all84QuestionsData.map((q, idx) => ({
-      No: idx + 1,
-      "Kode Soal": q.code,
-      "Kategori Dimensi": q.dimension,
-      "Subdimensi Penilaian": q.subdimensi,
-      "Teks Pernyataan Instrumen": q.text,
-      "Skala Penilaian": "Likert 1-5 (Sangat Tidak Sesuai s/d Sangat Sesuai)",
-      "Status Aktif": "Aktif",
-    }));
+    const questionRows = all84QuestionsData.map((q, idx) =>
+      sanitizeExcelRow({
+        No: idx + 1,
+        "Kode Soal": q.code,
+        "Kategori Dimensi": q.dimension,
+        "Subdimensi Penilaian": q.subdimensi,
+        "Teks Pernyataan Instrumen": q.text,
+        "Skala Penilaian": "Likert 1-5 (Sangat Tidak Sesuai s/d Sangat Sesuai)",
+        "Status Aktif": "Aktif",
+      })
+    );
 
-    // 3. Create Excel Workbook using XLSX
-    const workbook = XLSX.utils.book_new();
+    // 3. Create Excel Workbook using ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "Go Great Career (GGC)";
+    workbook.created = new Date();
 
-    const studentsWorksheet = XLSX.utils.json_to_sheet(studentsRows);
-    const questionsWorksheet = XLSX.utils.json_to_sheet(questionRows);
-
-    // Auto-fit column widths approximately
-    studentsWorksheet["!cols"] = [
-      { wch: 5 },  // No
-      { wch: 26 }, // Nama
-      { wch: 25 }, // Email
-      { wch: 16 }, // WA
-      { wch: 28 }, // Sekolah
-      { wch: 18 }, // Kelas
-      { wch: 15 }, // Status
-      { wch: 14 }, // Soal Terjawab
-      { wch: 20 }, // Waktu Mulai
-      { wch: 20 }, // Waktu Selesai
-      { wch: 30 }, // Signature
-      { wch: 36 }, // Jurusan
-      { wch: 18 }, // Fit Score
+    const studentsWorksheet = workbook.addWorksheet("Rekap Peserta & Asesmen");
+    studentsWorksheet.columns = [
+      { header: "No", key: "No", width: 5 },
+      { header: "Nama Lengkap", key: "Nama Lengkap", width: 26 },
+      { header: "Email", key: "Email", width: 25 },
+      { header: "No. WhatsApp", key: "No. WhatsApp", width: 16 },
+      { header: "Asal Sekolah", key: "Asal Sekolah", width: 28 },
+      { header: "Jenjang / Kelas", key: "Jenjang / Kelas", width: 18 },
+      { header: "Status Sesi", key: "Status Sesi", width: 15 },
+      { header: "Soal Terjawab", key: "Soal Terjawab", width: 14 },
+      { header: "Waktu Mulai", key: "Waktu Mulai", width: 20 },
+      { header: "Waktu Selesai", key: "Waktu Selesai", width: 20 },
+      { header: "Top Potential Signature", key: "Top Potential Signature", width: 30 },
+      { header: "Rekomendasi Jurusan Utama", key: "Rekomendasi Jurusan Utama", width: 36 },
+      { header: "Study Fit Score (%)", key: "Study Fit Score (%)", width: 18 },
     ];
+    if (studentsRows.length > 0) {
+      studentsWorksheet.addRows(studentsRows);
+    }
 
-    questionsWorksheet["!cols"] = [
-      { wch: 5 },  // No
-      { wch: 12 }, // Kode
-      { wch: 16 }, // Dimensi
-      { wch: 32 }, // Subdimensi
-      { wch: 70 }, // Teks
-      { wch: 25 }, // Skala
-      { wch: 14 }, // Status
+    const questionsWorksheet = workbook.addWorksheet("Bank Soal 84 Butir");
+    questionsWorksheet.columns = [
+      { header: "No", key: "No", width: 5 },
+      { header: "Kode Soal", key: "Kode Soal", width: 12 },
+      { header: "Kategori Dimensi", key: "Kategori Dimensi", width: 16 },
+      { header: "Subdimensi Penilaian", key: "Subdimensi Penilaian", width: 32 },
+      { header: "Teks Pernyataan Instrumen", key: "Teks Pernyataan Instrumen", width: 70 },
+      { header: "Skala Penilaian", key: "Skala Penilaian", width: 25 },
+      { header: "Status Aktif", key: "Status Aktif", width: 14 },
     ];
-
-    XLSX.utils.book_append_sheet(workbook, studentsWorksheet, "Rekap Peserta & Asesmen");
-    XLSX.utils.book_append_sheet(workbook, questionsWorksheet, "Bank Soal 84 Butir");
+    questionsWorksheet.addRows(questionRows);
 
     // Write to binary buffer
-    const excelBuffer = XLSX.write(workbook, {
-      type: "buffer",
-      bookType: "xlsx",
-    });
+    const arrayBuffer = await workbook.xlsx.writeBuffer();
+    const excelBuffer = Buffer.from(arrayBuffer);
 
     const timestamp = new Date().toISOString().slice(0, 10);
 

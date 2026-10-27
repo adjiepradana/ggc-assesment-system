@@ -992,7 +992,7 @@ export default function HomePage() {
                       {activeProfile.title}
                     </h3>
                     <div className="text-sm sm:text-base font-semibold text-ggc-gold mt-1">
-                      "{activeProfile.archetype}"
+                      &ldquo;{activeProfile.archetype}&rdquo;
                     </div>
 
                     <p className="mt-4 text-xs sm:text-sm text-ggc-subtle/90 leading-relaxed">
@@ -1035,7 +1035,7 @@ export default function HomePage() {
 
                     {/* Counselor Quote Box */}
                     <div className="mt-6 p-4 rounded-2xl bg-black/25 border border-white/10 text-xs sm:text-sm text-ggc-subtle italic leading-relaxed">
-                      "{activeProfile.quote}"
+                      &ldquo;{activeProfile.quote}&rdquo;
                     </div>
                   </div>
 

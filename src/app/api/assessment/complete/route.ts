@@ -39,6 +39,7 @@ export async function POST(req: Request) {
           answers: {
             include: {
               question: true,
+              question_set_item: true,
             },
           },
         },
@@ -68,28 +69,38 @@ export async function POST(req: Request) {
         );
       }
 
-      // Check if all questions are answered (e.g. 84 items)
-      const totalQuestionsCount = await prisma.question.count({
-        where: { is_active: true },
+      // Check if all active scored items in the session's bound QuestionSet (scoring_weight > 0) are answered
+      const totalQuestionsCount = await prisma.questionSetItem.count({
+        where: {
+          question_set_id: userSession.question_set_id,
+          scoring_weight: { gt: 0 },
+        },
       });
 
-      const answeredCount = userSession.answers.length;
+      const scoredAnsweredCount = userSession.answers.filter(
+        (ans) => (ans.question_set_item?.scoring_weight ?? 1) > 0
+      ).length;
 
-      if (totalQuestionsCount > 0 && answeredCount < totalQuestionsCount) {
+      if (totalQuestionsCount > 0 && scoredAnsweredCount < totalQuestionsCount) {
         return NextResponse.json(
           {
-            error: `Mohon lengkapi semua soal. Masih ada ${totalQuestionsCount - answeredCount} butir yang belum dijawab.`,
-            answeredCount,
+            error: `Mohon lengkapi semua soal. Masih ada ${
+              totalQuestionsCount - scoredAnsweredCount
+            } butir yang belum dijawab.`,
+            answeredCount: scoredAnsweredCount,
             totalQuestionsCount,
           },
           { status: 400 }
         );
       }
 
-      // Pre-compute assessment results (Phase 4.6)
+      // Pre-compute assessment results using versioned QuestionSetItem codes (with scoring_weight > 0)
       const answersRecord: Record<string, number> = {};
       for (const ans of userSession.answers) {
-        const code = ans.question?.code || ans.question_id;
+        const weight = ans.question_set_item?.scoring_weight ?? 1;
+        if (weight <= 0) continue;
+        const code =
+          ans.question_set_item?.code || ans.question?.code || ans.question_id;
         answersRecord[code] = ans.selected_value;
       }
 
@@ -98,14 +109,14 @@ export async function POST(req: Request) {
         session_id,
         answersRecord,
         {
-          fullName: studentProfile?.full_name || authSession.user.name || "Siswa GGC",
+          fullName:
+            studentProfile?.full_name || authSession.user.name || "Siswa GGC",
           schoolName: studentProfile?.school_name || "SMA / SMK Sederajat",
           grade: studentProfile?.grade || "Kelas 12",
         }
       );
 
       // ATOMIC LOCK (Phase 2.3 & 4.6): Check, set status to COMPLETED, and persist pre-computed results
-      // If multiple requests hit concurrently, only the first one will update a row.
       const updateResult = await prisma.assessmentSession.updateMany({
         where: { id: session_id, status: "IN_PROGRESS" },
         data: {
@@ -127,7 +138,8 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         success: true,
-        message: "Selamat! Asesmen Study Fit Anda berhasil diselesaikan dan disimpan.",
+        message:
+          "Selamat! Asesmen Study Fit Anda berhasil diselesaikan dan disimpan.",
         session_id,
       });
     } catch (dbErr: any) {
@@ -135,7 +147,8 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: "SERVICE_UNAVAILABLE",
-          message: "Gagal memfinalisasi asesmen ke basis data. Silakan coba lagi.",
+          message:
+            "Gagal memfinalisasi asesmen ke basis data. Silakan coba lagi.",
         },
         { status: 503 }
       );

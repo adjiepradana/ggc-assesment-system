@@ -3,12 +3,24 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/mail";
-import { getRequestOrigin } from "@/lib/request-origin";
+import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    // Rate Limit (F-09): max 5 registration requests per minute per IP
+    const clientIp = getClientIp(req);
+    const rateLimit = await consumeRateLimit(`register:ip:${clientIp}`, 5, 60_000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "TOO_MANY_REQUESTS",
+          message: "Terlalu banyak permintaan pendaftaran. Silakan tunggu 1 menit.",
+        },
+        { status: 429 }
+      );
+    }
     const body = await req.json();
     const { email, password, full_name, phone_number, school_name, grade } = body;
 
@@ -88,12 +100,10 @@ export async function POST(req: Request) {
 
     // 6. Send verification email via Gmail SMTP Nodemailer
     try {
-      const origin = getRequestOrigin(req);
       const emailResult = await sendVerificationEmail(
         trimmedEmail,
         full_name.trim(),
-        verificationToken,
-        origin
+        verificationToken
       );
       console.log(`📧 Verification email sent to ${trimmedEmail}:`, emailResult);
     } catch (emailErr) {

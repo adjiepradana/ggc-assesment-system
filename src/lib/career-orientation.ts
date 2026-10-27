@@ -1,5 +1,19 @@
 import { ScoringResult } from "./scoring";
 
+/**
+ * Verifies that an AssessmentSession belongs to the authenticated user (or user is ADMIN).
+ * Exported for unit testing and route enforcement (F-05).
+ */
+export function assertCareerProfileSessionOwnership(
+  assessmentSession: { user_id: string },
+  currentUser: { id: string; role?: string }
+): boolean {
+  return (
+    assessmentSession.user_id === currentUser.id ||
+    currentUser.role === "ADMIN"
+  );
+}
+
 export interface CareerProfileInput {
   educationLevel: "SMA" | "SMK" | "KULIAH" | "GAP_YEAR" | string;
   currentMajor: string; // e.g. "MIPA", "IPS", "Rekayasa Perangkat Lunak", "Teknik Informatika", dll.

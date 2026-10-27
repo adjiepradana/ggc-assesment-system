@@ -1,26 +1,30 @@
 import midtransClient from "midtrans-client";
 import crypto from "crypto";
-
-const isProduction = process.env.MIDTRANS_IS_PRODUCTION === "true";
-const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
-const clientKey = process.env.MIDTRANS_CLIENT_KEY || "";
+import {
+  MIDTRANS_IS_PRODUCTION,
+  MIDTRANS_SERVER_KEY,
+  MIDTRANS_CLIENT_KEY,
+  MIDTRANS_CORE_API_BASE_URL,
+  MIDTRANS_SNAP_BASE_URL,
+  MIDTRANS_SNAP_SCRIPT_URL,
+} from "@/lib/midtrans-config";
 
 /**
  * Reusable Midtrans Snap Client instance
  */
 export const snap = new midtransClient.Snap({
-  isProduction,
-  serverKey,
-  clientKey,
+  isProduction: MIDTRANS_IS_PRODUCTION,
+  serverKey: MIDTRANS_SERVER_KEY,
+  clientKey: MIDTRANS_CLIENT_KEY,
 });
 
 export const midtransConfig = {
-  isProduction,
-  serverKey,
-  clientKey,
-  snapScriptUrl: isProduction
-    ? "https://app.midtrans.com/snap/snap.js"
-    : "https://app.sandbox.midtrans.com/snap/snap.js",
+  isProduction: MIDTRANS_IS_PRODUCTION,
+  serverKey: MIDTRANS_SERVER_KEY,
+  clientKey: MIDTRANS_CLIENT_KEY,
+  coreApiBaseUrl: MIDTRANS_CORE_API_BASE_URL,
+  snapBaseUrl: MIDTRANS_SNAP_BASE_URL,
+  snapScriptUrl: MIDTRANS_SNAP_SCRIPT_URL,
 };
 
 /**
@@ -33,10 +37,14 @@ export function verifyMidtransSignature(
   grossAmount: string,
   signatureKey: string
 ): boolean {
-  if (!serverKey || !signatureKey) return false;
+  const activeServerKey = process.env.MIDTRANS_SERVER_KEY || MIDTRANS_SERVER_KEY;
+  if (!activeServerKey || !signatureKey) return false;
 
-  const rawString = `${orderId}${statusCode}${grossAmount}${serverKey}`;
-  const computedHash = crypto.createHash("sha512").update(rawString).digest("hex");
+  const rawString = `${orderId}${statusCode}${grossAmount}${activeServerKey}`;
+  const computedHash = crypto
+    .createHash("sha512")
+    .update(rawString)
+    .digest("hex");
 
   return computedHash.toLowerCase() === signatureKey.toLowerCase();
 }

@@ -148,22 +148,12 @@ export async function POST(req: Request) {
         { status: 201 }
       );
     } catch (dbErr) {
-      console.warn("DB write fallback in admin questions create:", dbErr);
+      console.error("DB write failure in admin questions create:", dbErr);
       return NextResponse.json(
         {
-          success: true,
-          message: "Soal baru berhasil dibuat (Mode Simpan Dev).",
-          question: {
-            id: `q-${trimmedCode}`,
-            code: trimmedCode,
-            dimension_category,
-            subdimensi,
-            question_text,
-            options: options || defaultLikertOptions,
-            is_active: true,
-          },
+          error: "Database sedang mengalami gangguan. Gagal menyimpan soal baru.",
         },
-        { status: 201 }
+        { status: 503 }
       );
     }
   } catch (error) {

@@ -42,15 +42,14 @@ export async function GET(req: Request) {
       );
     }
 
-    // Automatically mark user email as verified
-    await prisma.user.update({
-      where: { id: verification.user_id },
-      data: {
-        email_verified: true,
-        is_active: true,
-      },
-    });
+    if (verification.user.is_active === false) {
+      return NextResponse.json(
+        { error: "Akun ini telah dinonaktifkan oleh administrator." },
+        { status: 403 }
+      );
+    }
 
+    // Read-only check: do not mutate user state or consume token on GET
     return NextResponse.json({
       success: true,
       email: verification.user.email,
@@ -66,30 +65,36 @@ export async function GET(req: Request) {
 }
 
 /**
- * POST: Activate account with new password
+ * POST: Complete email verification (and optionally set new password), consuming the single-use token
  */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { token, password } = body;
 
-    if (!token || !password) {
+    if (!token || typeof token !== "string") {
       return NextResponse.json(
-        { error: "Token verifikasi dan kata sandi baru wajib diisi." },
+        { error: "Token verifikasi wajib diisi." },
         { status: 400 }
       );
     }
 
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Password must be at least 8 characters long." },
-        { status: 400 }
-      );
+    if (password !== undefined && password !== null) {
+      if (typeof password !== "string" || password.length < 8) {
+        return NextResponse.json(
+          { error: "Password must be at least 8 characters long." },
+          { status: 400 }
+        );
+      }
     }
 
     const verification = await prisma.verificationToken.findUnique({
       where: { token },
-      include: { user: true },
+      include: {
+        user: {
+          include: { profile: true },
+        },
+      },
     });
 
     if (!verification) {
@@ -106,16 +111,21 @@ export async function POST(req: Request) {
       );
     }
 
-    // Hash new password and activate user
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (verification.user.is_active === false) {
+      return NextResponse.json(
+        { error: "Akun ini telah dinonaktifkan oleh administrator." },
+        { status: 403 }
+      );
+    }
+
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
 
     await prisma.$transaction([
       prisma.user.update({
         where: { id: verification.user_id },
         data: {
-          password_hash: hashedPassword,
           email_verified: true,
-          is_active: true,
+          ...(hashedPassword ? { password_hash: hashedPassword } : {}),
         },
       }),
       prisma.verificationToken.delete({
@@ -125,8 +135,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "Akun berhasil diaktifkan dengan kata sandi baru.",
+      message: "Akun berhasil diverifikasi.",
       email: verification.user.email,
+      name: verification.user.profile?.full_name || verification.user.email.split("@")[0],
     });
   } catch (error: any) {
     console.error("Account activation error:", error);

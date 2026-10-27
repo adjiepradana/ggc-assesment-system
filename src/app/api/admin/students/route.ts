@@ -198,9 +198,14 @@ export async function PATCH(req: Request) {
           }),
         ]);
       } else {
+        const activeQuestionSet = await prisma.questionSet.findFirst({
+          where: { is_active: true },
+          orderBy: { version: "desc" },
+        });
         await prisma.assessmentSession.create({
           data: {
             user_id: studentUser.id,
+            question_set_id: activeQuestionSet?.id || "qset_v1_default",
             status: "IN_PROGRESS",
           },
         });
@@ -232,7 +237,10 @@ export async function PATCH(req: Request) {
 
       const updated = await prisma.user.update({
         where: { id: studentId },
-        data: { is_active: targetActive },
+        data: {
+          is_active: targetActive,
+          ...(!targetActive ? { token_version: { increment: 1 } } : {}),
+        },
       });
 
       const studentName = studentUser.profile?.full_name || studentUser.email;

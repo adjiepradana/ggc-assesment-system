@@ -18,6 +18,7 @@ enum Role {
 enum SessionStatus {
   IN_PROGRESS
   COMPLETED
+  ABANDONED
 }
 
 enum AccessCodeStatus {
@@ -42,6 +43,7 @@ model User {
   role                Role                @default(STUDENT)
   is_active           Boolean             @default(true)
   email_verified      Boolean             @default(false)
+  token_version       Int                 @default(0)
   created_at          DateTime            @default(now())
   updated_at          DateTime            @updatedAt
   profile             StudentProfile?
@@ -83,29 +85,69 @@ enum OrderStatus {
   SUCCESS
   FAILED
   EXPIRED
+  REFUNDED
+  CHARGEBACK
 }
 
 model Order {
-  id                String      @id @default(cuid())
-  order_id          String      @unique
-  user_id           String?
-  user              User?       @relation(fields: [user_id], references: [id], onDelete: SetNull)
-  customer_name     String
-  customer_email    String
-  customer_phone    String?
-  amount            Int
-  status            OrderStatus @default(PENDING)
-  snap_token        String?
-  snap_redirect_url String?
-  payment_type      String?
-  payment_details   Json?
-  created_at        DateTime    @default(now())
-  updated_at        DateTime    @updatedAt
+  id                   String               @id @default(cuid())
+  order_id             String               @unique
+  user_id              String?
+  user                 User?                @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  customer_name        String
+  customer_email       String
+  customer_phone       String?
+  amount               Int
+  status               OrderStatus          @default(PENDING)
+  snap_token           String?
+  snap_redirect_url    String?
+  payment_type         String?
+  payment_details      Json?
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  pending_registration PendingRegistration?
+  email_outbox         EmailOutbox[]
 
   @@index([order_id])
   @@index([customer_email])
   @@index([status])
+  @@index([user_id])
+  @@index([status, created_at])
   @@map("orders")
+}
+
+model PendingRegistration {
+  id            String   @id @default(cuid())
+  order_id      String   @unique
+  order         Order    @relation(fields: [order_id], references: [order_id], onDelete: Cascade)
+  email         String
+  full_name     String
+  phone         String?
+  password_hash String
+  expires_at    DateTime
+  created_at    DateTime @default(now())
+
+  @@map("pending_registrations")
+}
+
+model EmailOutbox {
+  id              String    @id @default(cuid())
+  order_id        String
+  order           Order     @relation(fields: [order_id], references: [order_id], onDelete: Restrict)
+  user_id         String
+  recipient_email String
+  idempotency_key String    @unique
+  status          String    @default("PENDING") // PENDING, PROCESSING, SENT, EXPIRED, FAILED
+  attempts        Int       @default(0)
+  last_error      String?
+  expires_at      DateTime
+  locked_until    DateTime?
+  sent_at         DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([status, locked_until])
+  @@map("email_outbox")
 }
 
 model StudentProfile {
@@ -140,35 +182,84 @@ model Question {
   @@map("questions")
 }
 
+model QuestionSet {
+  id             String              @id @default(cuid())
+  version        Int                 @unique
+  title          String
+  is_active      Boolean             @default(false)
+  scoring_config Json
+  published_at   DateTime?
+  created_at     DateTime            @default(now())
+  items          QuestionSetItem[]
+  sessions       AssessmentSession[]
+
+  @@map("question_sets")
+}
+
+model QuestionSetItem {
+  id                 String             @id @default(cuid())
+  question_set_id    String
+  question_set       QuestionSet        @relation(fields: [question_set_id], references: [id], onDelete: Restrict)
+  code               String
+  order_index        Int
+  dimension_category DimensionCategory
+  subdimensi         String
+  question_text      String
+  options            Json
+  scoring_weight     Float              @default(1.0)
+  legacy_question_id String?
+  created_at         DateTime           @default(now())
+  answers            AssessmentAnswer[]
+
+  @@unique([question_set_id, code])
+  @@index([question_set_id, order_index])
+  @@map("question_set_items")
+}
+
 model AssessmentSession {
-  id             String             @id @default(uuid())
-  user_id        String
-  user           User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  status         SessionStatus      @default(IN_PROGRESS)
-  started_at     DateTime           @default(now())
-  completed_at   DateTime?
-  career_profile Json?
-  result_data    Json?
-  answers        AssessmentAnswer[]
+  id              String             @id @default(uuid())
+  user_id         String
+  user            User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  question_set_id String
+  question_set    QuestionSet        @relation(fields: [question_set_id], references: [id], onDelete: Restrict)
+  status          SessionStatus      @default(IN_PROGRESS)
+  started_at      DateTime           @default(now())
+  completed_at    DateTime?
+  career_profile  Json?
+  result_data     Json?
+  answers         AssessmentAnswer[]
 
   @@index([user_id])
   @@index([status])
+  @@index([question_set_id])
   @@map("assessment_sessions")
 }
 
 model AssessmentAnswer {
-  id             String            @id @default(uuid())
-  session_id     String
-  session        AssessmentSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  question_id    String
-  question       Question          @relation(fields: [question_id], references: [id], onDelete: Restrict)
-  selected_value Int               // 1 to 5 Likert Scale
-  answered_at    DateTime          @default(now())
+  id                   String            @id @default(uuid())
+  session_id           String
+  session              AssessmentSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  question_id          String
+  question             Question          @relation(fields: [question_id], references: [id], onDelete: Restrict)
+  question_set_item_id String
+  question_set_item    QuestionSetItem   @relation(fields: [question_set_item_id], references: [id], onDelete: Restrict)
+  selected_value       Int               // 1 to 5 Likert Scale
+  answered_at          DateTime          @default(now())
 
   @@unique([session_id, question_id])
   @@index([session_id])
   @@index([question_id])
+  @@index([question_set_item_id])
   @@map("assessment_answers")
+}
+
+model RateLimitBucket {
+  key        String   @id
+  count      Int
+  reset_at   DateTime
+  updated_at DateTime @updatedAt
+
+  @@map("rate_limit_buckets")
 }
 
 model AccessCode {

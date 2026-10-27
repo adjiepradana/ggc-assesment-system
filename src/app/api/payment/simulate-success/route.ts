@@ -41,13 +41,21 @@ export async function POST(req: Request) {
       );
     }
 
-    // Fulfill the order
+    // Fulfill the order using simulated dev evidence (strictly gated by NODE_ENV !== "production" above)
     const fulfillmentResult = await fulfillPaidOrder(
       order,
       {
-        simulated: true,
-        simulation_note: "Payment successfully simulated in development test mode.",
-        simulated_at: new Date().toISOString(),
+        orderId: order.order_id,
+        transactionStatus: "settlement",
+        grossAmount: order.amount,
+        source: "MIDTRANS_CORE_API_VERIFY",
+        paymentType: "simulator_bank_transfer",
+        rawPayload: {
+          simulated: true,
+          simulation_note:
+            "Payment successfully simulated in development test mode.",
+          simulated_at: new Date().toISOString(),
+        },
       },
       "simulator_bank_transfer"
     );

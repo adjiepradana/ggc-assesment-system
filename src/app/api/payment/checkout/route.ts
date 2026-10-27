@@ -5,6 +5,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { snap } from "@/lib/midtrans";
+import { MIDTRANS_CLIENT_KEY } from "@/lib/midtrans-config";
+import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,18 @@ const DEFAULT_ASSESSMENT_PRICE = 49000;
 
 export async function POST(req: Request) {
   try {
+    // Rate Limit (F-09): max 10 checkout requests per minute per IP
+    const clientIp = getClientIp(req);
+    const rateLimit = await consumeRateLimit(`checkout:ip:${clientIp}`, 10, 60_000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "TOO_MANY_REQUESTS",
+          message: "Terlalu banyak permintaan transaksi. Silakan tunggu 1 menit.",
+        },
+        { status: 429 }
+      );
+    }
     const session = await getServerSession(authOptions);
     const isAuthenticated = !!(session?.user?.id || session?.user?.email);
 
@@ -23,7 +37,7 @@ export async function POST(req: Request) {
     let customerName: string;
     let customerPhone: string | null = phone?.trim() || null;
     let hashedPassword: string | null = null;
-    let studentUser: any = null;
+    let sessionUserId: string | null = null;
 
     if (isAuthenticated && session?.user) {
       // ==========================================
@@ -32,7 +46,7 @@ export async function POST(req: Request) {
       const currentUserId = session.user.id;
       const sessionEmail = session.user.email?.toLowerCase().trim();
 
-      studentUser = await prisma.user.findFirst({
+      const studentUser = await prisma.user.findFirst({
         where: {
           OR: [
             ...(currentUserId ? [{ id: currentUserId }] : []),
@@ -51,6 +65,7 @@ export async function POST(req: Request) {
         );
       }
 
+      sessionUserId = studentUser.id;
       customerEmail = studentUser.email;
       customerName =
         name?.trim() ||
@@ -103,11 +118,9 @@ export async function POST(req: Request) {
       customerEmail = trimmedEmail;
       customerName = name.trim();
 
-      // Hash password once, stored ONLY in internal database (never sent to Midtrans)
-      hashedPassword = await bcrypt.hash(password, 10);
-
-      // Check if user already exists
-      studentUser = await prisma.user.findUnique({
+      // Check if a verified user or user with a paid order / session already exists with that email (F-15)
+      // Do NOT create or mutate User records before payment succeeds.
+      const existingUser = await prisma.user.findUnique({
         where: { email: customerEmail },
         include: {
           orders: { where: { status: "SUCCESS" }, select: { id: true }, take: 1 },
@@ -115,36 +128,14 @@ export async function POST(req: Request) {
         },
       });
 
-      if (!studentUser) {
-        studentUser = await prisma.user.create({
-          data: {
-            email: customerEmail,
-            password_hash: hashedPassword,
-            role: "STUDENT",
-            is_active: true,
-            email_verified: false,
-            profile: {
-              create: {
-                full_name: customerName,
-                phone_number: customerPhone,
-              },
-            },
-          },
-          include: {
-            orders: { where: { status: "SUCCESS" }, select: { id: true }, take: 1 },
-            sessions: { select: { id: true }, take: 1 },
-          },
-        });
-      } else {
-        // SECURITY (anti account-takeover):
-        // Never let an anonymous checkout request overwrite the password of an existing active account.
-        const isAbandonedCheckoutAccount =
-          studentUser.role === "STUDENT" &&
-          studentUser.email_verified === false &&
-          studentUser.orders.length === 0 &&
-          studentUser.sessions.length === 0;
+      if (existingUser) {
+        const hasVerifiedOrPaidAccount =
+          existingUser.role !== "STUDENT" ||
+          existingUser.email_verified === true ||
+          existingUser.orders.length > 0 ||
+          existingUser.sessions.length > 0;
 
-        if (!isAbandonedCheckoutAccount) {
+        if (hasVerifiedOrPaidAccount) {
           return NextResponse.json(
             {
               error:
@@ -154,44 +145,56 @@ export async function POST(req: Request) {
             { status: 409 }
           );
         }
-
-        studentUser = await prisma.user.update({
-          where: { id: studentUser.id },
-          data: {
-            password_hash: hashedPassword,
-            is_active: true,
-          },
-          include: {
-            orders: { where: { status: "SUCCESS" }, select: { id: true }, take: 1 },
-            sessions: { select: { id: true }, take: 1 },
-          },
-        });
       }
+
+      // Hash password once to store in PendingRegistration (never in Order.payment_details)
+      hashedPassword = await bcrypt.hash(password, 10);
     }
 
     // ==========================================
-    // 3. PRE-CREATE ORDER RECORD IN DATABASE
+    // 3. PRE-CREATE ORDER & PENDING REGISTRATION
     // ==========================================
     // Server-side constant price enforcement (Rp 49.000) prevents price tampering
     const price = DEFAULT_ASSESSMENT_PRICE;
     const orderId = `GGC-${Date.now()}-${crypto.randomInt(1000, 10000)}`;
+    const pendingExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     const preCreatedOrder = await prisma.order.create({
       data: {
         order_id: orderId,
-        user_id: studentUser.id,
+        user_id: sessionUserId,
         customer_name: customerName,
         customer_email: customerEmail,
         customer_phone: customerPhone,
         amount: price,
         status: "PENDING",
         payment_details: {
-          ...(hashedPassword
-            ? { hashedPassword }
-            : { is_authenticated_purchase: true, user_id: studentUser.id }),
+          is_authenticated_purchase: Boolean(sessionUserId),
+          ...(sessionUserId ? { user_id: sessionUserId } : {}),
         },
       },
     });
+
+    if (!sessionUserId && hashedPassword) {
+      await prisma.pendingRegistration.upsert({
+        where: { order_id: orderId },
+        create: {
+          order_id: orderId,
+          email: customerEmail,
+          full_name: customerName,
+          phone: customerPhone,
+          password_hash: hashedPassword,
+          expires_at: pendingExpiresAt,
+        },
+        update: {
+          email: customerEmail,
+          full_name: customerName,
+          phone: customerPhone,
+          password_hash: hashedPassword,
+          expires_at: pendingExpiresAt,
+        },
+      });
+    }
 
     // ==========================================
     // 4. PREPARE MIDTRANS SNAP PARAMETERS
@@ -217,7 +220,7 @@ export async function POST(req: Request) {
         },
       ],
       callbacks: {
-        finish: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/student/dashboard`,
+        finish: `${(process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/+$/, "")}/student/dashboard`,
       },
     };
 
@@ -280,7 +283,7 @@ export async function POST(req: Request) {
       token: transactionToken,
       redirect_url: redirectUrl,
       is_mock: isMock,
-      client_key: process.env.MIDTRANS_CLIENT_KEY || process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY,
+      client_key: MIDTRANS_CLIENT_KEY,
     });
   } catch (error: any) {
     console.error("Error in /api/payment/checkout:", error);

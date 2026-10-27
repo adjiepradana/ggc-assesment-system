@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { all84QuestionsData, defaultLikertOptions, shuffleArrayWithSeed } from "@/lib/questions-data";
+import {
+  all84QuestionsData,
+  defaultLikertOptions,
+  shuffleArrayWithSeed,
+} from "@/lib/questions-data";
 import { checkUserPaidAccess } from "@/lib/access-check";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +25,7 @@ export async function GET() {
     const userId = session.user.id;
 
     // PAYWALL ACCESS GATEKEEPER:
-    // Only users who have paid (or admin/demo) are permitted to take the assessment
+    // Only users who have paid (or admin) are permitted to take the assessment
     const hasPaidAccess = await checkUserPaidAccess(
       userId,
       session.user.email,
@@ -33,7 +37,8 @@ export async function GET() {
         {
           error: "PAYMENT_REQUIRED",
           payment_required: true,
-          message: "Akses asesmen terkunci. Silakan selesaikan pembayaran resmi via Midtrans untuk membuka 84 butir soal.",
+          message:
+            "Akses asesmen terkunci. Silakan selesaikan pembayaran resmi via Midtrans untuk membuka 84 butir soal.",
         },
         { status: 402 }
       );
@@ -41,7 +46,6 @@ export async function GET() {
 
     // VERIFICATION GATEKEEPER:
     // Only users with verified emails (or admins) are permitted to start/access the assessment.
-    // There is no demo-account bypass: every student must verify and pay.
     const isBypassAccount = session.user.role === "ADMIN";
 
     const studentUserRecord = await prisma.user.findUnique({
@@ -54,21 +58,25 @@ export async function GET() {
         {
           error: "EMAIL_VERIFICATION_REQUIRED",
           email_verification_required: true,
-          message: "Email Anda belum diverifikasi. Silakan periksa kotak masuk atau spam email Anda dan klik tautan verifikasi.",
+          message:
+            "Email Anda belum diverifikasi. Silakan periksa kotak masuk atau spam email Anda dan klik tautan verifikasi.",
         },
         { status: 403 }
       );
     }
 
-    // 1. Find or create an active assessment session
-    let assessmentSession = null;
+    // 1. Find or create an active assessment session bound to the active QuestionSet
+    let assessmentSession: any = null;
     let dbConnected = true;
 
     try {
-      // Find the student's latest session
+      // Find the student's latest non-abandoned session
       const latestSession = await prisma.assessmentSession.findFirst({
         where: {
           user_id: userId,
+          status: {
+            in: ["IN_PROGRESS", "COMPLETED"],
+          },
         },
         include: {
           answers: true,
@@ -83,28 +91,61 @@ export async function GET() {
           session: latestSession,
           is_completed: true,
           redirect_url: `/student/results/${latestSession.id}`,
-          message: "Asesmen Anda telah selesai dan terkunci resmi. Menampilkan laporan hasil evaluasi...",
+          message:
+            "Asesmen Anda telah selesai dan terkunci resmi. Menampilkan laporan hasil evaluasi...",
         });
       }
 
       if (latestSession && latestSession.status === "IN_PROGRESS") {
         assessmentSession = latestSession;
       } else {
-        assessmentSession = await prisma.assessmentSession.create({
-          data: {
-            user_id: userId,
-            status: "IN_PROGRESS",
-          },
-          include: {
-            answers: true,
-          },
+        // Resolve the currently active QuestionSet
+        const activeQuestionSet = await prisma.questionSet.findFirst({
+          where: { is_active: true },
+          orderBy: { version: "desc" },
         });
+
+        const questionSetId = activeQuestionSet?.id || "qset_v1_default";
+
+        try {
+          assessmentSession = await prisma.assessmentSession.create({
+            data: {
+              user_id: userId,
+              question_set_id: questionSetId,
+              status: "IN_PROGRESS",
+            },
+            include: {
+              answers: true,
+            },
+          });
+        } catch (createErr: any) {
+          // Handle concurrent creation race hitting idx_unique_user_in_progress_session (P2002)
+          if (createErr?.code === "P2002") {
+            const existingInProgress =
+              await prisma.assessmentSession.findFirst({
+                where: {
+                  user_id: userId,
+                  status: "IN_PROGRESS",
+                },
+                include: {
+                  answers: true,
+                },
+                orderBy: { started_at: "desc" },
+              });
+            if (existingInProgress) {
+              assessmentSession = existingInProgress;
+            } else {
+              throw createErr;
+            }
+          } else {
+            throw createErr;
+          }
+        }
       }
     } catch (dbErr) {
       console.error("DB error in assessment/start:", dbErr);
 
       // SAFETY: Never hand out an in-memory mock session in production.
-      // Answers would silently fail to save and the student would lose their work.
       if (process.env.NODE_ENV === "production") {
         return NextResponse.json(
           {
@@ -117,10 +158,10 @@ export async function GET() {
       }
 
       dbConnected = false;
-      // In-memory fallback representation for local development without DB
       assessmentSession = {
         id: `mock-session-${userId}`,
         user_id: userId,
+        question_set_id: "qset_v1_default",
         status: "IN_PROGRESS" as const,
         started_at: new Date(),
         completed_at: null,
@@ -128,7 +169,7 @@ export async function GET() {
       };
     }
 
-    // 2. Fetch questions from DB if connected, or use centralized fallback
+    // 2. Fetch versioned QuestionSetItems for this session's question_set_id (with scoring_weight > 0)
     let rawQuestions: Array<{
       id: string;
       code: string;
@@ -136,7 +177,32 @@ export async function GET() {
       options: any;
     }> = [];
 
-    if (dbConnected) {
+    if (dbConnected && assessmentSession?.question_set_id) {
+      try {
+        const setItems = await prisma.questionSetItem.findMany({
+          where: {
+            question_set_id: assessmentSession.question_set_id,
+            scoring_weight: { gt: 0 },
+          },
+          orderBy: { order_index: "asc" },
+        });
+
+        if (setItems.length > 0) {
+          rawQuestions = setItems.map((item) => ({
+            id: item.legacy_question_id || item.id,
+            code: item.code,
+            question_text: item.question_text,
+            options: item.options,
+          }));
+        }
+      } catch (e) {
+        console.warn(
+          "Could not query question_set_items table, falling back to questions table."
+        );
+      }
+    }
+
+    if (rawQuestions.length === 0 && dbConnected) {
       try {
         const dbQuestions = await prisma.question.findMany({
           where: { is_active: true },
@@ -152,12 +218,13 @@ export async function GET() {
           rawQuestions = dbQuestions;
         }
       } catch (e) {
-        console.warn("Could not query questions table, using built-in questions data.");
+        console.warn(
+          "Could not query questions table, using built-in questions data."
+        );
       }
     }
 
     if (rawQuestions.length === 0) {
-      // Use standard 84 questions data
       rawQuestions = all84QuestionsData.map((q) => ({
         id: `q-${q.code}`,
         code: q.code,
@@ -167,7 +234,6 @@ export async function GET() {
     }
 
     // 3. Deterministic shuffle using assessment session ID as seed
-    // This ensures questions are shuffled randomly, but stay fixed for this student session across reloads
     const shuffled = shuffleArrayWithSeed(rawQuestions, assessmentSession.id);
 
     // 4. Uniform representation: strip category names (Verbal, Interest, etc.) to keep evaluation unbiased
@@ -190,6 +256,7 @@ export async function GET() {
       success: true,
       session: {
         id: assessmentSession.id,
+        question_set_id: assessmentSession.question_set_id,
         status: assessmentSession.status,
         started_at: assessmentSession.started_at,
       },

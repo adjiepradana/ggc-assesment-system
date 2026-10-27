@@ -37,6 +37,7 @@ async function dispatchEmail({
   text,
   logContext,
   localFallbackUrl,
+  idempotencyKey,
 }: {
   to: string;
   subject: string;
@@ -44,17 +45,27 @@ async function dispatchEmail({
   text: string;
   logContext: string;
   localFallbackUrl: string;
+  idempotencyKey?: string;
 }): Promise<SendEmailResult> {
   // 1. Primary: Resend ESP
   if (resend) {
     try {
-      const { data, error } = await resend.emails.send({
-        from: RESEND_FROM_EMAIL,
-        to,
-        subject,
-        html,
-        text,
-      });
+      const { data, error } = await resend.emails.send(
+        {
+          from: RESEND_FROM_EMAIL,
+          to,
+          subject,
+          html,
+          text,
+        },
+        idempotencyKey
+          ? {
+              headers: {
+                "Idempotency-Key": idempotencyKey,
+              },
+            }
+          : undefined
+      );
 
       if (!error && data?.id) {
         console.log(`✉️ [Resend] ${logContext} sent to ${to}. ID: ${data.id}`);
@@ -84,6 +95,7 @@ async function dispatchEmail({
         headers: {
           "X-Auto-Response-Suppress": "OOF, AutoReply",
           "X-Priority": "3",
+          ...(idempotencyKey ? { "X-Idempotency-Key": idempotencyKey } : {}),
         },
       });
       console.log(`✉️ [Nodemailer] ${logContext} sent to ${to}. ID: ${info.messageId}`);
@@ -109,31 +121,21 @@ async function dispatchEmail({
 }
 
 /**
- * Resolves the application base URL with intelligent fallbacks:
- * 1. Explicit customBaseUrl passed from the HTTP request context
- * 2. NEXTAUTH_URL if set and not pointing to localhost
- * 3. VERCEL_PROJECT_PRODUCTION_URL or VERCEL_URL if hosted on Vercel
- * 4. NEXTAUTH_URL as-is or http://localhost:3000
+ * Resolves the application base URL strictly from server-side NEXTAUTH_URL.
+ * SECURITY (Fix F-02): Ignores any request-header-derived customBaseUrl to prevent
+ * password-reset and email-verification link poisoning attacks.
  */
-export function resolveBaseUrl(customBaseUrl?: string): string {
-  if (customBaseUrl && customBaseUrl.startsWith("http")) {
-    return customBaseUrl.replace(/\/$/, "");
+export function resolveBaseUrl(_ignoredCustomBaseUrl?: string): string {
+  const nextAuthUrl = process.env.NEXTAUTH_URL?.trim();
+  if (nextAuthUrl && nextAuthUrl.startsWith("http")) {
+    return nextAuthUrl.replace(/\/+$/, "");
   }
 
-  const nextAuthUrl = process.env.NEXTAUTH_URL;
-  if (nextAuthUrl && !nextAuthUrl.includes("localhost")) {
-    return nextAuthUrl.replace(/\/$/, "");
-  }
+  return "http://localhost:3000";
+}
 
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
-  return (nextAuthUrl || "http://localhost:3000").replace(/\/$/, "");
+export interface SendVerificationEmailOptions {
+  idempotencyKey?: string;
 }
 
 /**
@@ -142,15 +144,19 @@ export function resolveBaseUrl(customBaseUrl?: string): string {
  * @param toEmail - Destination student email address
  * @param studentName - Full name of the student
  * @param token - Secure random email verification token
- * @param customBaseUrl - Optional request origin URL to guarantee correct domain in email links
+ * @param options - Optional delivery options (such as stable idempotencyKey)
  */
 export async function sendVerificationEmail(
   toEmail: string,
   studentName: string,
   token: string,
-  customBaseUrl?: string
+  options?: SendVerificationEmailOptions | string
 ): Promise<SendEmailResult> {
-  const baseUrl = resolveBaseUrl(customBaseUrl);
+  const idempotencyKey =
+    typeof options === "object" && options !== null
+      ? options.idempotencyKey
+      : undefined;
+  const baseUrl = resolveBaseUrl();
   const verificationUrl = `${baseUrl}/auth/verify?token=${encodeURIComponent(token)}`;
   const senderEmail = process.env.EMAIL_USER || "gogreatcareer@gmail.com";
 
@@ -353,6 +359,7 @@ https://gogreatcareer.com
     text: plainTextContent,
     logContext: "Verification email",
     localFallbackUrl: verificationUrl,
+    idempotencyKey,
   });
 }
 
@@ -367,9 +374,9 @@ export async function sendPasswordResetEmail(
   toEmail: string,
   userName: string,
   token: string,
-  customBaseUrl?: string
+  _ignoredCustomBaseUrl?: string
 ): Promise<SendEmailResult> {
-  const baseUrl = resolveBaseUrl(customBaseUrl);
+  const baseUrl = resolveBaseUrl();
   const resetUrl = `${baseUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
   const senderEmail = process.env.EMAIL_USER || "gogreatcareer@gmail.com";
 

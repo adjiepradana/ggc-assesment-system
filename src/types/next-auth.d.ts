@@ -19,6 +19,7 @@ declare module "next-auth" {
     email: string;
     role: Role;
     isActive?: boolean;
+    token_version?: number;
   }
 }
 
@@ -28,6 +29,8 @@ declare module "next-auth/jwt" {
     email?: string | null;
     role: Role;
     isActive?: boolean;
+    token_version?: number;
+    is_revoked?: boolean;
     isInvalid?: boolean;
     lastValidated?: number;
     error?: string;

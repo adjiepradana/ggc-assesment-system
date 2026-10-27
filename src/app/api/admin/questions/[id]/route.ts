@@ -46,12 +46,13 @@ export async function PATCH(
         question: updated,
       });
     } catch (dbErr) {
-      console.warn("DB update fallback in admin questions:", dbErr);
-      return NextResponse.json({
-        success: true,
-        message: "Status/teks soal berhasil diubah (Dev Mode).",
-        question: { id, ...updateData },
-      });
+      console.error("DB update failure in admin questions:", dbErr);
+      return NextResponse.json(
+        {
+          error: "Database sedang mengalami gangguan. Gagal memperbarui soal.",
+        },
+        { status: 503 }
+      );
     }
   } catch (error) {
     console.error("Error updating question:", error);
@@ -92,11 +93,13 @@ export async function DELETE(
         message: "Soal berhasil dinonaktifkan dari bank soal aktif.",
       });
     } catch (dbErr) {
-      console.warn("DB delete fallback in admin questions:", dbErr);
-      return NextResponse.json({
-        success: true,
-        message: "Soal berhasil dinonaktifkan (Dev Mode).",
-      });
+      console.error("DB delete failure in admin questions:", dbErr);
+      return NextResponse.json(
+        {
+          error: "Database sedang mengalami gangguan. Gagal menonaktifkan soal.",
+        },
+        { status: 503 }
+      );
     }
   } catch (error) {
     console.error("Error deleting question:", error);

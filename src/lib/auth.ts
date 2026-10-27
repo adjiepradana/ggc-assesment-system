@@ -4,10 +4,32 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
-// Revalidation interval for active user check (Phase 2.5: default 5 minutes in milliseconds)
+// Revalidation interval for active user & token_version check (default 5 minutes in milliseconds)
 const USER_REVALIDATION_INTERVAL_MS =
-  (parseInt(process.env.AUTH_TOKEN_REVALIDATION_SECONDS || "", 10) || 5 * 60) * 1000;
+  (parseInt(process.env.AUTH_TOKEN_REVALIDATION_SECONDS || "", 10) || 5 * 60) *
+  1000;
+
+const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+/**
+ * Pure helper exported for unit testing JWT session revocation logic (F-10).
+ * Returns true if the user record is missing, deactivated, or has a newer token_version.
+ */
+export function isTokenVersionRevoked(
+  token: { token_version?: number; is_revoked?: boolean; isInvalid?: boolean; isActive?: boolean },
+  dbUser: { is_active: boolean; token_version: number } | null | undefined
+): boolean {
+  if (token.is_revoked || token.isInvalid || token.isActive === false) {
+    return true;
+  }
+  if (!dbUser || dbUser.is_active === false) {
+    return true;
+  }
+  const tokenVer = token.token_version ?? 0;
+  return dbUser.token_version !== tokenVer;
+}
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -24,14 +46,37 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email", placeholder: "you@example.com" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Mohon masukkan email dan kata sandi.");
         }
 
+        const normalizedEmail = credentials.email.toLowerCase().trim();
+        const clientIp = getClientIp(req as any);
+
+        // Brute-Force Rate Limiting (F-04, F-09): max 5 per email and 10 per IP per 15 minutes
+        const [emailLimit, ipLimit] = await Promise.all([
+          consumeRateLimit(
+            `login:email:${normalizedEmail}`,
+            5,
+            LOGIN_RATE_LIMIT_WINDOW_MS
+          ),
+          consumeRateLimit(
+            `login:ip:${clientIp}`,
+            10,
+            LOGIN_RATE_LIMIT_WINDOW_MS
+          ),
+        ]);
+
+        if (!emailLimit.allowed || !ipLimit.allowed) {
+          throw new Error(
+            "Terlalu banyak percobaan masuk yang gagal. Silakan tunggu 15 menit sebelum mencoba kembali."
+          );
+        }
+
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email.toLowerCase().trim(),
+            email: normalizedEmail,
           },
           include: {
             profile: true,
@@ -39,7 +84,8 @@ export const authOptions: NextAuthOptions = {
         });
 
         // SECURITY (Phase 2.5): Constant-time check mitigation against email enumeration / timing attacks
-        const dummyHash = "$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUU1234567890";
+        const dummyHash =
+          "$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUU1234567890";
         const passwordHashToCompare = user?.password_hash || dummyHash;
 
         const isValidPassword = await bcrypt.compare(
@@ -54,7 +100,9 @@ export const authOptions: NextAuthOptions = {
 
         // Only verified credentials can see specific deactivation status
         if (user.is_active === false) {
-          throw new Error("Akses akun telah dicabut atau dinonaktifkan oleh administrator.");
+          throw new Error(
+            "Akses akun telah dicabut atau dinonaktifkan oleh administrator."
+          );
         }
 
         return {
@@ -63,6 +111,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           name: user.profile?.full_name || user.email.split("@")[0],
           isActive: user.is_active,
+          token_version: user.token_version ?? 0,
         };
       },
     }),
@@ -71,32 +120,41 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       const now = Date.now();
 
-      // 1. Initial sign-in: populate initial token data
+      // 1. Initial sign-in: populate initial token data including token_version (F-10)
       if (user) {
         token.id = user.id;
         token.role = user.role as Role;
         token.email = user.email;
         token.name = user.name;
         token.isActive = user.isActive ?? true;
+        token.token_version = user.token_version ?? 0;
+        token.is_revoked = false;
         token.isInvalid = false;
         token.lastValidated = now;
         delete token.error;
         return token;
       }
 
-      // 2. If token is already marked invalid, reject immediately
-      if (token.isInvalid || token.isActive === false || !token.id) {
+      // 2. If token is already marked revoked or invalid, reject immediately
+      if (
+        token.is_revoked ||
+        token.isInvalid ||
+        token.isActive === false ||
+        !token.id
+      ) {
         return {
           ...token,
+          is_revoked: true,
           isInvalid: true,
           isActive: false,
           error: "UserDeactivatedOrDeleted",
         };
       }
 
-      // 3. Periodic Database Revalidation (Fase 2.5: check is_active & user existence every 5 minutes)
+      // 3. Periodic Database Revalidation (check is_active & token_version every 5 minutes)
       const lastValidated = (token.lastValidated as number) || 0;
-      const isDueForCheck = now - lastValidated >= USER_REVALIDATION_INTERVAL_MS;
+      const isDueForCheck =
+        now - lastValidated >= USER_REVALIDATION_INTERVAL_MS;
 
       if (isDueForCheck) {
         try {
@@ -107,41 +165,54 @@ export const authOptions: NextAuthOptions = {
               email: true,
               role: true,
               is_active: true,
+              token_version: true,
               profile: {
                 select: { full_name: true },
               },
             },
           });
 
-          // If user record no longer exists or account was deactivated by admin:
-          if (!dbUser || dbUser.is_active === false) {
+          // If user record no longer exists, account was deactivated, or token_version incremented:
+          if (isTokenVersionRevoked(token, dbUser)) {
             console.warn(
-              `🔒 [NextAuth Phase 2.5] User ${token.email || token.id} is invalid: ` +
-              `${!dbUser ? "Record deleted" : "Account deactivated (is_active: false)"}. Revoking JWT session.`
+              `🔒 [NextAuth F-10] Revoking JWT session for ${
+                token.email || token.id
+              }: ` +
+                `${
+                  !dbUser
+                    ? "Record deleted"
+                    : !dbUser.is_active
+                    ? "Account deactivated"
+                    : `token_version mismatch (token=${token.token_version}, db=${dbUser.token_version})`
+                }.`
             );
 
             return {
               ...token,
+              is_revoked: true,
               isInvalid: true,
               isActive: false,
               error: "UserDeactivatedOrDeleted",
             };
           }
 
-          // User is active and valid: synchronize latest state and update validation timestamp
-          token.role = dbUser.role as Role;
-          token.email = dbUser.email;
-          if (dbUser.profile?.full_name) {
-            token.name = dbUser.profile.full_name;
+          // User is active and token_version matches: synchronize latest state
+          token.role = dbUser!.role as Role;
+          token.email = dbUser!.email;
+          if (dbUser!.profile?.full_name) {
+            token.name = dbUser!.profile.full_name;
           }
+          token.token_version = dbUser!.token_version;
           token.isActive = true;
+          token.is_revoked = false;
           token.isInvalid = false;
           token.lastValidated = now;
           delete token.error;
         } catch (dbError) {
-          console.error("⚠️ [NextAuth Phase 2.5] Periodic DB revalidation failed:", dbError);
-          // In case of transient database connection issue, do not log out legitimate users prematurely.
-          // Keep existing valid token state, but do not update lastValidated so it retries on next request.
+          console.error(
+            "⚠️ [NextAuth Phase 2.5] Periodic DB revalidation failed:",
+            dbError
+          );
         }
       }
 
@@ -149,8 +220,14 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      // If token is invalid or user was deactivated, invalidate the session
-      if (!token || token.isInvalid || token.isActive === false || !token.id) {
+      // If token is revoked, invalid, or user was deactivated, invalidate the session
+      if (
+        !token ||
+        token.is_revoked ||
+        token.isInvalid ||
+        token.isActive === false ||
+        !token.id
+      ) {
         return {
           ...session,
           user: null as any,

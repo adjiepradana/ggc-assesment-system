@@ -385,7 +385,7 @@ export default function CareerOrientationSection({
 
               <div className="pt-2 border-t border-gray-100 dark:border-[#0E3525]">
                 <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed italic">
-                  "{item.careerAdvantage}"
+                  &ldquo;{item.careerAdvantage}&rdquo;
                 </p>
               </div>
             </div>

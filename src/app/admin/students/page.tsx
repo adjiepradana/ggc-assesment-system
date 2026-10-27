@@ -322,7 +322,7 @@ export default function AdminStudentsPage() {
             <GraduationCap className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
             <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Tidak Ada Siswa Ditemukan</p>
             <p className="mt-1 max-w-sm mx-auto">
-              Tidak ada data siswa yang cocok dengan kriteria pencarian "{searchQuery}".
+              Tidak ada data siswa yang cocok dengan kriteria pencarian &ldquo;{searchQuery}&rdquo;.
             </p>
           </div>
         ) : (

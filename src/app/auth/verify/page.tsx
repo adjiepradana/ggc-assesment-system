@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import BrandLogo from "@/components/BrandLogo";
@@ -25,6 +25,7 @@ function VerifyContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verifiedData, setVerifiedData] = useState<{ email: string; name: string } | null>(null);
+  const hasVerifiedRef = useRef(false);
 
   useEffect(() => {
     // Case 1: Midtrans payment redirect (?payment=success)
@@ -40,10 +41,19 @@ function VerifyContent() {
       return;
     }
 
-    async function checkToken() {
+    if (hasVerifiedRef.current) {
+      return;
+    }
+    hasVerifiedRef.current = true;
+
+    async function completeVerification() {
       try {
         setLoading(true);
-        const res = await fetch(`/api/auth/verify?token=${encodeURIComponent(token!)}`);
+        const res = await fetch("/api/auth/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
         const data = await res.json();
 
         if (!res.ok) {
@@ -61,7 +71,7 @@ function VerifyContent() {
       }
     }
 
-    checkToken();
+    completeVerification();
   }, [token, paymentStatus]);
 
   // State A: Loading
