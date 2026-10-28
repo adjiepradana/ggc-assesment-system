@@ -2,11 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/Navbar";
 import BrandLogo from "@/components/BrandLogo";
 import InteractiveRadarChart, { RadarDataPoint } from "@/components/InteractiveRadarChart";
 import InteractiveMiniAssessment from "@/components/InteractiveMiniAssessment";
+import InteractiveMajorMatcher from "@/components/InteractiveMajorMatcher";
+import FloatingCtaBar from "@/components/FloatingCtaBar";
 import SpotlightCard from "@/components/SpotlightCard";
 import MidtransCheckoutModal from "@/components/MidtransCheckoutModal";
 import {
@@ -47,6 +51,79 @@ import {
   CreditCard,
   Receipt,
 } from "lucide-react";
+
+const faqCategoryList = [
+  { key: "ALL", label: "Semua Topik" },
+  { key: "ASSESSMENT", label: "Instrumen & Durasi" },
+  { key: "METHODOLOGY", label: "Metodologi Multi-Matrix" },
+  { key: "REPORT", label: "Laporan & Konseling" },
+];
+
+const faqs = [
+  {
+    id: "faq-1",
+    category: "ASSESSMENT",
+    categoryLabel: "Instrumen & Durasi",
+    tag: "15-20 Menit",
+    q: "Berapa lama waktu yang dibutuhkan untuk menyelesaikan seluruh 84 butir soal?",
+    a: "Asesmen terdiri dari 84 butir instrumen skala Likert (1 sampai 5) yang dirancang intuitif dan ringkas. Rata-rata siswa menyelesaikannya dalam kurun waktu 15 hingga 20 menit. Anda tidak perlu terburu-buru karena sistem mengamankan setiap pilihan secara realtime.",
+    takeaway: "Setiap jawaban tersimpan otomatis per butir soal, bebas stres tanpa batas waktu ketat.",
+  },
+  {
+    id: "faq-2",
+    category: "ASSESSMENT",
+    categoryLabel: "Instrumen & Durasi",
+    tag: "Zero-Bias",
+    q: "Apakah ada jawaban 'benar' atau 'salah' yang dapat menggugurkan peserta?",
+    a: "Sama sekali tidak ada jawaban benar atau salah. Seluruh instrumen dirancang murni untuk memetakan keaslian bakat kognitif, preferensi kerja, nilai hidup, dan minat karier Anda secara objektif. Pilihlah jawaban yang paling mencerminkan diri Anda apa adanya.",
+    takeaway: "Asesmen ini bukan ujian kelulusan, melainkan kompas pencocokan potensi diri.",
+  },
+  {
+    id: "faq-3",
+    category: "ASSESSMENT",
+    categoryLabel: "Instrumen & Durasi",
+    tag: "Auto-Save",
+    q: "Bisakah pengerjaan asesmen dijeda dan dilanjutkan kembali di perangkat lain?",
+    a: "Ya, tentu saja! Karena setiap klik jawaban langsung tersimpan di cloud database akun Anda, Anda dapat keluar kapan saja dan melanjutkan kembali melalui laptop, tablet, atau smartphone tanpa kehilangan progres pengerjaan.",
+    takeaway: "Fleksibel lintas perangkat; lanjutkan kapan saja dari nomor soal terakhir.",
+  },
+  {
+    id: "faq-4",
+    category: "METHODOLOGY",
+    categoryLabel: "Metodologi & Multi-Matrix",
+    tag: "Scoring Engine",
+    q: "Bagaimana cara kerja algoritma Multi-Matrix Scoring dalam menentukan kecocokan jurusan?",
+    a: "Algoritma menghitung Person Profile (distribusi skor 7 dimensi siswa) lalu membandingkannya dengan Study Profile ratusan program studi berbobot ilmiah. Hasil akhirnya menghasilkan persentase keselarasan (Fit Score 1-100%) dan kategori kecocokan: Very Strong Fit, Strong Fit, Potential Fit, hingga Explore Further.",
+    takeaway: "Menggabungkan profil personal dengan bobot kurikulum perguruan tinggi secara presisi.",
+  },
+  {
+    id: "faq-5",
+    category: "METHODOLOGY",
+    categoryLabel: "Metodologi & Multi-Matrix",
+    tag: "Archetype",
+    q: "Apa itu 'Potential Signature' dan mengapa penting untuk masa depan saya?",
+    a: "Potential Signature adalah sintesis arketipe talenta dominan Anda (misalnya The Analytical Strategist, The Visionary Creator, dll.). Ini bukan sekadar label, melainkan cetak biru kognitif yang memandu Anda memilih karier dan lingkungan kerja yang paling memungkinkan Anda berkembang maksimal.",
+    takeaway: "Cetak biru kognitif untuk memandu keputusan karier jangka panjang.",
+  },
+  {
+    id: "faq-6",
+    category: "REPORT",
+    categoryLabel: "Laporan & Konseling",
+    tag: "PDF Resmi A4",
+    q: "Apakah laporan hasil asesmen bisa langsung diunduh dan dicetak untuk orang tua?",
+    a: "Seketika setelah menekan tombol Selesai, Anda langsung mendapatkan akses ke Dashboard Hasil interaktif serta tombol unduh Laporan PDF Resmi 2 Halaman (format A4 standar eksekutif) lengkap dengan kop Go Great Career™ yang siap dibagikan ke orang tua dan konselor.",
+    takeaway: "Dokumen resmi berformat eksekutif siap cetak untuk diskusi keluarga & guru BK.",
+  },
+  {
+    id: "faq-7",
+    category: "REPORT",
+    categoryLabel: "Laporan & Konseling",
+    tag: "Portal Sekolah",
+    q: "Bagaimana pihak sekolah, yayasan, atau guru BK dapat menggunakan platform ini?",
+    a: "Kami menyediakan Portal Administrator khusus bagi institusi pendidikan. Konselor dapat memantau status kemajuan seluruh siswa, meninjau analitik distribusi kecocokan jurusan, dan mengekspor seluruh rekap data siswa ke format Excel (.xlsx) dengan sekali klik.",
+    takeaway: "Terintegrasi penuh untuk manajemen bimbingan karier sekolah terpusat.",
+  },
+];
 
 export default function HomePage() {
   const { data: session } = useSession();
@@ -283,79 +360,6 @@ export default function HomePage() {
   ];
 
   const activeDimension = dimensions.find((d) => d.code === activeDimCode) || dimensions[0];
-
-  const faqCategoryList = [
-    { key: "ALL", label: "Semua Topik" },
-    { key: "ASSESSMENT", label: "Instrumen & Durasi" },
-    { key: "METHODOLOGY", label: "Metodologi Multi-Matrix" },
-    { key: "REPORT", label: "Laporan & Konseling" },
-  ];
-
-  const faqs = [
-    {
-      id: "faq-1",
-      category: "ASSESSMENT",
-      categoryLabel: "Instrumen & Durasi",
-      tag: "15-20 Menit",
-      q: "Berapa lama waktu yang dibutuhkan untuk menyelesaikan seluruh 84 butir soal?",
-      a: "Asesmen terdiri dari 84 butir instrumen skala Likert (1 sampai 5) yang dirancang intuitif dan ringkas. Rata-rata siswa menyelesaikannya dalam kurun waktu 15 hingga 20 menit. Anda tidak perlu terburu-buru karena sistem mengamankan setiap pilihan secara realtime.",
-      takeaway: "Setiap jawaban tersimpan otomatis per butir soal, bebas stres tanpa batas waktu ketat.",
-    },
-    {
-      id: "faq-2",
-      category: "ASSESSMENT",
-      categoryLabel: "Instrumen & Durasi",
-      tag: "Zero-Bias",
-      q: "Apakah ada jawaban 'benar' atau 'salah' yang dapat menggugurkan peserta?",
-      a: "Sama sekali tidak ada jawaban benar atau salah. Seluruh instrumen dirancang murni untuk memetakan keaslian bakat kognitif, preferensi kerja, nilai hidup, dan minat karier Anda secara objektif. Pilihlah jawaban yang paling mencerminkan diri Anda apa adanya.",
-      takeaway: "Asesmen ini bukan ujian kelulusan, melainkan kompas pencocokan potensi diri.",
-    },
-    {
-      id: "faq-3",
-      category: "ASSESSMENT",
-      categoryLabel: "Instrumen & Durasi",
-      tag: "Auto-Save",
-      q: "Bisakah pengerjaan asesmen dijeda dan dilanjutkan kembali di perangkat lain?",
-      a: "Ya, tentu saja! Karena setiap klik jawaban langsung tersimpan di cloud database akun Anda, Anda dapat keluar kapan saja dan melanjutkan kembali melalui laptop, tablet, atau smartphone tanpa kehilangan progres pengerjaan.",
-      takeaway: "Fleksibel lintas perangkat; lanjutkan kapan saja dari nomor soal terakhir.",
-    },
-    {
-      id: "faq-4",
-      category: "METHODOLOGY",
-      categoryLabel: "Metodologi & Multi-Matrix",
-      tag: "Scoring Engine",
-      q: "Bagaimana cara kerja algoritma Multi-Matrix Scoring dalam menentukan kecocokan jurusan?",
-      a: "Algoritma menghitung Person Profile (distribusi skor 7 dimensi siswa) lalu membandingkannya dengan Study Profile ratusan program studi berbobot ilmiah. Hasil akhirnya menghasilkan persentase keselarasan (Fit Score 1-100%) dan kategori kecocokan: Very Strong Fit, Strong Fit, Potential Fit, hingga Explore Further.",
-      takeaway: "Menggabungkan profil personal dengan bobot kurikulum perguruan tinggi secara presisi.",
-    },
-    {
-      id: "faq-5",
-      category: "METHODOLOGY",
-      categoryLabel: "Metodologi & Multi-Matrix",
-      tag: "Archetype",
-      q: "Apa itu 'Potential Signature' dan mengapa penting untuk masa depan saya?",
-      a: "Potential Signature adalah sintesis arketipe talenta dominan Anda (misalnya The Analytical Strategist, The Visionary Creator, dll.). Ini bukan sekadar label, melainkan cetak biru kognitif yang memandu Anda memilih karier dan lingkungan kerja yang paling memungkinkan Anda berkembang maksimal.",
-      takeaway: "Cetak biru kognitif untuk memandu keputusan karier jangka panjang.",
-    },
-    {
-      id: "faq-6",
-      category: "REPORT",
-      categoryLabel: "Laporan & Konseling",
-      tag: "PDF Resmi A4",
-      q: "Apakah laporan hasil asesmen bisa langsung diunduh dan dicetak untuk orang tua?",
-      a: "Seketika setelah menekan tombol Selesai, Anda langsung mendapatkan akses ke Dashboard Hasil interaktif serta tombol unduh Laporan PDF Resmi 2 Halaman (format A4 standar eksekutif) lengkap dengan kop Go Great Career™ yang siap dibagikan ke orang tua dan konselor.",
-      takeaway: "Dokumen resmi berformat eksekutif siap cetak untuk diskusi keluarga & guru BK.",
-    },
-    {
-      id: "faq-7",
-      category: "REPORT",
-      categoryLabel: "Laporan & Konseling",
-      tag: "Portal Sekolah",
-      q: "Bagaimana pihak sekolah, yayasan, atau guru BK dapat menggunakan platform ini?",
-      a: "Kami menyediakan Portal Administrator khusus bagi institusi pendidikan. Konselor dapat memantau status kemajuan seluruh siswa, meninjau analitik distribusi kecocokan jurusan, dan mengekspor seluruh rekap data siswa ke format Excel (.xlsx) dengan sekali klik.",
-      takeaway: "Terintegrasi penuh untuk manajemen bimbingan karier sekolah terpusat.",
-    },
-  ];
 
   const filteredFaqs = React.useMemo(() => {
     return faqs.filter((faq) => {
@@ -602,81 +606,100 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Active Tab View */}
-              {heroTab === "try" ? (
-                <InteractiveMiniAssessment />
-              ) : (
-                <div className="relative rounded-3xl bg-white dark:bg-[#07261B] p-5 sm:p-7 shadow-2xl border border-ggc-gold/40 backdrop-blur-xl transition-colors">
-                  {/* Card Header with Official Logo */}
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230]">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src="/logo.png"
-                        alt="GGC Official Logo"
-                        className="w-10 h-10 object-contain drop-shadow-sm"
-                      />
-                      <div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-ggc-gold-dark dark:text-ggc-gold">
-                          Simulasi Radar Bakat 6 Sumbu
+              {/* Active Tab View with smooth AnimatePresence transition */}
+              <AnimatePresence mode="wait">
+                {heroTab === "try" ? (
+                  <motion.div
+                    key="try"
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
+                  >
+                    <InteractiveMiniAssessment />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="simulation"
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    className="relative rounded-3xl bg-white dark:bg-[#07261B] p-5 sm:p-7 shadow-2xl border border-ggc-gold/40 backdrop-blur-xl transition-colors"
+                  >
+                    {/* Card Header with Official Logo */}
+                    <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#0E4230]">
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src="/logo.png"
+                          alt="GGC Official Logo"
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 object-contain drop-shadow-sm"
+                        />
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-ggc-gold-dark dark:text-ggc-gold">
+                            Simulasi Radar Bakat 6 Sumbu
+                          </div>
+                          <div className="text-sm font-black text-ggc-dark dark:text-white">
+                            Amanda Putri • Kelas 12
+                          </div>
                         </div>
-                        <div className="text-sm font-black text-ggc-dark dark:text-white">
-                          Amanda Putri • Kelas 12
-                        </div>
                       </div>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-ggc-gold" />
-                      <span>96% Very Strong Fit</span>
-                    </span>
-                  </div>
-
-                  {/* High Fidelity Interactive Radar Chart */}
-                  <div className="my-3 flex flex-col items-center justify-center">
-                    <InteractiveRadarChart
-                      data={signatureProfiles[0].radarData}
-                      size={270}
-                      fillColor="rgba(11, 70, 50, 0.25)"
-                      strokeColor="#0B4632"
-                    />
-                  </div>
-
-                  {/* Primary Recommendation Result */}
-                  <div className="mt-2 p-3.5 rounded-2xl bg-gradient-to-br from-ggc-dark to-ggc text-white flex items-center justify-between gap-3 shadow-md">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-ggc-gold font-bold">
-                        Top Major Match
-                      </div>
-                      <div className="text-xs sm:text-sm font-black">
-                        Teknik Informatika & AI
-                      </div>
-                      <div className="text-[11px] text-ggc-subtle">
-                        Fakultas Ilmu Komputer
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-black text-ggc-gold">Kecocokan 96%</div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/20 text-white">
-                        Sangat Cocok
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-ggc-gold" />
+                        <span>96% Very Strong Fit</span>
                       </span>
                     </div>
-                  </div>
 
-                  {/* Card Action */}
-                  <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-[#0E4230] flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-500 dark:text-[#A0B9AE] flex items-center gap-1.5 font-medium">
-                      <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>15–20 Menit Selesai</span>
-                    </span>
-                    <Link
-                      href="/auth/register"
-                      className="text-xs font-bold text-ggc dark:text-ggc-gold hover:text-ggc-dark dark:hover:text-white flex items-center gap-1 transition-colors"
-                    >
-                      <span>Mulai Asesmen</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-ggc-gold" />
-                    </Link>
-                  </div>
-                </div>
-              )}
+                    {/* High Fidelity Interactive Radar Chart */}
+                    <div className="my-3 flex flex-col items-center justify-center">
+                      <InteractiveRadarChart
+                        data={signatureProfiles[0].radarData}
+                        size={270}
+                        fillColor="rgba(11, 70, 50, 0.25)"
+                        strokeColor="#0B4632"
+                      />
+                    </div>
+
+                    {/* Primary Recommendation Result */}
+                    <div className="mt-2 p-3.5 rounded-2xl bg-gradient-to-br from-ggc-dark to-ggc text-white flex items-center justify-between gap-3 shadow-md">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-widest text-ggc-gold font-bold">
+                          Top Major Match
+                        </div>
+                        <div className="text-xs sm:text-sm font-black">
+                          Teknik Informatika & AI
+                        </div>
+                        <div className="text-[11px] text-ggc-subtle">
+                          Fakultas Ilmu Komputer
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-black text-ggc-gold">Kecocokan 96%</div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/20 text-white">
+                          Sangat Cocok
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Action */}
+                    <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-[#0E4230] flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-gray-500 dark:text-[#A0B9AE] flex items-center gap-1.5 font-medium">
+                        <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span>15–20 Menit Selesai</span>
+                      </span>
+                      <Link
+                        href="/auth/register"
+                        className="text-xs font-bold text-ggc dark:text-ggc-gold hover:text-ggc-dark dark:hover:text-white flex items-center gap-1 transition-colors"
+                      >
+                        <span>Mulai Asesmen</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-ggc-gold" />
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* In-flow bottom reassurance badge (No Overlapping) */}
               <div className="mt-3.5 text-center">
@@ -926,6 +949,31 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ================= INTERACTIVE MAJOR & CAREER MATCHER SIMULATOR ================= */}
+      <section
+        id="simulasi-jurusan"
+        className="py-20 bg-gradient-to-b from-white via-ggc-subtle/20 to-[#FAFBF9] dark:from-[#031810] dark:via-[#052016] dark:to-[#031810] border-b border-ggc-subtle dark:border-[#0E4230] relative overflow-hidden transition-colors"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-800/40">
+              <Sparkles className="w-3.5 h-3.5 text-ggc-gold" />
+              Eksplorasi Live Interaktif
+            </span>
+            <h2 className="fluid-section-title font-black text-ggc-dark dark:text-white mt-3 tracking-tight">
+              Temukan Sinyal Kecocokan Jurusanmu Sekarang
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 dark:text-[#A0B9AE] mt-3 leading-relaxed">
+              Uji coba algoritma pencocokan multi-matriks kami. Pilih rumpun pendidikanmu saat ini dan lihat bagaimana kombinasi minat membentuk profil studi yang paling selaras.
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <InteractiveMajorMatcher onOpenCheckout={() => setIsCheckoutModalOpen(true)} />
+          </div>
+        </div>
+      </section>
+
       {/* ================= INTERACTIVE DEMO: POTENTIAL SIGNATURES SHOWCASE WITH RADAR ================= */}
       <section id="signatures" className="py-20 bg-gradient-to-b from-white via-ggc-tint/40 to-[#FAFBF9] dark:from-[#031810] dark:via-[#052016] dark:to-[#031810] border-b border-ggc-subtle dark:border-[#0E4230] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -974,9 +1022,11 @@ export default function HomePage() {
               <div className="rounded-3xl bg-gradient-to-br from-ggc-dark via-[#093D2C] to-ggc dark:from-[#041D14] dark:via-[#072B1E] dark:to-[#031810] text-white p-6 sm:p-10 shadow-2xl border border-ggc-gold/40 relative overflow-hidden transition-all duration-300">
                 {/* Background Watermark Logo */}
                 <div className="absolute top-6 right-6 hidden md:block opacity-15 pointer-events-none">
-                  <img
+                  <Image
                     src="/logo.png"
                     alt="GGC Watermark"
+                    width={144}
+                    height={144}
                     className="w-36 h-36 object-contain"
                   />
                 </div>
@@ -1419,7 +1469,13 @@ export default function HomePage() {
 
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-3">
-                  <img src="/logo.png" alt="" className="w-7 h-7 object-contain bg-white rounded-lg p-0.5" />
+                  <Image
+                    src="/logo.png"
+                    alt="Multi-Matrix Engine"
+                    width={28}
+                    height={28}
+                    className="w-7 h-7 object-contain bg-white rounded-lg p-0.5"
+                  />
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-ggc-gold">
                     Multi-Matrix Engine
                   </span>
@@ -1790,23 +1846,33 @@ export default function HomePage() {
                       </button>
 
                       {/* Answer Body with Key Takeaway */}
-                      {isOpen && (
-                        <div
-                          id={`faq-answer-${faq.id}`}
-                          className="px-6 sm:px-7 pb-6 pt-2 border-t border-gray-100 dark:border-[#0E4230] text-xs sm:text-sm text-gray-600 dark:text-[#C7DCD2] leading-relaxed space-y-3"
-                        >
-                          <p>{faq.a}</p>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                          >
+                            <div
+                              id={`faq-answer-${faq.id}`}
+                              className="px-6 sm:px-7 pb-6 pt-2 border-t border-gray-100 dark:border-[#0E4230] text-xs sm:text-sm text-gray-600 dark:text-[#C7DCD2] leading-relaxed space-y-3"
+                            >
+                              <p>{faq.a}</p>
 
-                          {/* Key Takeaway Callout */}
-                          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-ggc-subtle/80 via-emerald-50/50 to-amber-50/50 dark:from-[#052016] dark:via-[#072B1E] dark:to-[#052016] border border-ggc/20 dark:border-ggc-gold/30 flex items-start gap-2.5">
-                            <Lightbulb className="w-4 h-4 text-ggc-gold-dark dark:text-ggc-gold shrink-0 mt-0.5" />
-                            <div className="text-xs text-ggc-dark dark:text-[#E8F1EC] font-medium leading-relaxed">
-                              <strong className="text-ggc dark:text-ggc-gold font-bold">Key Takeaway: </strong>
-                              {faq.takeaway}
+                              {/* Key Takeaway Callout */}
+                              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-ggc-subtle/80 via-emerald-50/50 to-amber-50/50 dark:from-[#052016] dark:via-[#072B1E] dark:to-[#052016] border border-ggc/20 dark:border-ggc-gold/30 flex items-start gap-2.5">
+                                <Lightbulb className="w-4 h-4 text-ggc-gold-dark dark:text-ggc-gold shrink-0 mt-0.5" />
+                                <div className="text-xs text-ggc-dark dark:text-[#E8F1EC] font-medium leading-relaxed">
+                                  <strong className="text-ggc dark:text-ggc-gold font-bold">Key Takeaway: </strong>
+                                  {faq.takeaway}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </SpotlightCard>
                   );
                 })
@@ -1824,9 +1890,11 @@ export default function HomePage() {
 
             <div className="relative z-10 max-w-2xl mx-auto">
               <div className="inline-block p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-4 shadow-md">
-                <img
+                <Image
                   src="/logo.png"
                   alt="Go Great Career Logo"
+                  width={48}
+                  height={48}
                   className="w-12 h-12 object-contain mx-auto"
                 />
               </div>
@@ -1977,6 +2045,9 @@ export default function HomePage() {
           )}
         </div>
       </aside>
+
+      {/* Floating CTA Bar on Desktop/Tablet on Scroll */}
+      <FloatingCtaBar onOpenCheckout={() => setIsCheckoutModalOpen(true)} />
 
       {/* Midtrans Snap Payment Modal */}
       <MidtransCheckoutModal

@@ -85,6 +85,7 @@ export default async function StudentDashboardPage({
               answers: {
                 include: {
                   question: true,
+                  question_set_item: true,
                 },
               },
             },
@@ -101,7 +102,8 @@ export default async function StudentDashboardPage({
       if (activeSession?.answers) {
         totalAnswers = activeSession.answers.length;
         for (const ans of activeSession.answers) {
-          const code = ans.question?.code || "";
+          const code =
+            ans.question_set_item?.code || ans.question?.code || "";
           if (code) {
             answersRecord[code] = ans.selected_value;
             const prefix = code.charAt(0).toUpperCase();

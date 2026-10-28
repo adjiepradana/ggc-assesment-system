@@ -599,10 +599,10 @@ export default function MidtransCheckoutModal({
                       <input
                         type={showPassword ? "text" : "password"}
                         required
-                        minLength={6}
+                        minLength={8}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Minimal 6 karakter"
+                        placeholder="Minimal 8 karakter"
                         className="w-full pl-10 sm:pl-11 pr-10 sm:pr-11 py-2.5 sm:py-3 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:border-transparent focus:outline-none transition-all shadow-xs"
                       />
                       <button

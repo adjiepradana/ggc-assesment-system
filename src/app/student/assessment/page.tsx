@@ -269,8 +269,9 @@ export default function StudentAssessmentPage() {
 
   // Clean up any pending AbortControllers on unmount
   useEffect(() => {
+    const controllers = abortControllersRef.current;
     return () => {
-      Object.values(abortControllersRef.current).forEach((ctrl) => {
+      Object.values(controllers).forEach((ctrl) => {
         try {
           ctrl.abort();
         } catch (e) {}

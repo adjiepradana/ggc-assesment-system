@@ -128,7 +128,12 @@ async function dispatchEmail({
 export function resolveBaseUrl(_ignoredCustomBaseUrl?: string): string {
   const nextAuthUrl = process.env.NEXTAUTH_URL?.trim();
   if (nextAuthUrl && nextAuthUrl.startsWith("http")) {
-    return nextAuthUrl.replace(/\/+$/, "");
+    const cleanUrl = nextAuthUrl.replace(/\/+$/, "");
+    // If running on localhost and not explicitly using HTTPS, default to http:// to prevent ERR_SSL_PROTOCOL_ERROR
+    if (cleanUrl.startsWith("https://localhost:") && process.env.NODE_ENV !== "production") {
+      return cleanUrl.replace("https://", "http://");
+    }
+    return cleanUrl;
   }
 
   return "http://localhost:3000";

@@ -59,8 +59,8 @@ function ResetPasswordForm() {
     e.preventDefault();
     setError(null);
 
-    if (!password || password.length < 6) {
-      setError("Kata sandi baru minimal 6 karakter.");
+    if (!password || password.length < 8) {
+      setError("Kata sandi baru minimal 8 karakter.");
       return;
     }
 
@@ -152,9 +152,10 @@ function ResetPasswordForm() {
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             required
+            minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimal 6 karakter"
+            placeholder="Minimal 8 karakter"
             className="block w-full pl-10 pr-11 py-3 text-sm rounded-2xl border border-gray-200 dark:border-[#11402E] bg-gray-50/70 dark:bg-[#031810] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B4632] focus:border-transparent transition-all"
           />
           <button

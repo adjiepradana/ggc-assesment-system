@@ -154,8 +154,8 @@ export default function StudentSettingsPage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setPasswordError("Kata sandi baru minimal 6 karakter.");
+    if (newPassword.length < 8) {
+      setPasswordError("Kata sandi baru minimal 8 karakter.");
       return;
     }
 
@@ -541,10 +541,10 @@ export default function StudentSettingsPage() {
                 <input
                   type={showNewPassword ? "text" : "password"}
                   required
-                  minLength={6}
+                  minLength={8}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Minimal 8 karakter"
                   className="w-full pl-10 sm:pl-11 pr-11 py-3 rounded-xl border border-gray-300 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:bg-white dark:focus:bg-[#02130C] focus:ring-2 focus:ring-ggc focus:outline-none transition-all"
                 />
                 <button

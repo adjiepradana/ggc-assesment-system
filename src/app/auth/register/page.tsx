@@ -59,6 +59,12 @@ function RegisterForm() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    if (!formData.password || formData.password.length < 8) {
+      setError("Kata sandi akun minimal 8 karakter.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -403,7 +409,7 @@ function RegisterForm() {
                 htmlFor="password"
                 className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5"
               >
-                Kata Sandi Akun (Min. 6 Karakter) *
+                Kata Sandi Akun (Min. 8 Karakter) *
               </label>
               <div className="relative rounded-2xl shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -416,9 +422,10 @@ function RegisterForm() {
                   autoComplete="new-password"
                   enterKeyHint="done"
                   required
+                  minLength={8}
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Minimal 8 karakter"
                   className="block w-full pl-10 pr-11 py-2.5 sm:py-3 text-base sm:text-sm rounded-2xl border border-gray-200 dark:border-[#11402E] bg-gray-50/50 dark:bg-[#031810] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ggc focus:border-transparent transition-all"
                 />
                 <button

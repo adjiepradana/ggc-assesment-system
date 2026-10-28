@@ -53,6 +53,7 @@ export async function GET(
             answers: {
               include: {
                 question: true,
+                question_set_item: true,
               },
             },
           },
@@ -76,6 +77,7 @@ export async function GET(
             answers: {
               include: {
                 question: true,
+                question_set_item: true,
               },
             },
           },
@@ -98,7 +100,10 @@ export async function GET(
         studentProfile = userSession.user?.profile;
         if (userSession.answers && userSession.answers.length > 0) {
           for (const ans of userSession.answers) {
-            const code = ans.question?.code || ans.question_id;
+            const weight = ans.question_set_item?.scoring_weight ?? 1;
+            if (weight <= 0) continue;
+            const code =
+              ans.question_set_item?.code || ans.question?.code || ans.question_id;
             answersRecord[code] = ans.selected_value;
           }
         }
