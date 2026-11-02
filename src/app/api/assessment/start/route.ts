@@ -8,6 +8,7 @@ import {
   shuffleArrayWithSeed,
 } from "@/lib/questions-data";
 import { checkUserPaidAccess } from "@/lib/access-check";
+import { resolveAssessmentQuestionSetId } from "@/lib/question-set";
 
 export const dynamic = "force-dynamic";
 
@@ -99,13 +100,22 @@ export async function GET() {
       if (latestSession && latestSession.status === "IN_PROGRESS") {
         assessmentSession = latestSession;
       } else {
-        // Resolve the currently active QuestionSet
-        const activeQuestionSet = await prisma.questionSet.findFirst({
-          where: { is_active: true },
-          orderBy: { version: "desc" },
-        });
+        // Resolve the verified QuestionSet ID (active set or verified fallback)
+        const questionSetId = await resolveAssessmentQuestionSetId(prisma);
 
-        const questionSetId = activeQuestionSet?.id || "qset_v1_default";
+        if (!questionSetId) {
+          console.error(
+            "[FATAL] Cannot start assessment session: No valid active QuestionSet or fallback found in database."
+          );
+          return NextResponse.json(
+            {
+              error: "INSTRUMENT_UNAVAILABLE",
+              message:
+                "Instrumen asesmen sedang tidak tersedia atau dalam pemeliharaan. Silakan hubungi admin.",
+            },
+            { status: 503 }
+          );
+        }
 
         try {
           assessmentSession = await prisma.assessmentSession.create({

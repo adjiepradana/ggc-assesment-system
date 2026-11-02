@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { logAdminAction } from "@/lib/audit";
+import { resolveAssessmentQuestionSetId } from "@/lib/question-set";
 
 export const dynamic = "force-dynamic";
 
@@ -198,14 +199,20 @@ export async function PATCH(req: Request) {
           }),
         ]);
       } else {
-        const activeQuestionSet = await prisma.questionSet.findFirst({
-          where: { is_active: true },
-          orderBy: { version: "desc" },
-        });
+        const questionSetId = await resolveAssessmentQuestionSetId(prisma);
+        if (!questionSetId) {
+          return NextResponse.json(
+            {
+              error:
+                "Tidak dapat mereset sesi: Instrumen asesmen tidak ditemukan di database.",
+            },
+            { status: 503 }
+          );
+        }
         await prisma.assessmentSession.create({
           data: {
             user_id: studentUser.id,
-            question_set_id: activeQuestionSet?.id || "qset_v1_default",
+            question_set_id: questionSetId,
             status: "IN_PROGRESS",
           },
         });
