@@ -69,6 +69,18 @@ export async function POST(req: Request) {
         );
       }
 
+      // Guard: Ensure session has a valid question_set_id bound to it
+      if (!userSession.question_set_id) {
+        return NextResponse.json(
+          {
+            error: "SESSION_OUTDATED",
+            message:
+              "Sesi asesmen Anda terdaftar pada format instrumen lama. Silakan hubungi admin untuk mereset sesi.",
+          },
+          { status: 409 }
+        );
+      }
+
       // 2. Resolve the corresponding QuestionSetItem in the session's bound QuestionSet
       let questionSetItem = await prisma.questionSetItem.findFirst({
         where: {
@@ -81,19 +93,16 @@ export async function POST(req: Request) {
         },
       });
 
-      let resolvedLegacyQuestionId =
-        questionSetItem?.legacy_question_id || question_id;
-
       if (!questionSetItem) {
-        // Look up Question by id or code, then find matching QuestionSetItem by code
+        // Fallback: look up Question by id or code, then find matching QuestionSetItem by code in this session's question_set
         const legacyQuestion = await prisma.question.findFirst({
           where: {
             OR: [{ id: question_id }, { code: question_id }],
           },
+          select: { id: true, code: true },
         });
 
         if (legacyQuestion) {
-          resolvedLegacyQuestionId = legacyQuestion.id;
           questionSetItem = await prisma.questionSetItem.findUnique({
             where: {
               question_set_id_code: {
@@ -108,10 +117,52 @@ export async function POST(req: Request) {
       if (!questionSetItem) {
         return NextResponse.json(
           {
-            error:
+            error: "QUESTION_NOT_FOUND",
+            message:
               "Butir soal tidak ditemukan dalam paket instrumen sesi asesmen ini.",
           },
           { status: 400 }
+        );
+      }
+
+      // 3. Resolve and guarantee a valid Question foreign key (questions.id)
+      let resolvedLegacyQuestionId: string | null =
+        questionSetItem.legacy_question_id || null;
+
+      // If legacy_question_id is missing or null, find the corresponding Question by code
+      if (!resolvedLegacyQuestionId) {
+        const matchingLegacy = await prisma.question.findUnique({
+          where: { code: questionSetItem.code },
+          select: { id: true },
+        });
+        if (matchingLegacy) {
+          resolvedLegacyQuestionId = matchingLegacy.id;
+        }
+      }
+
+      // If still missing, check if the client-supplied question_id is itself a valid Question.id
+      if (!resolvedLegacyQuestionId) {
+        const candidateQuestion = await prisma.question.findUnique({
+          where: { id: question_id },
+          select: { id: true },
+        });
+        if (candidateQuestion) {
+          resolvedLegacyQuestionId = candidateQuestion.id;
+        }
+      }
+
+      // If after all resolution steps, no Question row exists in DB, abort safely
+      if (!resolvedLegacyQuestionId) {
+        console.error(
+          `[Assessment Answer] Integrity error: QuestionSetItem [${questionSetItem.id}] code [${questionSetItem.code}] has no corresponding Question record in database.`
+        );
+        return NextResponse.json(
+          {
+            error: "UNMAPPED_QUESTION",
+            message:
+              "Butir soal tidak memiliki pemetaan referensi yang valid dalam basis data.",
+          },
+          { status: 422 }
         );
       }
 
@@ -153,7 +204,7 @@ export async function POST(req: Request) {
           ? new Date(client_timestamp)
           : new Date();
 
-      // 3. Upsert answer with question_set_item_id
+      // 4. Upsert answer with verified question_id and question_set_item_id
       const answer = await prisma.assessmentAnswer.upsert({
         where: {
           session_id_question_id: {
@@ -188,13 +239,76 @@ export async function POST(req: Request) {
       });
     } catch (dbErr: any) {
       console.error("❌ [Assessment Answer] DB write error:", dbErr);
+
+      // Foreign Key Constraint Violation (P2003) -> 422 Unprocessable Entity
+      if (dbErr?.code === "P2003") {
+        return NextResponse.json(
+          {
+            error: "FOREIGN_KEY_VIOLATION",
+            message:
+              "Integritas data soal tidak valid. Silakan muat ulang halaman atau hubungi admin.",
+            detail: dbErr?.meta?.field_name,
+          },
+          { status: 422 }
+        );
+      }
+
+      // Trigger Exception (trg_enforce_answer_questionset_match) -> 409 Conflict
+      if (
+        typeof dbErr?.message === "string" &&
+        dbErr.message.includes("Foreign key integrity violation: QuestionSetItem")
+      ) {
+        return NextResponse.json(
+          {
+            error: "QUESTION_SET_MISMATCH",
+            message:
+              "Butir soal tidak cocok dengan versi paket instrumen pada sesi asesmen Anda.",
+          },
+          { status: 409 }
+        );
+      }
+
+      // Unique Constraint Violation (P2002, concurrent write race) -> 409 Conflict
+      if (dbErr?.code === "P2002") {
+        return NextResponse.json(
+          {
+            error: "CONCURRENT_SUBMISSION",
+            message:
+              "Terjadi konflik penyimpanan jawaban bersamaan. Silakan coba lagi.",
+          },
+          { status: 409 }
+        );
+      }
+
+      // Database Reachability, Pooler Exhaustion, or Network Timeout -> 503 Service Unavailable
+      const isConnectionIssue =
+        dbErr?.code === "P1001" ||
+        dbErr?.code === "P1008" ||
+        dbErr?.code === "P1017" ||
+        (typeof dbErr?.message === "string" &&
+          (dbErr.message.includes("Can't reach database server") ||
+            dbErr.message.includes("Timed out") ||
+            dbErr.message.includes("connection pool")));
+
+      if (isConnectionIssue) {
+        return NextResponse.json(
+          {
+            error: "SERVICE_UNAVAILABLE",
+            message:
+              "Server sedang mengalami gangguan koneksi database. Jawaban Anda aman di perangkat — silakan coba simpan kembali.",
+          },
+          { status: 503 }
+        );
+      }
+
+      // General internal database error -> 500 Internal Server Error
       return NextResponse.json(
         {
-          error: "SERVICE_UNAVAILABLE",
+          error: "DATABASE_ERROR",
           message:
-            "Gagal menyimpan jawaban ke basis data. Silakan periksa koneksi Anda dan coba lagi.",
+            "Gagal menyimpan jawaban ke basis data. Silakan coba lagi beberapa saat lagi.",
         },
-        { status: 503 }
+        { status: 500 }
       );
     }
   } catch (error: any) {
